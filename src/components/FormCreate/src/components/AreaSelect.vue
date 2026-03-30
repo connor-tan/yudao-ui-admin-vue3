@@ -16,8 +16,8 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, watch } from 'vue'
-import { getAreaTree } from '@/api/system/area'
+import { computed, ref, watch } from 'vue'
+import { getEnabledAreaTree } from '@/api/system/area'
 import { AreaLevelEnum } from '@/utils/constants'
 
 defineOptions({ name: 'AreaSelect' })
@@ -73,7 +73,7 @@ const loading = ref(false) // 加载状态
 async function loadAreaTree(): Promise<void> {
   try {
     loading.value = true
-    const data = await getAreaTree()
+    const data = await getEnabledAreaTree(currentAreaId.value)
     // 根据 level 限制层级
     areaTree.value = filterTreeByLevel(data || [], props.level)
   } catch (error) {
@@ -127,11 +127,19 @@ function syncSelectedValue(): void {
   }
 }
 
+const currentAreaId = computed(() => {
+  if (!Array.isArray(props.modelValue) || props.modelValue.length === 0) {
+    return undefined
+  }
+  const areaId = Number(props.modelValue[props.modelValue.length - 1])
+  return Number.isNaN(areaId) ? undefined : areaId
+})
+
 /** 监听 modelValue 变化 */
 watch(() => props.modelValue, syncSelectedValue, { immediate: true })
 
-/** 组件挂载时加载数据 */
-onMounted(async () => {
+/** 监听地区和层级变化，保证编辑态可回显停用地区 */
+watch([() => props.level, currentAreaId], async () => {
   await loadAreaTree()
-})
+}, { immediate: true })
 </script>

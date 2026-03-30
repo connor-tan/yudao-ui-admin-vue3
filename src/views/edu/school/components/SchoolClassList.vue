@@ -9,25 +9,33 @@
     >
       <Icon icon="ep:plus" class="mr-5px" /> 新增
     </el-button>
-      <el-button
-          type="danger"
-          plain
-          :disabled="isEmpty(checkedIds)"
-          @click="handleDeleteBatch"
-          v-hasPermi="['edu:school:delete']"
-      >
-        <Icon icon="ep:delete" class="mr-5px" /> 批量删除
-      </el-button>
-    <el-table
-        row-key="id"
-        v-loading="loading"
-        :data="list"
-        :stripe="true"
-        :show-overflow-tooltip="true"
-        @selection-change="handleRowCheckboxChange"
+    <el-button
+      type="success"
+      plain
+      @click="openPromotionDialog"
+      v-hasPermi="['edu:student:update']"
     >
-          <el-table-column type="selection" width="55" />
-<!--      <el-table-column label="班级ID" align="center" prop="id" />-->
+      <Icon icon="ep:top" class="mr-5px" /> 一键升班
+    </el-button>
+    <el-button
+      type="danger"
+      plain
+      :disabled="isEmpty(checkedIds)"
+      @click="handleDeleteBatch"
+      v-hasPermi="['edu:school:delete']"
+    >
+      <Icon icon="ep:delete" class="mr-5px" /> 批量删除
+    </el-button>
+    <el-table
+      row-key="id"
+      v-loading="loading"
+      :data="list"
+      :stripe="true"
+      :show-overflow-tooltip="true"
+      @selection-change="handleRowCheckboxChange"
+    >
+      <el-table-column type="selection" width="55" />
+      <!--      <el-table-column label="班级ID" align="center" prop="id" />-->
       <el-table-column label="入学批次" align="center" prop="entryYear" />
       <el-table-column label="年级阶段" align="center" prop="stage">
         <template #default="scope">
@@ -75,8 +83,9 @@
       @pagination="getList"
     />
   </ContentWrap>
-    <!-- 表单弹窗：添加/修改 -->
-    <SchoolClassForm ref="formRef" @success="getList" />
+  <!-- 表单弹窗：添加/修改 -->
+  <SchoolClassForm ref="formRef" @success="getList" />
+  <StudentPromotionDialog ref="promotionDialogRef" @success="getList" />
 </template>
 <script setup lang="ts">
 import { DICT_TYPE } from '@/utils/dict'
@@ -84,6 +93,7 @@ import { dateFormatter } from '@/utils/formatTime'
 import { isEmpty } from '@/utils/is'
 import { SchoolApi, SchoolClass } from '@/api/edu/school'
 import SchoolClassForm from './SchoolClassForm.vue'
+import StudentPromotionDialog from './StudentPromotionDialog.vue'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -110,7 +120,7 @@ watch(
     queryParams.schoolId = val
     handleQuery()
   },
-    { immediate: true, deep: true }
+  { immediate: true, deep: true }
 )
 
 /** 查询列表 */
@@ -139,6 +149,15 @@ const openForm = (type: string, id?: number) => {
     return
   }
   formRef.value.open(type, id, props.schoolId)
+}
+
+const promotionDialogRef = ref()
+const openPromotionDialog = () => {
+  if (!props.schoolId) {
+    message.error('请选择一个学校信息')
+    return
+  }
+  promotionDialogRef.value.open(props.schoolId)
 }
 
 /** 删除按钮操作 */

@@ -126,7 +126,7 @@ const open = async (type: string, id?: number) => {
     }
   }
   // 获得地区列表
-  areaList.value = await AreaApi.getAreaTree()
+  areaList.value = await AreaApi.getEnabledAreaTree(formData.value.areaId)
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 

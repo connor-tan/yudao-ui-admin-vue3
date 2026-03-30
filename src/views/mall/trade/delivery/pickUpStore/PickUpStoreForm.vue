@@ -116,7 +116,7 @@ import * as DeliveryPickUpStoreApi from '@/api/mall/trade/delivery/pickUpStore'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import { CommonStatusEnum } from '@/utils/constants'
 import { defaultProps } from '@/utils/tree'
-import { getAreaTree } from '@/api/system/area'
+import * as AreaApi from '@/api/system/area'
 import * as ConfigApi from '@/api/mall/trade/config'
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -174,6 +174,7 @@ const open = async (type: string, id?: number) => {
       formLoading.value = false
     }
   }
+  areaList.value = await AreaApi.getEnabledAreaTree(formData.value.areaId)
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 
@@ -255,7 +256,6 @@ const initTencentLbsMap = async () => {
 
 /** 初始化 **/
 onMounted(async () => {
-  areaList.value = await getAreaTree()
   // 加载地图
   await initTencentLbsMap()
 })

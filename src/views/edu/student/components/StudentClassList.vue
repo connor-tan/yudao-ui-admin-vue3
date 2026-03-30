@@ -4,7 +4,11 @@
       <el-table-column label="学生班级ID" align="center" prop="id" />
       <el-table-column label="班级" align="center" prop="className" min-width="180" />
       <el-table-column label="入班日期" align="center" prop="startDate" />
-      <el-table-column label="离班日期" align="center" prop="endDate" />
+      <el-table-column label="离班日期" align="center" min-width="120">
+        <template #default="scope">
+          {{ scope.row.endDate || '-' }}
+        </template>
+      </el-table-column>
       <el-table-column
         label="创建时间"
         align="center"

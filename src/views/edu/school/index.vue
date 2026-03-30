@@ -197,7 +197,7 @@ const loadAreaList = async () => {
   if (areaList.value.length > 0) {
     return
   }
-  areaList.value = await AreaApi.getAreaTree()
+  areaList.value = await AreaApi.getEnabledAreaTree()
 }
 
 const getAreaLastName = (areaName?: string) => {

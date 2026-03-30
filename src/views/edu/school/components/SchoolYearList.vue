@@ -28,8 +28,8 @@
     >
           <el-table-column type="selection" width="55" />
       <el-table-column label="学年ID" align="center" prop="id" />
-      <el-table-column label="学年开始-以年为计算单位" align="center" prop="yearStart" />
-      <el-table-column label="学年结束-以年为计算单位" align="center" prop="yearEnd" />
+      <el-table-column label="学年开始" align="center" prop="yearStart" />
+      <el-table-column label="学年结束" align="center" prop="yearEnd" />
       <el-table-column
         label="开学日期"
         align="center"

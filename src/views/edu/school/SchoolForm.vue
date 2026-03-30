@@ -112,12 +112,13 @@ const open = async (type: string, id?: number) => {
   resetForm()
   formLoading.value = true
   try {
-    if (!areaList.value.length) {
-      areaList.value = await AreaApi.getAreaTree()
-    }
+    let school: School | undefined
     // 修改时，设置数据
     if (id) {
-      const school = await SchoolApi.getSchool(id)
+      school = await SchoolApi.getSchool(id)
+    }
+    areaList.value = await AreaApi.getEnabledAreaTree(school?.areaId)
+    if (school) {
       formData.value = {
         id: school.id,
         schoolName: school.schoolName,

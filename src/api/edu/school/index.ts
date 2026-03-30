@@ -70,6 +70,7 @@ export interface SchoolClass {
 export interface SchoolClassSimple {
   id: number
   entryYear: number
+  schoolGradeId: number
   className: string
   stage?: string
   gradeNo?: string
@@ -185,8 +186,8 @@ export const SchoolApi = {
     return await request.get({ url: `/edu/school/school-class/page`, params })
   },
 
-  getSchoolClassSimpleList: async (schoolId: number) => {
-    return await request.get({ url: `/edu/school/school-class/simple-list`, params: { schoolId } })
+  getSchoolClassSimpleList: async (schoolId: number, schoolYearId?: number) => {
+    return await request.get({ url: `/edu/school/school-class/simple-list`, params: { schoolId, schoolYearId } })
   },
 
   createSchoolClass: async (data: SchoolClass) => {

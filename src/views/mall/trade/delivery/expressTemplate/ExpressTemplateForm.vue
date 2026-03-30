@@ -168,6 +168,7 @@ const formRules = reactive({
   sort: [{ required: true, message: '分类排序不能为空', trigger: 'blur' }]
 })
 const formRef = ref() // 表单 Ref
+const areaTree = ref([])
 
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {
@@ -190,6 +191,7 @@ const open = async (type: string, id?: number) => {
         item.freePrice = fenToYuan(item.freePrice)
       })
     }
+    areaTree.value = await AreaApi.getEnabledAreaTree(getSelectedAreaIds())
   } finally {
     formLoading.value = false
   }
@@ -258,7 +260,6 @@ const changeChargeMode = (chargeMode: number) => {
 }
 
 /** 初始化数据 */
-const areaTree = ref([])
 const initData = async () => {
   // 表头标题和计费方式的映射
   columnTitleMap.set(1, {
@@ -276,8 +277,14 @@ const initData = async () => {
     extraCountTitle: '续件体积(m³)',
     freeCountTitle: '包邮体积(m³)'
   })
-  // 加载区域数据
-  areaTree.value = await AreaApi.getAreaTree()
+}
+
+const getSelectedAreaIds = () => {
+  const areaIds = [
+    ...formData.value.charges.flatMap((item) => item.areaIds || []),
+    ...formData.value.frees.flatMap((item) => item.areaIds || [])
+  ]
+  return [...new Set(areaIds.filter((item) => item !== undefined && item !== null))]
 }
 
 /** 添加计费区域 */

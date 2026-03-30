@@ -18,22 +18,40 @@
         />
       </el-form-item>
       <el-form-item label="家长" prop="belongTo">
-        <el-input
+        <el-select
           v-model="queryParams.belongTo"
-          placeholder="请输入家长"
+          remote
+          filterable
+          reserve-keyword
           clearable
-          @keyup.enter="handleQuery"
+          placeholder="请输入家长昵称或手机号搜索"
+          :remote-method="searchParent"
+          :loading="parentLoading"
           class="!w-240px"
-        />
+        >
+          <el-option
+            v-for="parent in parentOptions"
+            :key="parent.id"
+            :label="formatParentLabel(parent)"
+            :value="parent.id"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="学校" prop="currentSchoolId">
-        <el-input
+        <el-select
           v-model="queryParams.currentSchoolId"
-          placeholder="请输入学校"
+          filterable
           clearable
-          @keyup.enter="handleQuery"
+          placeholder="请选择学校"
           class="!w-240px"
-        />
+        >
+          <el-option
+            v-for="school in schoolList"
+            :key="school.id"
+            :label="school.schoolName"
+            :value="school.id"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="入学年" prop="entryYear">
         <el-input
@@ -122,7 +140,7 @@
       <el-table-column type="expand">
         <template #default="scope">
           <el-tabs model-value="studentClass">
-            <el-tab-pane label="学生班级区间记录" name="studentClass">
+            <el-tab-pane label="学生班级信息" name="studentClass">
               <StudentClassList :key="`${scope.row.id}-${studentClassRefreshKey}`" :student-id="scope.row.id" />
             </el-tab-pane>
           </el-tabs>
@@ -189,6 +207,8 @@ import { isEmpty } from '@/utils/is'
 import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { getStudentStatusLabel, STUDENT_STATUS_OPTIONS, StudentApi, Student } from '@/api/edu/student'
+import { SchoolApi, type SchoolSimple } from '@/api/edu/school'
+import { getUserPage, type UserVO } from '@/api/member/user'
 import StudentForm from './StudentForm.vue'
 import StudentClassList from './components/StudentClassList.vue'
 
@@ -198,9 +218,18 @@ defineOptions({ name: 'Student' })
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
 
+interface ParentOption {
+  id: number
+  nickname?: string
+  mobile?: string
+}
+
 const loading = ref(true) // 列表的加载中
 const list = ref<Student[]>([]) // 列表的数据
 const total = ref(0) // 列表的总页数
+const schoolList = ref<SchoolSimple[]>([])
+const parentOptions = ref<ParentOption[]>([])
+const parentLoading = ref(false)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
@@ -215,6 +244,42 @@ const queryParams = reactive({
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 const studentClassRefreshKey = ref(0)
+
+const loadSchoolList = async () => {
+  if (schoolList.value.length > 0) {
+    return
+  }
+  schoolList.value = await SchoolApi.getSchoolSimpleList()
+}
+
+const formatParentLabel = (parent: ParentOption) => {
+  if (parent.nickname && parent.mobile) {
+    return `${parent.nickname}（${parent.mobile}）`
+  }
+  return parent.nickname || parent.mobile || String(parent.id)
+}
+
+const searchParent = async (query: string) => {
+  parentLoading.value = true
+  try {
+    const params: Record<string, any> = { pageNo: 1, pageSize: 20 }
+    if (query) {
+      if (/^\d+$/.test(query)) {
+        params.mobile = query
+      } else {
+        params.nickname = query
+      }
+    }
+    const data = await getUserPage(params)
+    parentOptions.value = (data.list || []).map((item: UserVO) => ({
+      id: item.id,
+      nickname: item.nickname,
+      mobile: item.mobile
+    }))
+  } finally {
+    parentLoading.value = false
+  }
+}
 
 const formatParentDisplay = (student: Student) => {
   if (student.parentNickname && student.parentMobile) {
@@ -304,7 +369,8 @@ const handleExport = async () => {
 }
 
 /** 初始化 **/
-onMounted(() => {
-  getList()
+onMounted(async () => {
+  await Promise.all([loadSchoolList(), searchParent('')])
+  await getList()
 })
 </script>

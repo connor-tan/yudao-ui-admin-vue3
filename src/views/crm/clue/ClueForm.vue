@@ -200,7 +200,7 @@ const open = async (type: string, id?: number) => {
     }
   }
   // 获得地区列表
-  areaList.value = await AreaApi.getAreaTree()
+  areaList.value = await AreaApi.getEnabledAreaTree(formData.value.areaId)
   // 获得用户列表
   userOptions.value = await UserApi.getSimpleUserList()
   // 默认新建时选中自己

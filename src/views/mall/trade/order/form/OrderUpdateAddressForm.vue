@@ -32,7 +32,7 @@
 </template>
 <script lang="ts" setup>
 import * as TradeOrderApi from '@/api/mall/trade/order'
-import { getAreaTree } from '@/api/system/area'
+import * as AreaApi from '@/api/system/area'
 import { copyValueToTarget } from '@/utils'
 import { defaultProps } from '@/utils/tree'
 
@@ -58,6 +58,7 @@ const open = async (row: TradeOrderApi.OrderVO) => {
   resetForm()
   // 设置数据
   copyValueToTarget(formData.value, row)
+  areaList.value = await AreaApi.getEnabledAreaTree(formData.value.receiverAreaId)
   dialogVisible.value = true
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
@@ -91,8 +92,4 @@ const resetForm = () => {
   formRef.value?.resetFields()
 }
 
-onMounted(async () => {
-  // 获得地区列表
-  areaList.value = await getAreaTree()
-})
 </script>
