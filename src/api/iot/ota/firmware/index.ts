@@ -12,7 +12,7 @@ export interface IoTOtaFirmware {
   fileSize?: number // 固件文件大小
   fileDigestAlgorithm?: string // 固件文件签名算法
   fileDigestValue?: string // 固件文件签名结果
-  createTime?: Date // 创建时间
+  createTime?: string // 创建时间
 }
 
 // IoT OTA 固件 API

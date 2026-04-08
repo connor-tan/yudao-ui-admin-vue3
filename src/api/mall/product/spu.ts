@@ -57,7 +57,7 @@ export interface Spu {
   marketPrice?: number // 市场价
   costPrice?: number // 成本价
   stock?: number // 商品库存
-  createTime?: Date // 商品创建时间
+  createTime?: string // 商品创建时间
   status?: number // 商品状态
 }
 

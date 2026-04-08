@@ -1,4 +1,5 @@
 import request from '@/config/axios'
+import qs from 'qs'
 
 export interface SubscriptionWindowSpu {
   id: number
@@ -39,20 +40,25 @@ export interface SubscriptionWindowSpuAvailable {
   publisherId?: number
   publisherName?: string
   applicableGradeNames?: string
+  matchedGradeCatalogIds?: number[]
+  matchedGradeNames?: string
 }
 
 export interface SubscriptionWindowSpuBatchCreateReqVO {
   windowId: number
-  baseGradeCatalogId: number
+  baseGradeCatalogIds: number[]
   productSpuIds: number[]
 }
 
 export interface SubscriptionWindowSpuBatchCreateRespVO {
-  createdCount: number
+  createdWindowSpuCount: number
+  createdGradeCount: number
   skippedCount: number
   skippedItems: Array<{
     productSpuId: number
     productName: string
+    skippedGradeCatalogIds?: number[]
+    skippedGradeNames?: string
     reason: string
   }>
 }
@@ -71,7 +77,11 @@ export const SubscriptionWindowSpuApi = {
   },
 
   getAvailablePage: async (params: any) => {
-    return await request.get({ url: '/subscription/window-spu/available-page', params })
+    return await request.get({
+      url: '/subscription/window-spu/available-page',
+      params,
+      paramsSerializer: (requestParams) => qs.stringify(requestParams, { allowDots: true, indices: false })
+    })
   },
 
   batchCreate: async (data: SubscriptionWindowSpuBatchCreateReqVO) => {

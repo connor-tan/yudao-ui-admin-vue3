@@ -7,8 +7,8 @@ export interface DiscountActivityVO {
   name?: string
   status?: number
   remark?: string
-  startTime?: Date
-  endTime?: Date
+  startTime?: string
+  endTime?: string
   products?: DiscountProductVO[]
 }
 // 限时折扣相关 属性

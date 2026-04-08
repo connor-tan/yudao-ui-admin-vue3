@@ -5,7 +5,7 @@ export interface StockOutVO {
   id: number // 出库编号
   no: string // 出库单号
   customerId: number // 客户编号
-  outTime: Date // 出库时间
+  outTime: string // 出库时间
   totalCount: number // 合计数量
   totalPrice: number // 合计金额，单位：元
   status: number // 状态

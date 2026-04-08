@@ -5,7 +5,7 @@ export interface KeFuConversationRespVO {
   userId: number // 会话所属用户
   userAvatar: string // 会话所属用户头像
   userNickname: string // 会话所属用户昵称
-  lastMessageTime: Date // 最后聊天时间
+  lastMessageTime: string // 最后聊天时间
   lastMessageContent: string // 最后聊天内容
   lastMessageContentType: number // 最后发送的消息类型
   adminPinned: boolean // 管理端置顶

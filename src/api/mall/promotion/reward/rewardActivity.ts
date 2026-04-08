@@ -3,9 +3,9 @@ import request from '@/config/axios'
 export interface RewardActivityVO {
   id?: number
   name?: string
-  startTime?: Date
-  endTime?: Date
-  startAndEndTime?: Date[] // 只前端使用
+  startTime?: string
+  endTime?: string
+  startAndEndTime?: string[] // 只前端使用
   remark?: string
   conditionType?: number
   productScope?: number

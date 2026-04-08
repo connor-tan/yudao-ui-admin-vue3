@@ -15,7 +15,7 @@
           v-model="formData.startTime"
           class="!w-full"
           type="datetime"
-          value-format="x"
+          value-format="YYYY-MM-DD HH:mm:ss"
           placeholder="请选择开始时间"
         />
       </el-form-item>
@@ -24,7 +24,7 @@
           v-model="formData.endTime"
           class="!w-full"
           type="datetime"
-          value-format="x"
+          value-format="YYYY-MM-DD HH:mm:ss"
           placeholder="请选择结束时间"
         />
       </el-form-item>
@@ -245,11 +245,8 @@ const normalizeDateTimeValue = (value?: string | number) => {
   if (value === undefined || value === null || value === '') {
     return undefined
   }
-  if (typeof value === 'number') {
-    return value
-  }
-  const timestamp = dayjs(value).valueOf()
-  return Number.isNaN(timestamp) ? undefined : timestamp
+  const datetime = dayjs(value)
+  return datetime.isValid() ? datetime.format('YYYY-MM-DD HH:mm:ss') : undefined
 }
 
 const open = async (type: 'create' | 'update', id?: number) => {

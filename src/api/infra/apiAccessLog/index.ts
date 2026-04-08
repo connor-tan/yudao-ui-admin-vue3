@@ -15,12 +15,12 @@ export interface ApiAccessLogVO {
   operateModule: string
   operateName: string
   operateType: number
-  beginTime: Date
-  endTime: Date
+  beginTime: string
+  endTime: string
   duration: number
   resultCode: number
   resultMsg: string
-  createTime: Date
+  createTime: string
 }
 
 // 查询列表API 访问日志

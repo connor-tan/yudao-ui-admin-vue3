@@ -8,7 +8,7 @@ export interface NoticeVO {
   status: number
   remark: string
   creator: string
-  createTime: Date
+  createTime: string
 }
 
 // 查询公告列表

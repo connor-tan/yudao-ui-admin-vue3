@@ -15,7 +15,7 @@ export interface MenuVO {
   visible: boolean
   keepAlive: boolean
   alwaysShow?: boolean
-  createTime: Date
+  createTime: string
 }
 
 // 查询菜单（精简）列表

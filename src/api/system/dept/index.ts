@@ -9,7 +9,7 @@ export interface DeptVO {
   leaderUserId: number
   phone: string
   email: string
-  createTime: Date
+  createTime: string
 }
 
 // 查询部门（精简)列表

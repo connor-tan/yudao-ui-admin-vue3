@@ -23,10 +23,10 @@ export interface RefundVO {
   channelErrorCode: string
   channelErrorMsg: string
   channelExtras: string
-  expireTime: Date
-  successTime: Date
-  notifyTime: Date
-  createTime: Date
+  expireTime: string
+  successTime: string
+  notifyTime: string
+  createTime: string
 }
 
 export interface RefundPageReqVO extends PageParam {
@@ -51,10 +51,10 @@ export interface RefundPageReqVO extends PageParam {
   channelErrorCode?: string
   channelErrorMsg?: string
   channelExtras?: string
-  expireTime?: Date[]
-  successTime?: Date[]
-  notifyTime?: Date[]
-  createTime?: Date[]
+  expireTime?: string[]
+  successTime?: string[]
+  notifyTime?: string[]
+  createTime?: string[]
 }
 
 export interface PayRefundExportReqVO {
@@ -79,10 +79,10 @@ export interface PayRefundExportReqVO {
   channelErrorCode?: string
   channelErrorMsg?: string
   channelExtras?: string
-  expireTime?: Date[]
-  successTime?: Date[]
-  notifyTime?: Date[]
-  createTime?: Date[]
+  expireTime?: string[]
+  successTime?: string[]
+  notifyTime?: string[]
+  createTime?: string[]
 }
 
 // 查询列表退款订单

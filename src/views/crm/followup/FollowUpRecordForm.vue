@@ -27,7 +27,7 @@
               v-model="formData.nextTime"
               placeholder="选择下次联系时间"
               type="date"
-              value-format="x"
+              value-format="YYYY-MM-DD HH:mm:ss"
             />
           </el-form-item>
         </el-col>

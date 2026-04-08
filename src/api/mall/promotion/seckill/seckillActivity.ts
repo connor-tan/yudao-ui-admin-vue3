@@ -7,8 +7,8 @@ export interface SeckillActivityVO {
   name?: string
   status?: number
   remark?: string
-  startTime?: Date
-  endTime?: Date
+  startTime?: string
+  endTime?: string
   sort?: number
   configIds?: string
   orderCount?: number

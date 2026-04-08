@@ -19,7 +19,7 @@
             <el-date-picker
               v-model="formData.checkTime"
               type="date"
-              value-format="x"
+              value-format="YYYY-MM-DD HH:mm:ss"
               placeholder="选择盘点时间"
               class="!w-1/1"
             />

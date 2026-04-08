@@ -7,8 +7,8 @@ export interface BusinessVO {
   customerId: number
   customerName?: string
   followUpStatus: boolean
-  contactLastTime: Date
-  contactNextTime: Date
+  contactLastTime: string
+  contactNextTime: string
   ownerUserId: number
   ownerUserName?: string // 负责人的用户名称
   ownerUserDept?: string // 负责人的部门名称
@@ -18,15 +18,15 @@ export interface BusinessVO {
   statusName?: string
   endStatus: number
   endRemark: string
-  dealTime: Date
+  dealTime: string
   totalProductPrice: number
   totalPrice: number
   discountPercent: number
   remark: string
   creator: string // 创建人
   creatorName?: string // 创建人名称
-  createTime: Date // 创建时间
-  updateTime: Date // 更新时间
+  createTime: string // 创建时间
+  updateTime: string // 更新时间
   products?: [
     {
       id: number

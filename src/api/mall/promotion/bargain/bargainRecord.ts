@@ -10,7 +10,7 @@ export interface BargainRecordVO {
   bargainPrice: number
   status: number
   orderId: number
-  endTime: Date
+  endTime: string
 }
 
 // 查询砍价记录列表

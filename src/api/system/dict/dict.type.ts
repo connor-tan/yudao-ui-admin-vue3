@@ -6,7 +6,7 @@ export interface DictTypeVO {
   type: string
   status: number
   remark: string
-  createTime: Date
+  createTime: string
 }
 
 // 查询字典（精简)列表

@@ -9,15 +9,15 @@ export interface ContractVO {
   customerName?: string
   businessId: number
   businessName: string
-  contactLastTime: Date
+  contactLastTime: string
   ownerUserId: number
   ownerUserName?: string
   ownerUserDeptName?: string
   processInstanceId: number
   auditStatus: number
-  orderDate: Date
-  startTime: Date
-  endTime: Date
+  orderDate: string
+  startTime: string
+  endTime: string
   totalProductPrice: number
   discountPercent: number
   totalPrice: number
@@ -27,10 +27,10 @@ export interface ContractVO {
   signUserId: number
   signUserName: string
   remark: string
-  createTime?: Date
+  createTime?: string
   creator: string
   creatorName: string
-  updateTime?: Date
+  updateTime?: string
   products?: [
     {
       id: number

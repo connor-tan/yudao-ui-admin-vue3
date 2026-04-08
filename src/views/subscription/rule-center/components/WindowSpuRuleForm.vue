@@ -1,47 +1,79 @@
 <template>
-  <Dialog v-model="dialogVisible" :title="`特殊规则：${productName}`" width="980px">
-    <div class="mb-12px">
-      <el-button type="primary" plain @click="openRuleDialog('create')">
-        <Icon class="mr-5px" icon="ep:plus" />
-        新增规则
-      </el-button>
-    </div>
+  <Dialog
+    v-model="dialogVisible"
+    :appendToBody="true"
+    :scroll="true"
+    :title="`特殊规则：${productName}`"
+    width="980px"
+  >
+    <ContentWrap>
+      <div class="mb-12px">
+        <el-button
+          v-hasPermi="['subscription:window-spu-rule:create']"
+          plain
+          type="primary"
+          @click="openRuleDialog('create')"
+        >
+          <Icon class="mr-5px" icon="ep:plus" />
+          新增规则
+        </el-button>
+      </div>
 
-    <el-table v-loading="loading" :data="list" :show-overflow-tooltip="true" :stripe="true">
-      <el-table-column label="规则效果" min-width="100">
-        <template #default="{ row }">
-          {{ getSubscriptionRuleEffectTypeLabel(row.effectType) }}
-        </template>
-      </el-table-column>
-      <el-table-column label="规则范围" min-width="120">
-        <template #default="{ row }">
-          {{ getSubscriptionRuleScopeTypeLabel(row.scopeType) }}
-        </template>
-      </el-table-column>
-      <el-table-column label="学校" min-width="180" prop="schoolName" />
-      <el-table-column label="年级" min-width="180">
-        <template #default="{ row }">
-          {{ row.gradeAliasName ? `${row.gradeName}（${row.gradeAliasName}）` : row.gradeName || '-' }}
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="排序" min-width="80" prop="sort" />
-      <el-table-column label="备注" min-width="180" prop="remark" />
-      <el-table-column align="center" label="操作" width="140">
-        <template #default="{ row }">
-          <el-button link type="primary" @click="openRuleDialog('update', row)">编辑</el-button>
-          <el-button link type="danger" @click="handleDelete(row.id!)">删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+      <el-table v-loading="loading" :data="list" :show-overflow-tooltip="true" :stripe="true">
+        <el-table-column label="规则效果" min-width="100">
+          <template #default="{ row }">
+            {{ getSubscriptionRuleEffectTypeLabel(row.effectType) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="规则范围" min-width="120">
+          <template #default="{ row }">
+            {{ getSubscriptionRuleScopeTypeLabel(row.scopeType) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="学校" min-width="180" prop="schoolName" />
+        <el-table-column label="年级" min-width="180">
+          <template #default="{ row }">
+            {{ row.gradeAliasName ? `${row.gradeName}（${row.gradeAliasName}）` : row.gradeName || '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="排序" min-width="80" prop="sort" />
+        <el-table-column label="备注" min-width="180" prop="remark" />
+        <el-table-column align="center" label="操作" width="140">
+          <template #default="{ row }">
+            <el-button
+              v-hasPermi="['subscription:window-spu-rule:update']"
+              link
+              type="primary"
+              @click="openRuleDialog('update', row)"
+            >
+              编辑
+            </el-button>
+            <el-button
+              v-hasPermi="['subscription:window-spu-rule:delete']"
+              link
+              type="danger"
+              @click="handleDelete(row.id!)"
+            >
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
 
-    <Pagination
-      v-model:limit="queryParams.pageSize"
-      v-model:page="queryParams.pageNo"
-      :total="total"
-      @pagination="getList"
-    />
+      <Pagination
+        v-model:limit="queryParams.pageSize"
+        v-model:page="queryParams.pageNo"
+        :total="total"
+        @pagination="getList"
+      />
+    </ContentWrap>
 
-    <Dialog v-model="ruleDialogVisible" :title="ruleDialogType === 'create' ? '新增规则' : '编辑规则'" width="620px">
+    <Dialog
+      v-model="ruleDialogVisible"
+      :appendToBody="true"
+      :title="ruleDialogType === 'create' ? '新增规则' : '编辑规则'"
+      width="620px"
+    >
       <el-form ref="formRef" v-loading="formLoading" :model="formData" :rules="formRules" label-width="100px">
         <el-form-item label="规则效果" prop="effectType">
           <el-radio-group v-model="formData.effectType">

@@ -14,7 +14,7 @@ export interface OtaTaskRecord {
   status?: number // 升级状态
   progress?: number // 升级进度，百分比
   description?: string // 升级进度描述
-  updateTime?: Date // 更新时间
+  updateTime?: string // 更新时间
 }
 
 // IoT OTA 任务记录 API

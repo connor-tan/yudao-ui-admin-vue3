@@ -11,7 +11,7 @@ export interface KeFuMessageRespVO {
   contentType: number // 消息类型
   content: string // 消息
   readStatus: boolean // 是否已读
-  createTime: Date // 创建时间
+  createTime: string // 创建时间
 }
 
 // 客服会话 API

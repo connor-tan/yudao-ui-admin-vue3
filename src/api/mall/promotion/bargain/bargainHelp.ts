@@ -5,7 +5,7 @@ export interface BargainHelpVO {
   record: number
   userId: number
   reducePrice: number
-  endTime: Date
+  endTime: string
 }
 
 // 查询砍价记录列表

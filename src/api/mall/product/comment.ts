@@ -20,7 +20,7 @@ export interface CommentVO {
   replyStatus: boolean
   replyUserId: number
   replyContent: string
-  replyTime: Date
+  replyTime: string
 }
 
 // 查询商品评论列表

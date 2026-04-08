@@ -10,10 +10,10 @@ export interface TenantVO {
   packageId: number
   username: string
   password: string
-  expireTime: Date
+  expireTime: string
   accountCount: number
   websites: string[]
-  createTime: Date
+  createTime: string
 }
 
 export interface TenantPageReqVO extends PageParam {
@@ -21,7 +21,7 @@ export interface TenantPageReqVO extends PageParam {
   contactName?: string
   contactMobile?: string
   status?: number
-  createTime?: Date[]
+  createTime?: string[]
 }
 
 export interface TenantExportReqVO {
@@ -29,7 +29,7 @@ export interface TenantExportReqVO {
   contactName?: string
   contactMobile?: string
   status?: number
-  createTime?: Date[]
+  createTime?: string[]
 }
 
 // 查询租户列表

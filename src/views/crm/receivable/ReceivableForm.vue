@@ -123,7 +123,7 @@
               v-model="formData.returnTime"
               placeholder="选择回款日期"
               type="date"
-              value-format="x"
+              value-format="YYYY-MM-DD HH:mm:ss"
               class="!w-100%"
             />
           </el-form-item>

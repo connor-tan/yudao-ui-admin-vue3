@@ -1,144 +1,139 @@
 <template>
-  <Dialog v-model="dialogVisible" title="按年级批量新增" width="1100px">
-    <el-form :inline="true" :model="queryParams" class="-mb-15px" label-width="96px">
-      <el-form-item label="基础可见年级" required>
-        <el-select
-          v-model="queryParams.baseGradeCatalogId"
-          class="!w-220px"
-          clearable
-          filterable
-          placeholder="请选择基础可见年级"
-          @change="handleQuery"
-        >
-          <el-option
-            v-for="item in gradeList"
-            :key="item.id"
-            :label="buildGradeLabel(item)"
-            :value="item.id"
+  <Dialog v-model="dialogVisible" :appendToBody="true" :max-height="620" :scroll="true" title="按年级批量新增" width="1100px">
+    <ContentWrap>
+      <el-form :inline="true" :model="queryParams" class="-mb-15px" label-width="112px">
+        <el-form-item label="基础可见年级" required>
+          <el-select
+            v-model="queryParams.baseGradeCatalogIds"
+            class="!w-220px"
+            collapse-tags
+            collapse-tags-tooltip
+            clearable
+            filterable
+            multiple
+            placeholder="请选择基础可见年级"
+            @change="handleGradeChange"
+          >
+            <el-option
+              v-for="item in gradeList"
+              :key="item.id"
+              :label="buildGradeLabel(item)"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="刊物名称">
+          <el-input
+            v-model="queryParams.productName"
+            class="!w-220px"
+            clearable
+            placeholder="请输入刊物名称"
+            @keyup.enter="handleQuery"
           />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="刊物名称">
-        <el-input
-          v-model="queryParams.productName"
-          class="!w-220px"
-          clearable
-          placeholder="请输入刊物名称"
-          @keyup.enter="handleQuery"
+        </el-form-item>
+        <el-form-item label="商品分类">
+          <el-cascader
+            v-model="queryParams.categoryId"
+            :options="categoryList"
+            :props="defaultProps"
+            class="!w-220px"
+            clearable
+            filterable
+            placeholder="请选择商品分类"
+          />
+        </el-form-item>
+        <el-form-item label="刊物类型">
+          <el-select
+            v-model="queryParams.publicationTypeId"
+            class="!w-220px"
+            clearable
+            placeholder="请选择刊物类型"
+          >
+            <el-option
+              v-for="item in typeList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="出版社">
+          <el-select
+            v-model="queryParams.publisherId"
+            class="!w-220px"
+            clearable
+            filterable
+            placeholder="请选择出版社"
+          >
+            <el-option
+              v-for="item in publisherList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button :disabled="queryParams.baseGradeCatalogIds.length === 0" @click="handleQuery">
+            <Icon class="mr-5px" icon="ep:search" />
+            搜索
+          </el-button>
+          <el-button @click="resetQuery">
+            <Icon class="mr-5px" icon="ep:refresh" />
+            重置
+          </el-button>
+        </el-form-item>
+      </el-form>
+
+      <el-alert
+        v-if="queryParams.baseGradeCatalogIds.length === 0"
+        class="mb-12px"
+        title="请先选择一个或多个基础可见年级，再筛选可加入的刊物"
+        type="info"
+        :closable="false"
+      />
+
+      <template v-if="queryParams.baseGradeCatalogIds.length > 0">
+        <el-table
+          ref="tableRef"
+          v-loading="loading"
+          :data="list"
+          :show-overflow-tooltip="true"
+          :stripe="true"
+          class="mt-12px"
+          @selection-change="handleSelectionChange"
+        >
+          <el-table-column type="selection" width="55" />
+          <el-table-column label="刊物信息" min-width="260">
+            <template #default="{ row }">
+              <div class="flex items-center">
+                <el-image :src="row.picUrl" class="h-50px w-50px flex-none" fit="cover" />
+                <div class="ml-4 overflow-hidden">
+                  <div class="truncate font-600">{{ row.productName }}</div>
+                  <div class="mt-1 text-12px text-gray-500">{{ row.publicationTitleName || '-' }}</div>
+                </div>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="商品分类" min-width="120" prop="categoryName" />
+          <el-table-column label="刊物类型" min-width="100" prop="publicationTypeName" />
+        <el-table-column label="出版社" min-width="160" prop="publisherName" />
+        <el-table-column label="将挂载年级" min-width="220" prop="matchedGradeNames" />
+        <el-table-column label="适用年级" min-width="220" prop="applicableGradeNames" />
+        <el-table-column align="center" label="价格" min-width="90">
+          <template #default="{ row }">¥ {{ fenToYuan(row.price || 0) }}</template>
+          </el-table-column>
+        </el-table>
+
+        <Pagination
+          v-model:limit="queryParams.pageSize"
+          v-model:page="queryParams.pageNo"
+          :total="total"
+          @pagination="getList"
         />
-      </el-form-item>
-      <el-form-item label="商品分类">
-        <el-cascader
-          v-model="queryParams.categoryId"
-          :options="categoryList"
-          :props="defaultProps"
-          class="!w-220px"
-          clearable
-          filterable
-          placeholder="请选择商品分类"
-        />
-      </el-form-item>
-      <el-form-item label="刊物类型">
-        <el-select
-          v-model="queryParams.publicationTypeId"
-          class="!w-220px"
-          clearable
-          placeholder="请选择刊物类型"
-        >
-          <el-option
-            v-for="item in typeList"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="出版社">
-        <el-select
-          v-model="queryParams.publisherId"
-          class="!w-220px"
-          clearable
-          filterable
-          placeholder="请选择出版社"
-        >
-          <el-option
-            v-for="item in publisherList"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button @click="handleQuery">
-          <Icon class="mr-5px" icon="ep:search" />
-          搜索
-        </el-button>
-        <el-button @click="resetQuery">
-          <Icon class="mr-5px" icon="ep:refresh" />
-          重置
-        </el-button>
-      </el-form-item>
-    </el-form>
-
-    <el-alert
-      v-if="!queryParams.baseGradeCatalogId"
-      class="mb-12px"
-      title="请先选择一个基础可见年级，再筛选可加入的刊物"
-      type="info"
-      :closable="false"
-    />
-
-    <el-table
-      v-loading="loading"
-      :data="list"
-      :show-overflow-tooltip="true"
-      :stripe="true"
-      class="mt-12px"
-      @selection-change="handleSelectionChange"
-    >
-      <el-table-column type="selection" width="55" />
-      <el-table-column label="刊物信息" min-width="260">
-        <template #default="{ row }">
-          <div class="flex items-center">
-            <el-image :src="row.picUrl" class="h-50px w-50px flex-none" fit="cover" />
-            <div class="ml-4 overflow-hidden">
-              <div class="truncate font-600">{{ row.productName }}</div>
-              <div class="mt-1 text-12px text-gray-500">{{ row.publicationTitleName || '-' }}</div>
-            </div>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="商品分类" min-width="120" prop="categoryName" />
-      <el-table-column label="刊物类型" min-width="100" prop="publicationTypeName" />
-      <el-table-column label="出版社" min-width="160" prop="publisherName" />
-      <el-table-column label="适用年级" min-width="220" prop="applicableGradeNames" />
-      <el-table-column align="center" label="价格" min-width="90">
-        <template #default="{ row }">¥ {{ fenToYuan(row.price || 0) }}</template>
-      </el-table-column>
-    </el-table>
-
-    <Pagination
-      v-model:limit="queryParams.pageSize"
-      v-model:page="queryParams.pageNo"
-      :total="total"
-      @pagination="getList"
-    />
-
-    <el-alert
-      v-if="resultSummary"
-      class="mt-12px"
-      :title="resultSummary"
-      type="success"
-      :closable="false"
-    />
-    <el-alert
-      v-if="skippedSummary"
-      class="mt-12px"
-      :title="skippedSummary"
-      type="warning"
-      :closable="false"
-    />
+      </template>
+      <el-empty v-else class="mt-12px" description="请先选择一个或多个基础可见年级，再筛选可加入的刊物" />
+    </ContentWrap>
 
     <template #footer>
       <el-button :disabled="submitLoading" type="primary" @click="submitForm">确 定</el-button>
@@ -168,18 +163,17 @@ const loading = ref(false)
 const submitLoading = ref(false)
 const total = ref(0)
 const windowId = ref<number>()
+const tableRef = ref()
 const list = ref<SubscriptionWindowSpuAvailable[]>([])
 const selectedIds = ref<number[]>([])
 const categoryList = ref<any[]>([])
 const typeList = ref<PublicationTypeApi.PublicationTypeSimpleVO[]>([])
 const publisherList = ref<PublicationPublisherApi.PublicationPublisherSimpleVO[]>([])
 const gradeList = ref<GradeCatalog[]>([])
-const resultSummary = ref('')
-const skippedSummary = ref('')
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  baseGradeCatalogId: undefined as number | undefined,
+  baseGradeCatalogIds: [] as number[],
   productName: undefined as string | undefined,
   categoryId: undefined as number | undefined,
   publicationTypeId: undefined as number | undefined,
@@ -203,9 +197,12 @@ const loadOptions = async () => {
 }
 
 const getList = async () => {
-  if (!windowId.value || !queryParams.baseGradeCatalogId) {
+  selectedIds.value = []
+  if (!windowId.value || queryParams.baseGradeCatalogIds.length === 0) {
     list.value = []
     total.value = 0
+    await nextTick()
+    tableRef.value?.clearSelection?.()
     return
   }
   loading.value = true
@@ -216,6 +213,8 @@ const getList = async () => {
     })
     list.value = data.list
     total.value = data.total
+    await nextTick()
+    tableRef.value?.clearSelection?.()
   } finally {
     loading.value = false
   }
@@ -231,6 +230,15 @@ const resetQuery = () => {
 }
 
 const handleQuery = () => {
+  if (queryParams.baseGradeCatalogIds.length === 0) {
+    message.warning('请先选择基础可见年级')
+    return
+  }
+  queryParams.pageNo = 1
+  getList()
+}
+
+const handleGradeChange = () => {
   queryParams.pageNo = 1
   getList()
 }
@@ -242,12 +250,10 @@ const handleSelectionChange = (rows: SubscriptionWindowSpuAvailable[]) => {
 const open = async (selectedWindowId: number) => {
   dialogVisible.value = true
   windowId.value = selectedWindowId
-  resultSummary.value = ''
-  skippedSummary.value = ''
   selectedIds.value = []
   queryParams.pageNo = 1
   queryParams.pageSize = 10
-  queryParams.baseGradeCatalogId = undefined
+  queryParams.baseGradeCatalogIds = []
   queryParams.productName = undefined
   queryParams.categoryId = undefined
   queryParams.publicationTypeId = undefined
@@ -263,7 +269,7 @@ const submitForm = async () => {
   if (!windowId.value) {
     return
   }
-  if (!queryParams.baseGradeCatalogId) {
+  if (queryParams.baseGradeCatalogIds.length === 0) {
     message.warning('请先选择基础可见年级')
     return
   }
@@ -275,15 +281,14 @@ const submitForm = async () => {
   try {
     const resp: SubscriptionWindowSpuBatchCreateRespVO = await SubscriptionWindowSpuApi.batchCreate({
       windowId: windowId.value,
-      baseGradeCatalogId: queryParams.baseGradeCatalogId,
+      baseGradeCatalogIds: queryParams.baseGradeCatalogIds,
       productSpuIds: selectedIds.value
     })
-    resultSummary.value = `成功处理 ${resp.createdCount} 条刊物挂载`
-    skippedSummary.value =
+    message.success(
       resp.skippedCount > 0
-        ? `跳过 ${resp.skippedCount} 条：${resp.skippedItems.map((item) => `${item.productName}（${item.reason}）`).join('、')}`
-        : ''
-    message.success('批量新增完成')
+        ? `批量新增完成，新增刊物 ${resp.createdWindowSpuCount} 条，新增年级关系 ${resp.createdGradeCount} 条，跳过 ${resp.skippedCount} 条`
+        : `批量新增完成，新增刊物 ${resp.createdWindowSpuCount} 条，新增年级关系 ${resp.createdGradeCount} 条`
+    )
     emit('success')
     dialogVisible.value = false
   } finally {

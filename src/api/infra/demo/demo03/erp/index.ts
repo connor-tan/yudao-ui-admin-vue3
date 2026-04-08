@@ -1,5 +1,4 @@
 import request from '@/config/axios'
-import type { Dayjs } from 'dayjs';
 
 /** 学生课程信息 */
 export interface Demo03Course {
@@ -22,7 +21,7 @@ export interface Demo03Student {
   id: number; // 编号
   name?: string; // 名字
   sex?: number; // 性别
-  birthday?: string | Dayjs; // 出生日期
+  birthday?: string; // 出生日期
   description?: string; // 简介
 }
 

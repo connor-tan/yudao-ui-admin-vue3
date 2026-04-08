@@ -152,7 +152,7 @@
               v-model="formData.contactNextTime"
               placeholder="选择下次联系时间"
               type="datetime"
-              value-format="x"
+              value-format="YYYY-MM-DD HH:mm:ss"
               class="!w-1/1"
             />
           </el-form-item>

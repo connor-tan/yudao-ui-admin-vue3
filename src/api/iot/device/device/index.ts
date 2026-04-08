@@ -11,10 +11,10 @@ export interface DeviceVO {
   nickname: string // 设备备注名称
   gatewayId: number // 网关设备 ID
   state: number // 设备状态
-  onlineTime: Date // 最后上线时间
-  offlineTime: Date // 最后离线时间
-  activeTime: Date // 设备激活时间
-  createTime: Date // 创建时间
+  onlineTime: string // 最后上线时间
+  offlineTime: string // 最后离线时间
+  activeTime: string // 设备激活时间
+  createTime: string // 创建时间
   ip: string // 设备的 IP 地址
   firmwareVersion: string // 设备的固件版本
   deviceSecret: string // 设备密钥，用于设备认证，需安全存储
@@ -34,7 +34,7 @@ export interface DeviceVO {
 export interface IotDevicePropertyDetailRespVO {
   identifier: string // 属性标识符
   value: string // 最新值
-  updateTime: Date // 更新时间
+  updateTime: string // 更新时间
   name: string // 属性名称
   dataType: string // 数据类型
   dataSpecs: any // 数据定义
@@ -45,7 +45,7 @@ export interface IotDevicePropertyDetailRespVO {
 export interface IotDevicePropertyRespVO {
   identifier: string // 属性标识符
   value: string // 最新值
-  updateTime: Date // 更新时间
+  updateTime: string // 更新时间
 }
 
 // 设备认证参数 VO

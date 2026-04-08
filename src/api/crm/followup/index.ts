@@ -9,7 +9,7 @@ export interface FollowUpRecordVO {
   content: string // 跟进内容
   picUrls: string[] // 图片
   fileUrls: string[] // 附件
-  nextTime: Date // 下次联系时间
+  nextTime: string // 下次联系时间
   businessIds: number[] // 关联的商机编号数组
   businesses: {
     id: number

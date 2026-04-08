@@ -5,10 +5,10 @@ export interface ReceivablePlanVO {
   period: number
   receivableId: number
   price: number
-  returnTime: Date
+  returnTime: string
   remindDays: number
   returnType: number
-  remindTime: Date
+  remindTime: string
   customerId: number
   customerName?: string
   contractId?: number
@@ -18,11 +18,11 @@ export interface ReceivablePlanVO {
   remark: string
   creator: string // 创建人
   creatorName?: string // 创建人名称
-  createTime: Date // 创建时间
-  updateTime: Date // 更新时间
+  createTime: string // 创建时间
+  updateTime: string // 更新时间
   receivable?: {
     price: number
-    returnTime: Date
+    returnTime: string
   }
 }
 

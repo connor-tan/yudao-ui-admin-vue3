@@ -15,8 +15,8 @@ export interface ImageVO {
   options: any // 配置 Map<string, string>
   taskId: number // 任务编号
   buttons: ImageMidjourneyButtonsVO[] // mj 操作按钮
-  createTime: Date // 创建时间
-  finishTime: Date // 完成时间
+  createTime: string // 创建时间
+  finishTime: string // 完成时间
 }
 
 export interface ImageDrawReqVO {

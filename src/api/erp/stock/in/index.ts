@@ -5,7 +5,7 @@ export interface StockInVO {
   id: number // 入库编号
   no: string // 入库单号
   supplierId: number // 供应商编号
-  inTime: Date // 入库时间
+  inTime: string // 入库时间
   totalCount: number // 合计数量
   totalPrice: number // 合计金额，单位：元
   status: number // 状态

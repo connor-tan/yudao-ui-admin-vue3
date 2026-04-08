@@ -19,7 +19,7 @@
             <el-date-picker
               v-model="formData.moveTime"
               type="date"
-              value-format="x"
+              value-format="YYYY-MM-DD HH:mm:ss"
               placeholder="选择调度时间"
               class="!w-1/1"
             />

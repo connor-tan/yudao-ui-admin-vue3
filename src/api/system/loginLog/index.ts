@@ -11,7 +11,7 @@ export interface LoginLogVO {
   status: number
   userIp: string
   userAgent: string
-  createTime: Date
+  createTime: string
 }
 
 // 查询登录日志列表

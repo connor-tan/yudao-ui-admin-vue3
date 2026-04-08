@@ -4,8 +4,8 @@ import { Sku, Spu } from '@/api/mall/product/spu'
 export interface BargainActivityVO {
   id?: number
   name?: string
-  startTime?: Date
-  endTime?: Date
+  startTime?: string
+  endTime?: string
   status?: number
   helpMaxCount?: number // 达到该人数，才能砍到低价
   bargainCount?: number // 最大帮砍次数

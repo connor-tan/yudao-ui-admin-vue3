@@ -11,7 +11,7 @@ export interface MsgTemplateVO {
   example: string // 模板示例
   primaryIndustry: string // 模板所属行业的一级行业
   deputyIndustry: string // 模板所属行业的二级行业
-  createTime: Date // 创建时间
+  createTime: string // 创建时间
 }
 
 // 发送消息模板请求 VO
