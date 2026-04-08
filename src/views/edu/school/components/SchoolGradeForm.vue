@@ -27,7 +27,7 @@
           <el-option
             v-for="catalog in filteredGradeCatalogList"
             :key="catalog.id"
-            :label="`${catalog.gradeNo} / ${catalog.gradeName}`"
+            :label="formatGradeLabel(catalog.gradeNo, catalog.gradeName, catalog.aliasName)"
             :value="catalog.id"
           />
         </el-select>
@@ -42,6 +42,7 @@
 
 <script setup lang="ts">
 import { DICT_TYPE, getStrDictOptions } from '@/utils/dict'
+import { formatGradeLabel } from '@/utils/edu'
 import { SchoolApi, type GradeCatalog, type SchoolGrade } from '@/api/edu/school'
 
 const { t } = useI18n()

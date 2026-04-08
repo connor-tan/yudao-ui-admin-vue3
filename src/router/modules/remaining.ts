@@ -348,7 +348,7 @@ const remainingRouter: AppRouteRecordRaw[] = [
   {
     path: '/mall/product', // 商品中心
     component: Layout,
-    name: 'ProductCenter',
+    name: 'ProductCenterRoot',
     meta: {
       hidden: true
     },
@@ -363,7 +363,7 @@ const remainingRouter: AppRouteRecordRaw[] = [
           canTo: true,
           icon: 'ep:edit',
           title: '商品添加',
-          activeMenu: '/mall/product/spu'
+          activeMenu: '/mall/product/center'
         }
       },
       {
@@ -376,7 +376,7 @@ const remainingRouter: AppRouteRecordRaw[] = [
           canTo: true,
           icon: 'ep:edit',
           title: '商品编辑',
-          activeMenu: '/mall/product/spu'
+          activeMenu: '/mall/product/center'
         }
       },
       {
@@ -389,7 +389,46 @@ const remainingRouter: AppRouteRecordRaw[] = [
           canTo: true,
           icon: 'ep:view',
           title: '商品详情',
-          activeMenu: '/mall/product/spu'
+          activeMenu: '/mall/product/center'
+        }
+      },
+      {
+        path: 'publication/add',
+        component: () => import('@/views/mall/product/publication/form/index.vue'),
+        name: 'ProductPublicationAdd',
+        meta: {
+          noCache: false,
+          hidden: true,
+          canTo: true,
+          icon: 'ep:edit',
+          title: '刊物添加',
+          activeMenu: '/mall/product/center'
+        }
+      },
+      {
+        path: 'publication/edit/:id(\\d+)',
+        component: () => import('@/views/mall/product/publication/form/index.vue'),
+        name: 'ProductPublicationEdit',
+        meta: {
+          noCache: true,
+          hidden: true,
+          canTo: true,
+          icon: 'ep:edit',
+          title: '刊物编辑',
+          activeMenu: '/mall/product/center'
+        }
+      },
+      {
+        path: 'publication/detail/:id(\\d+)',
+        component: () => import('@/views/mall/product/publication/form/index.vue'),
+        name: 'ProductPublicationDetail',
+        meta: {
+          noCache: true,
+          hidden: true,
+          canTo: true,
+          icon: 'ep:view',
+          title: '刊物详情',
+          activeMenu: '/mall/product/center'
         }
       },
       {

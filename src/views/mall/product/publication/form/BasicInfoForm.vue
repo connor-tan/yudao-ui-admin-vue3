@@ -1,4 +1,3 @@
-<!-- 商品发布 - 基础设置 -->
 <template>
   <el-form ref="formRef" :disabled="isDetail" :model="formData" :rules="rules" label-width="120px">
     <el-form-item label="商品名称" prop="name">
@@ -9,7 +8,7 @@
         :show-word-limit="true"
         class="w-80!"
         maxlength="64"
-        placeholder="请输入商品名称"
+        placeholder="请输入刊物商品名称"
         type="textarea"
       />
     </el-form-item>
@@ -23,10 +22,10 @@
         filterable
         placeholder="请选择商品分类"
       />
-      <el-button :icon="RefreshRight" @click="refreshCategoryList" class="ml-1" size="small" />
+      <el-button :icon="RefreshRight" class="ml-1" size="small" @click="refreshCategoryList" />
     </el-form-item>
     <el-form-item label="商品品牌" prop="brandId">
-      <el-select v-model="formData.brandId" class="w-80!" placeholder="请选择商品品牌">
+      <el-select v-model="formData.brandId" class="w-80!" clearable placeholder="请选择商品品牌">
         <el-option
           v-for="item in brandList"
           :key="item.id"
@@ -34,7 +33,7 @@
           :value="item.id as number"
         />
       </el-select>
-      <el-button :icon="RefreshRight" @click="refreshBrandList" class="ml-1" size="small" />
+      <el-button :icon="RefreshRight" class="ml-1" size="small" @click="refreshBrandList" />
     </el-form-item>
     <el-form-item label="商品关键字" prop="keyword">
       <el-input v-model="formData.keyword" class="w-80!" placeholder="请输入商品关键字" />
@@ -59,38 +58,41 @@
     </el-form-item>
   </el-form>
 </template>
+
 <script lang="ts" setup>
 import { PropType } from 'vue'
+import { RefreshRight } from '@element-plus/icons-vue'
 import { copyValueToTarget } from '@/utils'
 import { propTypes } from '@/utils/propTypes'
 import { defaultProps, handleTree } from '@/utils/tree'
-import type { Spu } from '@/api/mall/product/spu'
 import * as ProductCategoryApi from '@/api/mall/product/category'
-import { CategoryVO } from '@/api/mall/product/category'
 import * as ProductBrandApi from '@/api/mall/product/brand'
-import { BrandVO } from '@/api/mall/product/brand'
-import { RefreshRight } from '@element-plus/icons-vue'
+import type { CategoryVO } from '@/api/mall/product/category'
+import type { BrandVO } from '@/api/mall/product/brand'
+import type { PublicationProductVO } from '@/api/mall/product/publicationProduct'
 
-defineOptions({ name: 'ProductSpuInfoForm' })
+defineOptions({ name: 'PublicationBasicInfoForm' })
+
 const props = defineProps({
   propFormData: {
-    type: Object as PropType<Spu>,
-    default: () => {}
+    type: Object as PropType<PublicationProductVO>,
+    default: () => ({})
   },
-  isDetail: propTypes.bool.def(false) // 是否作为详情组件
+  isDetail: propTypes.bool.def(false)
 })
 
-const message = useMessage() // 消息弹窗
-
-const formRef = ref() // 表单 Ref
-const formData = reactive<Spu>({
-  name: '', // 商品名称
-  categoryId: undefined, // 商品分类
-  keyword: '', // 关键字
-  picUrl: '', // 商品封面图
-  sliderPicUrls: [], // 商品轮播图
-  introduction: '', // 商品简介
-  brandId: undefined // 商品品牌
+const message = useMessage()
+const formRef = ref()
+const categoryList = ref<CategoryVO[]>([])
+const brandList = ref<BrandVO[]>([])
+const formData = reactive<PublicationProductVO>({
+  name: '',
+  categoryId: undefined,
+  keyword: '',
+  picUrl: '',
+  sliderPicUrls: [],
+  introduction: '',
+  brandId: undefined
 })
 const rules = reactive({
   name: [required],
@@ -98,59 +100,54 @@ const rules = reactive({
   keyword: [required],
   introduction: [required],
   picUrl: [required],
-  sliderPicUrls: [required],
-  brandId: [required]
+  sliderPicUrls: [required]
 })
 
-/** 将传进来的值赋值给 formData */
 watch(
   () => props.propFormData,
   (data) => {
-    if (!data) {
-      return
-    }
+    if (!data) return
     copyValueToTarget(formData, data)
   },
-  {
-    immediate: true
-  }
+  { immediate: true }
 )
 
-/** 表单校验 */
 const emit = defineEmits(['update:activeName'])
 const validate = async () => {
-  if (!formRef) return
+  if (!formRef.value) return
   try {
-    await unref(formRef)?.validate()
-    // 校验通过更新数据
-    Object.assign(props.propFormData, formData)
+    await formRef.value.validate()
+    Object.assign(props.propFormData, {
+      name: formData.name,
+      categoryId: formData.categoryId,
+      keyword: formData.keyword,
+      picUrl: formData.picUrl,
+      sliderPicUrls: formData.sliderPicUrls,
+      introduction: formData.introduction,
+      brandId: formData.brandId
+    })
   } catch (e) {
-    message.error('【基础设置】不完善，请填写相关信息')
-    emit('update:activeName', 'info')
-    throw e // 目的截断之后的校验
+    message.error('【基础信息】不完善，请填写相关信息')
+    emit('update:activeName', 'basic')
+    throw e
   }
 }
 defineExpose({ validate })
 
-/** 初始化 */
-const brandList = ref<BrandVO[]>([]) // 商品品牌列表
-const categoryList = ref<CategoryVO[]>([]) // 商品分类树
-async function refreshCategoryList() {
-  // 获得分类树
+const refreshCategoryList = async () => {
   const data = await ProductCategoryApi.getCategoryList({
     status: 0,
-    domainType: 'NORMAL'
+    domainType: 'PUBLICATION'
   })
   categoryList.value = handleTree(data, 'id')
 }
 
-async function refreshBrandList() {
+const refreshBrandList = async () => {
   brandList.value = await ProductBrandApi.getSimpleBrandList()
 }
 
 onMounted(async () => {
   await refreshCategoryList()
-  // 获取商品品牌列表
   await refreshBrandList()
 })
 </script>

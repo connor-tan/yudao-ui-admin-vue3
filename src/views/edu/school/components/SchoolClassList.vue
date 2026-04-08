@@ -10,14 +10,6 @@
       <Icon icon="ep:plus" class="mr-5px" /> 新增
     </el-button>
     <el-button
-      type="success"
-      plain
-      @click="openPromotionDialog"
-      v-hasPermi="['edu:student:update']"
-    >
-      <Icon icon="ep:top" class="mr-5px" /> 一键升班
-    </el-button>
-    <el-button
       type="danger"
       plain
       :disabled="isEmpty(checkedIds)"
@@ -43,7 +35,11 @@
         </template>
       </el-table-column>
       <el-table-column label="年级标识" align="center" prop="gradeNo" />
-      <el-table-column label="年级名称" align="center" prop="gradeName" />
+      <el-table-column label="年级名称" align="center" min-width="140">
+        <template #default="scope">
+          {{ formatGradeName(scope.row.gradeName, scope.row.aliasName) }}
+        </template>
+      </el-table-column>
       <el-table-column label="所属学年" align="center" prop="schoolYearName" />
 <!--      <el-table-column label="班级号" align="center" prop="classNo" />-->
       <el-table-column label="班级名称" align="center" prop="className" />
@@ -85,15 +81,14 @@
   </ContentWrap>
   <!-- 表单弹窗：添加/修改 -->
   <SchoolClassForm ref="formRef" @success="getList" />
-  <StudentPromotionDialog ref="promotionDialogRef" @success="getList" />
 </template>
 <script setup lang="ts">
 import { DICT_TYPE } from '@/utils/dict'
+import { formatGradeName } from '@/utils/edu'
 import { dateFormatter } from '@/utils/formatTime'
 import { isEmpty } from '@/utils/is'
 import { SchoolApi, SchoolClass } from '@/api/edu/school'
 import SchoolClassForm from './SchoolClassForm.vue'
-import StudentPromotionDialog from './StudentPromotionDialog.vue'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -149,15 +144,6 @@ const openForm = (type: string, id?: number) => {
     return
   }
   formRef.value.open(type, id, props.schoolId)
-}
-
-const promotionDialogRef = ref()
-const openPromotionDialog = () => {
-  if (!props.schoolId) {
-    message.error('请选择一个学校信息')
-    return
-  }
-  promotionDialogRef.value.open(props.schoolId)
 }
 
 /** 删除按钮操作 */

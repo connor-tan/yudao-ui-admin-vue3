@@ -32,6 +32,7 @@ export interface GiveCouponTemplate {
 
 export interface Spu {
   id?: number
+  domainType?: string // 业务域类型
   name?: string // 商品名称
   categoryId?: number // 商品分类
   keyword?: string // 关键字
@@ -61,13 +62,13 @@ export interface Spu {
 }
 
 // 获得 Spu 列表
-export const getSpuPage = (params: PageParam) => {
+export const getSpuPage = (params: PageParam & { domainType?: string }) => {
   return request.get({ url: '/product/spu/page', params })
 }
 
 // 获得 Spu 列表 tabsCount
-export const getTabsCount = () => {
-  return request.get({ url: '/product/spu/get-count' })
+export const getTabsCount = (params?: { domainType?: string }) => {
+  return request.get({ url: '/product/spu/get-count', params })
 }
 
 // 创建商品 Spu

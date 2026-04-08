@@ -285,6 +285,7 @@ const queryParams = ref({
   pageNo: 1,
   pageSize: 10,
   tabType: 0,
+  domainType: 'NORMAL',
   name: '',
   categoryId: undefined,
   createTime: undefined
@@ -311,7 +312,7 @@ const handleTabClick = (tab: TabsPaneContext) => {
 
 /** 获得每个 Tab 的数量 */
 const getTabsCount = async () => {
-  const res = await ProductSpuApi.getTabsCount()
+  const res = await ProductSpuApi.getTabsCount({ domainType: 'NORMAL' })
   for (let objName in res) {
     tabsData.value[Number(objName)].count = res[objName]
   }
@@ -385,6 +386,7 @@ const handleQuery = () => {
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryFormRef.value.resetFields()
+  queryParams.value.domainType = 'NORMAL'
   handleQuery()
 }
 
@@ -430,17 +432,24 @@ onActivated(() => {
   getList()
 })
 
+watch(
+  () => route.query.categoryId,
+  (categoryId) => {
+    queryParams.value.categoryId = categoryId || undefined
+  },
+  { immediate: true }
+)
+
 /** 初始化 **/
 onMounted(async () => {
-  // 解析路由的 categoryId
-  if (route.query.categoryId) {
-    queryParams.value.categoryId = route.query.categoryId
-  }
   // 获得商品信息
   await getTabsCount()
   await getList()
   // 获得分类树
-  const data = await ProductCategoryApi.getCategoryList({})
+  const data = await ProductCategoryApi.getCategoryList({
+    status: 0,
+    domainType: 'NORMAL'
+  })
   categoryList.value = handleTree(data, 'id', 'parentId')
 })
 </script>

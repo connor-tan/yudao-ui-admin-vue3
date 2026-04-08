@@ -82,6 +82,7 @@ const descriptionRef = ref() // 商品详情 Ref
 const otherRef = ref() // 其他设置 Ref
 // SPU 表单数据
 const formData = ref<ProductSpuApi.Spu>({
+  domainType: 'NORMAL',
   name: '', // 商品名称
   categoryId: undefined, // 商品分类
   keyword: '', // 关键字
@@ -201,7 +202,7 @@ const submitForm = async () => {
 /** 关闭按钮 */
 const close = () => {
   delView(unref(currentRoute))
-  push({ name: 'ProductSpu' })
+  push({ name: 'ProductCenter' })
 }
 
 /** 初始化 */

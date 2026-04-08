@@ -70,7 +70,7 @@
             link
             type="primary"
             v-if="scope.row.parentId > 0"
-            @click="handleViewSpu(scope.row.id)"
+            @click="handleViewSpu(scope.row)"
             v-hasPermi="['product:spu:query']"
           >
             查看商品
@@ -78,6 +78,7 @@
           <el-button
             link
             type="danger"
+            v-if="scope.row.id !== publicationRootCategoryId"
             @click="handleDelete(scope.row.id)"
             v-hasPermi="['product:category:delete']"
           >
@@ -105,6 +106,8 @@ const { t } = useI18n() // 国际化
 
 const loading = ref(true) // 列表的加载中
 const list = ref<any[]>([]) // 列表的数据
+const publicationCategoryIds = ref<Set<number>>(new Set())
+const publicationRootCategoryId = ref<number>()
 const queryParams = reactive({
   name: undefined
 })
@@ -153,15 +156,28 @@ const handleDelete = async (id: number) => {
 
 /** 查看商品操作 */
 const router = useRouter() // 路由
-const handleViewSpu = (id: number) => {
+const handleViewSpu = (row: any) => {
   router.push({
-    name: 'ProductSpu',
-    query: { categoryId: id }
+    name: 'ProductCenter',
+    query: {
+      domainType: publicationCategoryIds.value.has(row.id) ? 'PUBLICATION' : 'NORMAL',
+      categoryId: row.id
+    }
   })
 }
 
 /** 初始化 **/
-onMounted(() => {
-  getList()
+const initPublicationCategoryIds = async () => {
+  const data = await ProductCategoryApi.getCategoryList({
+    status: 0,
+    domainType: 'PUBLICATION'
+  })
+  publicationRootCategoryId.value = data?.length ? data[0].parentId : undefined
+  publicationCategoryIds.value = new Set((data || []).map((item) => item.id))
+}
+
+onMounted(async () => {
+  await initPublicationCategoryIds()
+  await getList()
 })
 </script>

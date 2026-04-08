@@ -34,7 +34,11 @@
         </template>
       </el-table-column>
       <el-table-column label="年级标识" align="center" prop="gradeNo" />
-      <el-table-column label="年级名称" align="center" prop="gradeName" />
+      <el-table-column label="年级名称" align="center" min-width="140">
+        <template #default="scope">
+          {{ formatGradeName(scope.row.gradeName, scope.row.aliasName) }}
+        </template>
+      </el-table-column>
       <el-table-column
         label="创建时间"
         align="center"
@@ -76,6 +80,7 @@
 </template>
 <script setup lang="ts">
 import { DICT_TYPE } from '@/utils/dict'
+import { formatGradeName } from '@/utils/edu'
 import { dateFormatter } from '@/utils/formatTime'
 import { isEmpty } from '@/utils/is'
 import { SchoolApi, SchoolGrade } from '@/api/edu/school'

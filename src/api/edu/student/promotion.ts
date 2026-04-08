@@ -19,7 +19,7 @@ export interface StudentPromotionReqVO {
 export interface StudentPromotionSummary {
   totalCount: number
   promotedCount: number
-  graduatedCount: number
+  pendingAdvanceCount: number
   repeatCount: number
   skippedCount: number
   missingTargetClassCount: number
@@ -33,10 +33,12 @@ export interface StudentPromotionItem {
   fromSchoolGradeId?: number
   fromClassName?: string
   fromGradeName?: string
+  fromGradeAliasName?: string
   toClassId?: number
   toSchoolGradeId?: number
   toClassName?: string
   toGradeName?: string
+  toGradeAliasName?: string
   targetClassMissing: boolean
   action: string
   reason?: string
@@ -77,7 +79,7 @@ export interface StudentGlobalPromotionSummary {
   failedSchoolCount: number
   totalCount: number
   promotedCount: number
-  graduatedCount: number
+  pendingAdvanceCount: number
   repeatCount: number
   skippedCount: number
   missingTargetClassCount: number
@@ -93,7 +95,7 @@ export interface StudentGlobalPromotionSchool {
   reason?: string
   totalCount: number
   promotedCount: number
-  graduatedCount: number
+  pendingAdvanceCount: number
   repeatCount: number
   skippedCount: number
   missingTargetClassCount: number
@@ -108,10 +110,12 @@ export interface StudentGlobalPromotionItem {
   fromSchoolGradeId?: number
   fromClassName?: string
   fromGradeName?: string
+  fromGradeAliasName?: string
   toSchoolGradeId?: number
   toClassId?: number
   toClassName?: string
   toGradeName?: string
+  toGradeAliasName?: string
   targetClassMissing: boolean
   action: string
   reason?: string
@@ -143,7 +147,7 @@ export interface StudentPromotionTask {
   totalCount: number
   promotedCount: number
   repeatCount: number
-  graduatedCount: number
+  pendingAdvanceCount: number
   skippedCount: number
   status: number
   rollbackable: boolean
@@ -162,7 +166,7 @@ export interface StudentPromotionBatch {
   totalCount: number
   promotedCount: number
   repeatCount: number
-  graduatedCount: number
+  pendingAdvanceCount: number
   skippedCount: number
   status: number
   reason?: string
@@ -202,6 +206,7 @@ export interface StudentGlobalPromotionRollbackRespVO {
 export const PROMOTION_ACTION_LABELS: Record<string, string> = {
   PROMOTE: '升班',
   REPEAT: '留级',
+  PENDING_ADVANCE: '待升学',
   GRADUATE: '毕业',
   SKIP: '跳过'
 }
@@ -212,8 +217,9 @@ export const PROMOTION_REASON_LABELS: Record<string, string> = {
   MANUAL_REPEAT: '已按人工指定留级班级',
   TARGET_CLASS_AUTO_CREATE: '目标班级不存在，将自动创建',
   TARGET_CLASS_NOT_FOUND: '目标班级不存在',
+  TERMINAL_GRADE_PENDING_ADVANCE: '已处于末级，转待升学',
   TERMINAL_GRADE_GRADUATE: '已处于末级，执行毕业',
-  TERMINAL_GRADE_SKIP: '已处于末级，未开启自动毕业',
+  TERMINAL_GRADE_SKIP: '已处于末级，未开启自动转待升学',
   GRADE_SEQUENCE_GAP: '学校年级配置不完整，无法推导下一年级',
   MULTI_CURRENT_CLASS: '学生存在多条当前班级记录',
   STUDENT_NOT_READING: '学生当前不是在读状态'
@@ -252,6 +258,7 @@ export const PROMOTION_FLOW_TYPE_LABELS: Record<string, string> = {
   PROMOTE: '升班',
   TRANSFER: '转班',
   REPEAT: '留级',
+  PENDING_ADVANCE: '待升学',
   GRADUATE: '毕业'
 }
 

@@ -15,7 +15,7 @@
           <el-option
             v-for="grade in schoolGradeList"
             :key="grade.id"
-            :label="`${grade.gradeNo} / ${grade.gradeName}`"
+            :label="formatGradeLabel(grade.gradeNo, grade.gradeName, grade.aliasName)"
             :value="grade.id"
           />
         </el-select>
@@ -45,6 +45,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatGradeLabel } from '@/utils/edu'
 import {
   SchoolApi,
   type SchoolClass,

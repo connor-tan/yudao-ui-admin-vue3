@@ -3,7 +3,8 @@ import request from '@/config/axios'
 export const STUDENT_STATUS_OPTIONS = [
   { label: '在读', value: 1 },
   { label: '毕业', value: 2 },
-  { label: '休学', value: 3 }
+  { label: '休学', value: 3 },
+  { label: '待升学', value: 4 }
 ]
 
 export const getStudentStatusLabel = (value?: number) => {

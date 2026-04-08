@@ -5,6 +5,7 @@ export interface GradeCatalog {
   stage: string
   gradeNo: string
   gradeName: string
+  aliasName?: string
 }
 
 /** 年级定义信息 */
@@ -15,6 +16,7 @@ export interface SchoolGrade {
   stage?: string
   gradeNo?: string
   gradeName?: string
+  aliasName?: string
   createTime?: string
 }
 
@@ -24,6 +26,7 @@ export interface SchoolGradeSimple {
   stage: string
   gradeNo: string
   gradeName: string
+  aliasName?: string
 }
 
 /** 学年信息 */
@@ -62,6 +65,7 @@ export interface SchoolClass {
   stage?: string
   gradeNo?: string
   gradeName?: string
+  aliasName?: string
   classNo?: number
   className?: string
   createTime?: string
@@ -75,6 +79,7 @@ export interface SchoolClassSimple {
   stage?: string
   gradeNo?: string
   gradeName?: string
+  aliasName?: string
   schoolYearName?: string
 }
 

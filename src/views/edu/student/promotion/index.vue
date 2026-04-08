@@ -18,9 +18,10 @@
                   filterable
                   placeholder="请选择来源学年"
                   class="!w-full"
+                  @change="handleFromYearStartChange"
                 >
                   <el-option
-                    v-for="schoolYear in schoolYearOptions"
+                    v-for="schoolYear in executableSourceYearOptions"
                     :key="schoolYear.yearStart"
                     :label="schoolYear.name"
                     :value="schoolYear.yearStart"
@@ -30,22 +31,17 @@
             </el-col>
             <el-col :span="12">
               <el-form-item label="目标学年" prop="toYearStart">
-                <el-select
-                  v-model="formData.toYearStart"
-                  filterable
-                  placeholder="请选择目标学年"
-                  class="!w-full"
-                >
-                  <el-option
-                    v-for="schoolYear in schoolYearOptions"
-                    :key="schoolYear.yearStart"
-                    :label="schoolYear.name"
-                    :value="schoolYear.yearStart"
-                  />
-                </el-select>
+                <el-input :model-value="selectedTargetYearLabel" readonly placeholder="请选择来源学年后自动带出" />
               </el-form-item>
             </el-col>
           </el-row>
+          <el-alert
+            v-if="!executableSourceYearOptions.length"
+            type="warning"
+            :closable="false"
+            class="mb-12px"
+            title="当前没有可升班的学年，请先补充下一学年的学年数据"
+          />
           <el-row :gutter="16">
             <el-col :span="24">
               <el-form-item label="学校范围" prop="scopeType">
@@ -104,7 +100,7 @@
               </el-form-item>
             </el-col>
             <el-col :span="6">
-              <el-form-item label="末级自动毕业" prop="graduateTerminalStudent">
+              <el-form-item label="末级转待升学" prop="graduateTerminalStudent">
                 <el-switch v-model="formData.graduateTerminalStudent" />
               </el-form-item>
             </el-col>
@@ -159,12 +155,14 @@
         />
 
         <template v-if="previewData">
-          <div class="mb-12px text-14px font-600">预览摘要</div>
+          <div class="mb-12px text-14px font-600">
+            {{ previewSummaryMode === 'execute' ? '执行结果摘要' : '预览摘要' }}
+          </div>
           <el-descriptions :column="4" border class="mb-16px">
             <el-descriptions-item label="总学校数">
               {{ previewData.summary.totalSchoolCount }}
             </el-descriptions-item>
-            <el-descriptions-item label="可执行学校数">
+            <el-descriptions-item :label="readySchoolSummaryLabel">
               {{ previewData.summary.readySchoolCount }}
             </el-descriptions-item>
             <el-descriptions-item label="跳过学校数">
@@ -179,8 +177,8 @@
             <el-descriptions-item label="留级人数">
               {{ previewData.summary.repeatCount }}
             </el-descriptions-item>
-            <el-descriptions-item label="毕业人数">
-              {{ previewData.summary.graduatedCount }}
+            <el-descriptions-item :label="pendingAdvanceSummaryLabel">
+              {{ previewData.summary.pendingAdvanceCount }}
             </el-descriptions-item>
             <el-descriptions-item label="跳过人数">
               {{ previewData.summary.skippedCount }}
@@ -211,7 +209,7 @@
                 <el-table-column label="总人数" prop="totalCount" width="90" />
                 <el-table-column label="升班人数" prop="promotedCount" width="90" />
                 <el-table-column label="留级人数" prop="repeatCount" width="90" />
-                <el-table-column label="毕业人数" prop="graduatedCount" width="90" />
+                <el-table-column :label="pendingAdvanceSchoolColumnLabel" prop="pendingAdvanceCount" width="110" />
                 <el-table-column label="跳过人数" prop="skippedCount" width="90" />
                 <el-table-column label="缺失目标班级人数" prop="missingTargetClassCount" width="130" />
               </el-table>
@@ -227,7 +225,11 @@
                 <el-table-column label="学生姓名" prop="studentName" min-width="120" />
                 <el-table-column label="入学批次" prop="entryYear" width="100" />
                 <el-table-column label="来源班级" prop="fromClassName" min-width="180" />
-                <el-table-column label="目标年级" prop="toGradeName" min-width="120" />
+                <el-table-column label="目标年级" min-width="150">
+                  <template #default="scope">
+                    {{ formatGradeName(scope.row.toGradeName, scope.row.toGradeAliasName) }}
+                  </template>
+                </el-table-column>
                 <el-table-column label="目标班级" prop="toClassName" min-width="180" />
                 <el-table-column label="动作" width="110">
                   <template #default="scope">
@@ -428,7 +430,7 @@
                 <el-table-column label="总人数" prop="totalCount" width="90" />
                 <el-table-column label="升班人数" prop="promotedCount" width="90" />
                 <el-table-column label="留级人数" prop="repeatCount" width="90" />
-                <el-table-column label="毕业人数" prop="graduatedCount" width="90" />
+                <el-table-column label="待升学人数" prop="pendingAdvanceCount" width="90" />
                 <el-table-column label="跳过人数" prop="skippedCount" width="90" />
                 <el-table-column label="原因" min-width="180">
                   <template #default="batchScope">
@@ -477,7 +479,7 @@
           <el-table-column label="学生统计" min-width="220">
             <template #default="scope">
               总 {{ scope.row.totalCount }} / 升 {{ scope.row.promotedCount }} / 留
-              {{ scope.row.repeatCount }} / 毕 {{ scope.row.graduatedCount }} / 跳
+              {{ scope.row.repeatCount }} / 待 {{ scope.row.pendingAdvanceCount }} / 跳
               {{ scope.row.skippedCount }}
             </template>
           </el-table-column>
@@ -644,6 +646,7 @@
 
 <script setup lang="ts">
 import * as AreaApi from '@/api/system/area'
+import { formatGradeName } from '@/utils/edu'
 import { dateFormatter, dateFormatter2 } from '@/utils/formatTime'
 import { SchoolApi, type SchoolClassSimple, type SchoolSimple } from '@/api/edu/school'
 import {
@@ -685,6 +688,7 @@ const targetClassOptionsMap = ref<Record<string, SchoolClassSimple[]>>({})
 const previewData = ref<StudentGlobalPromotionPreviewRespVO>()
 const activePreviewTab = ref('schools')
 const previewDirty = ref(false)
+const previewSummaryMode = ref<'preview' | 'execute'>('preview')
 const lastExecutedTaskId = ref<number>()
 const rollbackTaskId = ref<number>()
 const rollbackRemark = ref<string>()
@@ -763,9 +767,24 @@ const validateAreaScope = (_rule, value, callback) => {
   callback()
 }
 
+const validateAdjacentYearStart = (_rule, _value, callback) => {
+  if (!formData.value.fromYearStart || !formData.value.toYearStart) {
+    callback()
+    return
+  }
+  if (formData.value.toYearStart !== formData.value.fromYearStart + 1) {
+    callback(new Error('目标学年必须是来源学年的下一学年'))
+    return
+  }
+  callback()
+}
+
 const formRules = reactive({
   fromYearStart: [{ required: true, message: '来源学年不能为空', trigger: 'change' }],
-  toYearStart: [{ required: true, message: '目标学年不能为空', trigger: 'change' }],
+  toYearStart: [
+    { required: true, message: '目标学年不能为空', trigger: 'change' },
+    { validator: validateAdjacentYearStart, trigger: 'change' }
+  ],
   scopeType: [{ required: true, message: '学校范围不能为空', trigger: 'change' }],
   schoolIds: [{ validator: validateSchoolScope, trigger: 'change' }],
   areaId: [{ validator: validateAreaScope, trigger: 'change' }]
@@ -777,8 +796,41 @@ const canExecute = computed(
     !previewDirty.value &&
     (previewData.value.summary.promotedCount > 0 ||
       previewData.value.summary.repeatCount > 0 ||
-      previewData.value.summary.graduatedCount > 0)
+      previewData.value.summary.pendingAdvanceCount > 0)
 )
+
+const readySchoolSummaryLabel = computed(() =>
+  previewSummaryMode.value === 'execute' ? '已处理学校数' : '可执行学校数'
+)
+
+const pendingAdvanceSummaryLabel = computed(() =>
+  previewSummaryMode.value === 'execute' ? '待升学人数' : '预估待升学人数'
+)
+
+const pendingAdvanceSchoolColumnLabel = computed(() =>
+  previewSummaryMode.value === 'execute' ? '待升学人数' : '预估待升学人数'
+)
+
+const schoolYearOptionMap = computed<Record<number, StudentPromotionYearOption>>(() => {
+  return schoolYearOptions.value.reduce(
+    (result, item) => {
+      result[item.yearStart] = item
+      return result
+    },
+    {} as Record<number, StudentPromotionYearOption>
+  )
+})
+
+const executableSourceYearOptions = computed(() =>
+  schoolYearOptions.value.filter((item) => !!schoolYearOptionMap.value[item.yearStart + 1])
+)
+
+const selectedTargetYearLabel = computed(() => {
+  if (!formData.value.toYearStart) {
+    return ''
+  }
+  return schoolYearOptionMap.value[formData.value.toYearStart]?.name || ''
+})
 
 const schoolYearIdMap = computed<Record<number, number>>(() => {
   const result: Record<number, number> = {}
@@ -802,6 +854,17 @@ const loadSchoolYearOptions = async () => {
 
 const loadAreaList = async () => {
   areaList.value = await AreaApi.getEnabledAreaTree()
+}
+
+const handleFromYearStartChange = (yearStart?: number) => {
+  if (!yearStart) {
+    formData.value.toYearStart = undefined
+    return
+  }
+  const targetYearStart = yearStart + 1
+  formData.value.toYearStart = schoolYearOptionMap.value[targetYearStart]
+    ? targetYearStart
+    : undefined
 }
 
 const ensureTargetClassOptions = async (schoolId?: number, schoolYearId?: number) => {
@@ -839,6 +902,7 @@ const handlePreview = async () => {
     previewData.value = await StudentPromotionApi.previewGlobal(buildPayload())
     activePreviewTab.value = 'schools'
     previewDirty.value = false
+    previewSummaryMode.value = 'preview'
   } finally {
     previewLoading.value = false
   }
@@ -861,10 +925,11 @@ const handleExecute = async () => {
     }
     activePreviewTab.value = 'schools'
     previewDirty.value = false
+    previewSummaryMode.value = 'execute'
     lastExecutedTaskId.value = data.taskId
     rollbackTaskId.value = data.taskId
     message.success(
-      `执行成功：任务 ${data.taskId}，升班 ${data.summary.promotedCount} 人，留级 ${data.summary.repeatCount} 人，毕业 ${data.summary.graduatedCount} 人`
+      `执行成功：任务 ${data.taskId}，升班 ${data.summary.promotedCount} 人，留级 ${data.summary.repeatCount} 人，待升学 ${data.summary.pendingAdvanceCount} 人`
     )
     if (activeTab.value === 'tasks') {
       await getTaskList()
@@ -1030,6 +1095,9 @@ const getActionTagType = (action?: string) => {
   if (action === 'REPEAT') {
     return 'danger'
   }
+  if (action === 'PENDING_ADVANCE') {
+    return 'warning'
+  }
   if (action === 'GRADUATE') {
     return 'warning'
   }
@@ -1108,6 +1176,9 @@ const getFlowTypeTagType = (changeType?: string) => {
   if (changeType === 'REPEAT') {
     return 'danger'
   }
+  if (changeType === 'PENDING_ADVANCE') {
+    return 'warning'
+  }
   if (changeType === 'GRADUATE') {
     return 'warning'
   }
@@ -1152,6 +1223,7 @@ const resetExecuteForm = () => {
   previewData.value = undefined
   activePreviewTab.value = 'schools'
   previewDirty.value = false
+  previewSummaryMode.value = 'preview'
   adjustmentMap.value = {}
   targetClassOptionsMap.value = {}
   lastExecutedTaskId.value = undefined
