@@ -24,24 +24,23 @@
         </el-card>
       </el-col>
       <!-- 下边：账户明细 -->
-      <!-- TODO 芋艿：【订单管理】【售后管理】【收藏记录】-->
       <el-card header="账户明细" shadow="never" style="width: 100%; margin-top: 20px">
         <template #header>
           <CardTitle title="账户明细" />
         </template>
         <el-tabs>
-          <el-tab-pane label="积分">
-            <UserPointList :user-id="id" />
-          </el-tab-pane>
-          <el-tab-pane label="签到" lazy>
-            <UserSignList :user-id="id" />
-          </el-tab-pane>
-          <el-tab-pane label="成长值" lazy>
-            <UserExperienceRecordList :user-id="id" />
-          </el-tab-pane>
-          <el-tab-pane label="余额" lazy>
-            <UserBalanceList :wallet-id="wallet.id" />
-          </el-tab-pane>
+<!--          <el-tab-pane label="积分">-->
+<!--            <UserPointList :user-id="id" />-->
+<!--          </el-tab-pane>-->
+<!--          <el-tab-pane label="签到" lazy>-->
+<!--            <UserSignList :user-id="id" />-->
+<!--          </el-tab-pane>-->
+<!--          <el-tab-pane label="成长值" lazy>-->
+<!--            <UserExperienceRecordList :user-id="id" />-->
+<!--          </el-tab-pane>-->
+<!--          <el-tab-pane label="余额" lazy>-->
+<!--            <UserBalanceList :wallet-id="wallet.id" />-->
+<!--          </el-tab-pane>-->
           <el-tab-pane label="收货地址" lazy>
             <UserAddressList :user-id="id" />
           </el-tab-pane>
@@ -54,12 +53,12 @@
           <el-tab-pane label="收藏记录" lazy>
             <UserFavoriteList :user-id="id" />
           </el-tab-pane>
-          <el-tab-pane label="优惠劵" lazy>
-            <UserCouponList :user-id="id" />
-          </el-tab-pane>
-          <el-tab-pane label="推广用户" lazy>
-            <UserBrokerageList :bind-user-id="id" />
-          </el-tab-pane>
+<!--          <el-tab-pane label="优惠劵" lazy>-->
+<!--            <UserCouponList :user-id="id" />-->
+<!--          </el-tab-pane>-->
+<!--          <el-tab-pane label="推广用户" lazy>-->
+<!--            <UserBrokerageList :bind-user-id="id" />-->
+<!--          </el-tab-pane>-->
         </el-tabs>
       </el-card>
     </el-row>

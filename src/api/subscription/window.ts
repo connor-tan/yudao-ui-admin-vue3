@@ -5,10 +5,14 @@ export interface SubscriptionWindow {
   name?: string
   startTime?: string | number
   endTime?: string | number
-  targetSchoolYearId?: number
-  targetSchoolYearName?: string
-  targetSemester?: number
+  targetYearStart?: number
+  targetYearEnd?: number
+  targetYearName?: string
+  templateId?: number
+  templateNameSnapshot?: string
+  targetPeriod?: string
   gradeCalcRule?: string
+  templateLocked?: boolean
   status?: number
   remark?: string
   createTime?: string
@@ -17,9 +21,12 @@ export interface SubscriptionWindow {
 export interface SubscriptionWindowSimple {
   id: number
   name: string
-  targetSchoolYearId?: number
-  targetSchoolYearName?: string
-  targetSemester?: number
+  targetYearStart?: number
+  targetYearEnd?: number
+  targetYearName?: string
+  templateId?: number
+  templateNameSnapshot?: string
+  targetPeriod?: string
   gradeCalcRule?: string
   status?: number
 }

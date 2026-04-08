@@ -1,12 +1,25 @@
 import request from '@/config/axios'
 
-export interface SubscriptionSupportSchoolYearSimple {
-  id: number
+export interface SubscriptionSupportWindowYearSimple {
+  yearStart: number
+  yearEnd: number
   name: string
 }
 
+export interface SubscriptionSupportStudentSimple {
+  id: number
+  studentName: string
+  currentSchoolId?: number
+  currentSchoolName?: string
+  status?: number
+}
+
 export const SubscriptionSupportApi = {
-  getSchoolYearSimpleList: async (schoolId?: number) => {
-    return await request.get({ url: '/subscription/support/school-year/simple-list', params: { schoolId } })
+  getWindowYearSimpleList: async () => {
+    return await request.get({ url: '/subscription/support/window-year/simple-list' })
+  },
+
+  getStudentSimpleList: async (keyword?: string) => {
+    return await request.get({ url: '/subscription/support/student/simple-list', params: { keyword } })
   }
 }
