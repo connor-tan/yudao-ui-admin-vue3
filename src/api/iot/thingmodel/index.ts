@@ -134,7 +134,7 @@ export interface ThingModelBoolOrEnumDataSpecs {
 }
 
 /** 文本/时间型数据规范 */
-export interface ThingModelDateOrTextDataSpecs {
+export interface ThingModelstringOrTextDataSpecs {
   dataType: 'text' | 'date'
   length?: number
   defaultValue?: string

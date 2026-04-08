@@ -6,7 +6,7 @@ export interface DataSourceConfigVO {
   url: string
   username: string
   password: string
-  createTime?: Date
+  createTime?: string
 }
 
 // 新增数据源配置

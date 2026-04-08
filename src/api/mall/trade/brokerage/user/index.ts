@@ -3,9 +3,9 @@ import request from '@/config/axios'
 export interface BrokerageUserVO {
   id: number
   bindUserId: number
-  bindUserTime: Date
+  bindUserTime: string
   brokerageEnabled: boolean
-  brokerageTime: Date
+  brokerageTime: string
   price: number
   frozenPrice: number
 

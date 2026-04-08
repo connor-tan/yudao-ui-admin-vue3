@@ -11,7 +11,7 @@ export interface ApiErrorLogVO {
   requestUrl: string
   userIp: string
   userAgent: string
-  exceptionTime: Date
+  exceptionTime: string
   exceptionName: string
   exceptionMessage: string
   exceptionRootCauseMessage: string
@@ -22,9 +22,9 @@ export interface ApiErrorLogVO {
   exceptionLineNumber: number
   processUserId: number
   processStatus: number
-  processTime: Date
+  processTime: string
   resultCode: number
-  createTime: Date
+  createTime: string
 }
 
 // 查询列表API 访问日志

@@ -9,7 +9,7 @@ export interface RoleVO {
   type: number
   dataScope: number
   dataScopeDeptIds: number[]
-  createTime: Date
+  createTime: string
 }
 
 // 查询角色列表

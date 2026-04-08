@@ -16,7 +16,7 @@ export interface MailLogVO {
   templateContent: string
   templateParams: string
   sendStatus: number
-  sendTime: Date
+  sendTime: string
   sendMessageId: string
   sendException: string
 }

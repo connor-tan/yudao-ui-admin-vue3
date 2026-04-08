@@ -13,8 +13,8 @@ export interface UserVO {
   loginIp: string
   status: number
   remark: string
-  loginDate: Date
-  createTime: Date
+  loginDate: string
+  createTime: string
 }
 
 // 查询用户管理列表

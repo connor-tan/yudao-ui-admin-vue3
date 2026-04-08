@@ -78,7 +78,7 @@
               v-model="formData.orderDate"
               placeholder="选择下单日期"
               type="date"
-              value-format="x"
+              value-format="YYYY-MM-DD HH:mm:ss"
               class="!w-1/1"
             />
           </el-form-item>
@@ -89,7 +89,7 @@
               v-model="formData.startTime"
               placeholder="选择开始时间"
               type="date"
-              value-format="x"
+              value-format="YYYY-MM-DD HH:mm:ss"
               class="!w-1/1"
             />
           </el-form-item>
@@ -100,7 +100,7 @@
               v-model="formData.endTime"
               placeholder="选择结束时间"
               type="date"
-              value-format="x"
+              value-format="YYYY-MM-DD HH:mm:ss"
               class="!w-1/1"
             />
           </el-form-item>

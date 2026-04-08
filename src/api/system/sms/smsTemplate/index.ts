@@ -12,7 +12,7 @@ export interface SmsTemplateVO {
   channelId?: number
   channelCode?: string
   params?: string[]
-  createTime?: Date
+  createTime?: string
 }
 
 export interface SendSmsReqVO {

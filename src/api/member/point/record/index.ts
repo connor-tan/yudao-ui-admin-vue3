@@ -9,7 +9,7 @@ export interface RecordVO {
   point: number
   totalPoint: number
   userId: number
-  createDate: Date
+  createDate: string
 }
 
 // 查询用户积分记录列表

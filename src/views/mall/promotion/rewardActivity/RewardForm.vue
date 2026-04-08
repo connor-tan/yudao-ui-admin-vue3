@@ -17,7 +17,7 @@
           :start-placeholder="t('common.startTimeText')"
           range-separator="-"
           type="datetimerange"
-          value-format="x"
+          value-format="YYYY-MM-DD HH:mm:ss"
         />
       </el-form-item>
       <el-form-item label="条件类型" prop="conditionType">

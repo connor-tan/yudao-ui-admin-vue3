@@ -4,7 +4,7 @@ export interface OrderVO {
   // ========== 订单基本信息 ==========
   id?: number | null // 订单编号
   no?: string // 订单流水号
-  createTime?: Date | null // 下单时间
+  createTime?: string | null // 下单时间
   type?: number | null // 订单类型
   terminal?: number | null // 订单来源
   userId?: number | null // 用户编号
@@ -12,15 +12,15 @@ export interface OrderVO {
   userRemark?: string // 用户备注
   status?: number | null // 订单状态
   productCount?: number | null // 购买的商品数量
-  finishTime?: Date | null // 订单完成时间
-  cancelTime?: Date | null // 订单取消时间
+  finishTime?: string | null // 订单完成时间
+  cancelTime?: string | null // 订单取消时间
   cancelType?: number | null // 取消类型
   remark?: string // 商家备注
 
   // ========== 价格 + 支付基本信息 ==========
   payOrderId?: number | null // 支付订单编号
   payStatus?: boolean // 是否已支付
-  payTime?: Date | null // 付款时间
+  payTime?: string | null // 付款时间
   payChannelCode?: string // 支付渠道
   totalPrice?: number | null // 商品原价（总）
   discountPrice?: number | null // 订单优惠（总）
@@ -34,8 +34,8 @@ export interface OrderVO {
   deliveryTemplateId?: number | null // 配送模板编号
   logisticsId?: number | null // 发货物流公司编号
   logisticsNo?: string // 发货物流单号
-  deliveryTime?: Date | null // 发货时间
-  receiveTime?: Date | null // 收货时间
+  deliveryTime?: string | null // 发货时间
+  receiveTime?: string | null // 收货时间
   receiverName?: string // 收件人名称
   receiverMobile?: string // 收件人手机
   receiverPostCode?: number | null // 收件人邮编
@@ -72,7 +72,7 @@ export interface OrderVO {
 
 export interface OrderLogRespVO {
   content?: string
-  createTime?: Date
+  createTime?: string
   userType?: number
 }
 

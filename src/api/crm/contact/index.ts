@@ -6,9 +6,9 @@ export interface ContactVO {
   name: string // 联系人名称
   customerId: number // 客户编号
   customerName?: string // 客户名称
-  contactLastTime: Date // 最后跟进时间
+  contactLastTime: string // 最后跟进时间
   contactLastContent: string // 最后跟进内容
-  contactNextTime: Date // 下次联系时间
+  contactNextTime: string // 下次联系时间
   ownerUserId: number // 负责人的用户编号
   ownerUserName?: string // 负责人的用户名称
   ownerUserDept?: string // 负责人的部门名称
@@ -28,8 +28,8 @@ export interface ContactVO {
   remark: string // 备注
   creator: string // 创建人
   creatorName?: string // 创建人名称
-  createTime: Date // 创建时间
-  updateTime: Date // 更新时间
+  createTime: string // 创建时间
+  updateTime: string // 更新时间
 }
 
 export interface ContactBusinessReqVO {

@@ -19,7 +19,7 @@ export interface ProductVO {
   protocolType: string // 协议类型
   serializeType: string // 序列化类型
   deviceCount: number // 设备数量
-  createTime: Date // 创建时间
+  createTime: string // 创建时间
 }
 
 // IOT 产品设备类型枚举类 0: 直连设备, 1: 网关子设备, 2: 网关设备

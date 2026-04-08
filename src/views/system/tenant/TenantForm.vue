@@ -50,8 +50,8 @@
           v-model="formData.expireTime"
           clearable
           placeholder="请选择过期时间"
-          type="date"
-          value-format="x"
+          type="datetime"
+          value-format="YYYY-MM-DD HH:mm:ss"
         />
       </el-form-item>
       <el-form-item label="绑定域名" prop="websites">

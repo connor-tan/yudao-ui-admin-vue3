@@ -45,7 +45,7 @@
         <el-date-picker
           v-model="formData.birthday"
           type="date"
-          value-format="x"
+          value-format="YYYY-MM-DD"
           placeholder="选择出生日期"
         />
       </el-form-item>

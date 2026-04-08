@@ -17,7 +17,7 @@ export type OperateLogVO = {
   userAgent: string
   creator: string
   creatorName: string
-  createTime: Date
+  createTime: string
 }
 
 // 查询操作日志列表

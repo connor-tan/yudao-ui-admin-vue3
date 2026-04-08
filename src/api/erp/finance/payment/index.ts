@@ -5,7 +5,7 @@ export interface FinancePaymentVO {
   id: number // 付款单编号
   no: string // 付款单号
   supplierId: number // 供应商编号
-  paymentTime: Date // 付款时间
+  paymentTime: string // 付款时间
   totalPrice: number // 合计金额，单位：元
   status: number // 状态
   remark: string // 备注

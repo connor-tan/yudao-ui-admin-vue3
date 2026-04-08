@@ -16,16 +16,16 @@ export interface OrderVO {
   channelFeeAmount: number
   status: number
   userIp: string
-  expireTime: Date
-  successTime: Date
-  notifyTime: Date
+  expireTime: string
+  successTime: string
+  notifyTime: string
   successExtensionId: number
   refundStatus: number
   refundTimes: number
   refundAmount: number
   channelUserId: string
   channelOrderNo: string
-  createTime: Date
+  createTime: string
 }
 
 export interface OrderPageReqVO extends PageParam {
@@ -42,15 +42,15 @@ export interface OrderPageReqVO extends PageParam {
   channelFeeRate?: number
   channelFeeAmount?: number
   status?: number
-  expireTime?: Date[]
-  successTime?: Date[]
-  notifyTime?: Date[]
+  expireTime?: string[]
+  successTime?: string[]
+  notifyTime?: string[]
   successExtensionId?: number
   refundStatus?: number
   refundTimes?: number
   channelUserId?: string
   channelOrderNo?: string
-  createTime?: Date[]
+  createTime?: string[]
 }
 
 export interface OrderExportReqVO {
@@ -67,15 +67,15 @@ export interface OrderExportReqVO {
   channelFeeRate?: number
   channelFeeAmount?: number
   status?: number
-  expireTime?: Date[]
-  successTime?: Date[]
-  notifyTime?: Date[]
+  expireTime?: string[]
+  successTime?: string[]
+  notifyTime?: string[]
   successExtensionId?: number
   refundStatus?: number
   refundTimes?: number
   channelUserId?: string
   channelOrderNo?: string
-  createTime?: Date[]
+  createTime?: string[]
 }
 
 // 查询列表支付订单

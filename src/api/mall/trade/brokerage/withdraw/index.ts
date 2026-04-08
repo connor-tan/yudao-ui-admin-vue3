@@ -14,11 +14,11 @@ export interface BrokerageWithdrawVO {
   qrCodeUrl: string
   status: number
   auditReason: string
-  auditTime: Date
+  auditTime: string
   remark: string
   payTransferId?: number
   transferChannelCode?: string
-  transferTime?: Date
+  transferTime?: string
   transferErrorMsg?: string
 }
 

@@ -19,7 +19,7 @@
             <el-date-picker
               v-model="formData.receiptTime"
               type="date"
-              value-format="x"
+              value-format="YYYY-MM-DD HH:mm:ss"
               placeholder="选择收款时间"
               class="!w-1/1"
             />

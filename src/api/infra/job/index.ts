@@ -10,7 +10,7 @@ export interface JobVO {
   retryCount: number
   retryInterval: number
   monitorTimeout: number
-  createTime: Date
+  createTime: string
 }
 
 // 任务列表

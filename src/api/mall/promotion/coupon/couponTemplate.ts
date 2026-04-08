@@ -11,8 +11,8 @@ export interface CouponTemplateVO {
   productScope: number
   productScopeValues: number[]
   validityType: number
-  validStartTime: Date
-  validEndTime: Date
+  validStartTime: string
+  validEndTime: string
   fixedStartTerm: number
   fixedEndTerm: number
   discountType: number

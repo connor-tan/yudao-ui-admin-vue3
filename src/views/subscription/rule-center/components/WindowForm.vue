@@ -15,7 +15,7 @@
           v-model="formData.startTime"
           class="!w-full"
           type="datetime"
-          value-format="x"
+          value-format="YYYY-MM-DD HH:mm:ss"
           placeholder="请选择开始时间"
         />
       </el-form-item>
@@ -24,53 +24,57 @@
           v-model="formData.endTime"
           class="!w-full"
           type="datetime"
-          value-format="x"
+          value-format="YYYY-MM-DD HH:mm:ss"
           placeholder="请选择结束时间"
         />
       </el-form-item>
-      <el-form-item label="目标学年" prop="targetSchoolYearId">
-        <el-select v-model="formData.targetSchoolYearId" class="!w-full" filterable placeholder="请选择目标学年">
+      <el-form-item label="目标学年" prop="targetYearStart">
+        <el-select v-model="targetYearKey" class="!w-full" filterable placeholder="请选择目标学年">
           <el-option
-            v-for="schoolYear in schoolYearList"
-            :key="schoolYear.id"
-            :label="schoolYear.name"
-            :value="schoolYear.id"
+            v-for="item in windowYearList"
+            :key="buildSubscriptionTargetYearKey(item.yearStart, item.yearEnd)"
+            :label="item.name"
+            :value="buildSubscriptionTargetYearKey(item.yearStart, item.yearEnd)"
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="目标学期" prop="targetSemester">
-        <el-select v-model="formData.targetSemester" class="!w-full" placeholder="请选择目标学期">
+      <el-form-item label="规则模板" prop="templateId">
+        <el-select
+          v-model="formData.templateId"
+          :disabled="!!formData.templateLocked"
+          class="!w-full"
+          clearable
+          filterable
+          placeholder="请选择规则模板"
+        >
           <el-option
-            v-for="option in SUBSCRIPTION_SEMESTER_OPTIONS"
-            :key="option.value"
-            :label="option.label"
-            :value="option.value"
+            v-for="item in templateOptions"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="年级判定">
-        <div class="flex w-full items-center gap-12px">
-          <el-input :model-value="gradeCalcRuleSummary" readonly />
-          <el-button link type="primary" @click="toggleAdvancedMode">
-            {{ advancedModeEnabled ? '关闭高级配置' : '高级配置' }}
-          </el-button>
-        </div>
+      <el-form-item label="模板摘要">
+        <el-descriptions v-if="templateSummary" :column="1" border class="!w-full">
+          <el-descriptions-item label="模板名称">
+            <div class="flex items-center gap-8px">
+              <span>{{ templateSummary.name }}</span>
+              <el-tag v-if="formData.templateLocked" size="small" type="warning">已锁定</el-tag>
+            </div>
+          </el-descriptions-item>
+          <el-descriptions-item label="目标周期">
+            {{ getSubscriptionTargetPeriodLabel(templateSummary.targetPeriod) }}
+          </el-descriptions-item>
+          <el-descriptions-item label="年级判定">
+            {{ getSubscriptionGradeCalcRuleLabel(templateSummary.gradeCalcRule) }}
+          </el-descriptions-item>
+          <el-descriptions-item label="模板说明">
+            {{ templateSummary.description || '-' }}
+          </el-descriptions-item>
+        </el-descriptions>
+        <el-empty v-else :image-size="72" description="请选择规则模板" />
       </el-form-item>
-      <el-collapse-transition>
-        <div v-show="advancedModeEnabled">
-          <el-form-item label="判定方式" prop="gradeCalcRule">
-            <el-radio-group v-model="formData.gradeCalcRule">
-              <el-radio
-                v-for="option in SUBSCRIPTION_GRADE_CALC_RULE_OPTIONS"
-                :key="option.value"
-                :label="option.value"
-              >
-                {{ option.label }}
-              </el-radio>
-            </el-radio-group>
-          </el-form-item>
-        </div>
-      </el-collapse-transition>
       <el-form-item label="状态" prop="status">
         <el-radio-group v-model="formData.status">
           <el-radio
@@ -95,15 +99,21 @@
 
 <script setup lang="ts">
 import dayjs from 'dayjs'
-
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import {
+  buildSubscriptionTargetYearKey,
   getSubscriptionGradeCalcRuleLabel,
-  SUBSCRIPTION_GRADE_CALC_RULE_OPTIONS,
-  SUBSCRIPTION_SEMESTER_OPTIONS
+  getSubscriptionTargetPeriodLabel
 } from '@/utils/subscription'
-import { SubscriptionSupportApi, type SubscriptionSupportSchoolYearSimple } from '@/api/subscription/support'
+import {
+  SubscriptionSupportApi,
+  type SubscriptionSupportWindowYearSimple
+} from '@/api/subscription/support'
 import { SubscriptionWindowApi, type SubscriptionWindow } from '@/api/subscription/window'
+import {
+  SubscriptionWindowTemplateApi,
+  type SubscriptionWindowTemplateSimple
+} from '@/api/subscription/windowTemplate'
 
 defineOptions({ name: 'SubscriptionWindowForm' })
 
@@ -113,19 +123,24 @@ const message = useMessage()
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const formLoading = ref(false)
-const formType = ref('create')
-const advancedModeEnabled = ref(false)
-const schoolYearList = ref<SubscriptionSupportSchoolYearSimple[]>([])
+const formType = ref<'create' | 'update'>('create')
+const windowYearList = ref<SubscriptionSupportWindowYearSimple[]>([])
+const templateList = ref<SubscriptionWindowTemplateSimple[]>([])
 const formRef = ref()
+const targetYearKey = ref<string>()
 const formData = ref<SubscriptionWindow>({
   id: undefined,
   name: '',
   startTime: undefined,
   endTime: undefined,
-  targetSchoolYearId: undefined,
-  targetSemester: 1,
-  gradeCalcRule: 'CURRENT_GRADE',
-  status: 1,
+  targetYearStart: undefined,
+  targetYearEnd: undefined,
+  templateId: undefined,
+  templateNameSnapshot: '',
+  targetPeriod: '',
+  gradeCalcRule: '',
+  templateLocked: false,
+  status: 0,
   remark: ''
 })
 
@@ -133,37 +148,123 @@ const formRules = reactive({
   name: [{ required: true, message: '窗口名称不能为空', trigger: 'blur' }],
   startTime: [{ required: true, message: '开始时间不能为空', trigger: 'change' }],
   endTime: [{ required: true, message: '结束时间不能为空', trigger: 'change' }],
-  targetSchoolYearId: [{ required: true, message: '目标学年不能为空', trigger: 'change' }],
-  targetSemester: [{ required: true, message: '目标学期不能为空', trigger: 'change' }],
+  targetYearStart: [
+    {
+      validator: (_rule: any, _value: any, callback: any) => {
+        if (!formData.value.targetYearStart || !formData.value.targetYearEnd) {
+          callback(new Error('目标学年不能为空'))
+          return
+        }
+        callback()
+      },
+      trigger: 'change'
+    }
+  ],
+  templateId: [
+    {
+      validator: (_rule: any, value: any, callback: any) => {
+        if (formType.value === 'create' || !formData.value.templateLocked) {
+          if (!value) {
+            callback(new Error('规则模板不能为空'))
+            return
+          }
+        }
+        callback()
+      },
+      trigger: 'change'
+    }
+  ],
   status: [{ required: true, message: '状态不能为空', trigger: 'change' }]
 })
 
-const gradeCalcRuleSummary = computed(() =>
-  advancedModeEnabled.value
-    ? getSubscriptionGradeCalcRuleLabel(formData.value.gradeCalcRule)
-    : '当前学籍年级（系统自动计算）'
-)
+const templateOptions = computed(() => {
+  const exists = templateList.value.some((item) => item.id === formData.value.templateId)
+  if (!formData.value.templateId || exists || !formData.value.templateNameSnapshot) {
+    return templateList.value
+  }
+  return [
+    {
+      id: formData.value.templateId,
+      code: '',
+      name: formData.value.templateNameSnapshot,
+      targetPeriod: formData.value.targetPeriod || '',
+      gradeCalcRule: formData.value.gradeCalcRule || '',
+      description: '',
+      builtIn: false,
+      status: 0
+    },
+    ...templateList.value
+  ]
+})
 
-const loadSchoolYearList = async () => {
-  if (schoolYearList.value.length > 0) {
+const templateSummary = computed(() => {
+  const selectedTemplate = templateOptions.value.find((item) => item.id === formData.value.templateId)
+  if (selectedTemplate) {
+    return selectedTemplate
+  }
+  if (formData.value.templateNameSnapshot || formData.value.targetPeriod || formData.value.gradeCalcRule) {
+    return {
+      id: formData.value.templateId || 0,
+      code: '',
+      name: formData.value.templateNameSnapshot || '历史窗口快照',
+      targetPeriod: formData.value.targetPeriod || '',
+      gradeCalcRule: formData.value.gradeCalcRule || '',
+      description: '',
+      builtIn: false,
+      status: 0
+    }
+  }
+  return undefined
+})
+
+watch(targetYearKey, (value) => {
+  if (!value) {
+    formData.value.targetYearStart = undefined
+    formData.value.targetYearEnd = undefined
+    nextTick(() => formRef.value?.validateField('targetYearStart'))
     return
   }
-  schoolYearList.value = await SubscriptionSupportApi.getSchoolYearSimpleList()
+  const [yearStart, yearEnd] = value.split('-').map((item) => Number(item))
+  formData.value.targetYearStart = Number.isNaN(yearStart) ? undefined : yearStart
+  formData.value.targetYearEnd = Number.isNaN(yearEnd) ? undefined : yearEnd
+  nextTick(() => formRef.value?.validateField('targetYearStart'))
+})
+
+const loadWindowYearList = async () => {
+  if (windowYearList.value.length > 0) {
+    return
+  }
+  windowYearList.value = await SubscriptionSupportApi.getWindowYearSimpleList()
 }
 
-const open = async (type: string, id?: number) => {
+const loadTemplateList = async () => {
+  templateList.value = await SubscriptionWindowTemplateApi.getWindowTemplateSimpleList()
+}
+
+const normalizeDateTimeValue = (value?: string | number) => {
+  if (value === undefined || value === null || value === '') {
+    return undefined
+  }
+  const datetime = dayjs(value)
+  return datetime.isValid() ? datetime.format('YYYY-MM-DD HH:mm:ss') : undefined
+}
+
+const open = async (type: 'create' | 'update', id?: number) => {
   dialogVisible.value = true
-  dialogTitle.value = t(`action.${type}`)
+  dialogTitle.value = type === 'create' ? t('action.create') : t('action.update')
   formType.value = type
   resetForm()
   formLoading.value = true
   try {
-    await loadSchoolYearList()
+    await Promise.all([loadWindowYearList(), loadTemplateList()])
     if (id) {
       formData.value = await SubscriptionWindowApi.getWindow(id)
-      formData.value.startTime = formData.value.startTime ? dayjs(formData.value.startTime).valueOf() : undefined
-      formData.value.endTime = formData.value.endTime ? dayjs(formData.value.endTime).valueOf() : undefined
-      advancedModeEnabled.value = formData.value.gradeCalcRule === 'PROMOTED_GRADE'
+      formData.value.startTime = normalizeDateTimeValue(formData.value.startTime)
+      formData.value.endTime = normalizeDateTimeValue(formData.value.endTime)
+      targetYearKey.value = buildSubscriptionTargetYearKey(
+        formData.value.targetYearStart,
+        formData.value.targetYearEnd
+      )
     }
   } finally {
     formLoading.value = false
@@ -177,9 +278,6 @@ const submitForm = async () => {
   await formRef.value.validate()
   formLoading.value = true
   try {
-    formData.value.gradeCalcRule = advancedModeEnabled.value
-      ? formData.value.gradeCalcRule || 'CURRENT_GRADE'
-      : 'CURRENT_GRADE'
     if (formType.value === 'create') {
       await SubscriptionWindowApi.createWindow(formData.value)
       message.success(t('common.createSuccess'))
@@ -194,27 +292,21 @@ const submitForm = async () => {
   }
 }
 
-const toggleAdvancedMode = () => {
-  if (advancedModeEnabled.value) {
-    advancedModeEnabled.value = false
-    formData.value.gradeCalcRule = 'CURRENT_GRADE'
-    return
-  }
-  advancedModeEnabled.value = true
-  formData.value.gradeCalcRule = formData.value.gradeCalcRule || 'CURRENT_GRADE'
-}
-
 const resetForm = () => {
-  advancedModeEnabled.value = false
+  targetYearKey.value = undefined
   formData.value = {
     id: undefined,
     name: '',
     startTime: undefined,
     endTime: undefined,
-    targetSchoolYearId: undefined,
-    targetSemester: 1,
-    gradeCalcRule: 'CURRENT_GRADE',
-    status: 1,
+    targetYearStart: undefined,
+    targetYearEnd: undefined,
+    templateId: undefined,
+    templateNameSnapshot: '',
+    targetPeriod: '',
+    gradeCalcRule: '',
+    templateLocked: false,
+    status: 0,
     remark: ''
   }
   formRef.value?.resetFields()

@@ -158,7 +158,7 @@
           v-model="formData.validTimes"
           :default-time="[new Date(2000, 1, 1, 0, 0, 0), new Date(2000, 2, 1, 23, 59, 59)]"
           type="datetimerange"
-          value-format="x"
+          value-format="YYYY-MM-DD HH:mm:ss"
         />
       </el-form-item>
       <el-form-item

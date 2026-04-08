@@ -10,7 +10,7 @@ export interface DictDataVO {
   colorType: string
   cssClass: string
   remark: string
-  createTime: Date
+  createTime: string
 }
 
 // 查询字典数据（精简)列表

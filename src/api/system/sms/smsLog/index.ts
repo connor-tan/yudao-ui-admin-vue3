@@ -14,16 +14,16 @@ export interface SmsLogVO {
   userId: number | null
   userType: number | null
   sendStatus: number | null
-  sendTime: Date | null
+  sendTime: string | null
   apiSendCode: string
   apiSendMsg: string
   apiRequestId: string
   apiSerialNo: string
   receiveStatus: number | null
-  receiveTime: Date | null
+  receiveTime: string | null
   apiReceiveCode: string
   apiReceiveMsg: string
-  createTime: Date | null
+  createTime: string | null
 }
 
 // 查询短信日志列表

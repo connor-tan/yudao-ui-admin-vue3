@@ -25,7 +25,7 @@
               clearable
               placeholder="请选择开始时间"
               type="datetime"
-              value-format="x"
+              value-format="YYYY-MM-DD HH:mm:ss"
             />
           </el-form-item>
           <el-form-item label="结束时间" prop="endTime">
@@ -34,7 +34,7 @@
               clearable
               placeholder="请选择结束时间"
               type="datetime"
-              value-format="x"
+              value-format="YYYY-MM-DD HH:mm:ss"
             />
           </el-form-item>
           <el-form-item label="原因" prop="reason">

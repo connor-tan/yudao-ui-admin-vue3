@@ -7,8 +7,8 @@ export interface OAuth2TokenVO {
   userId: number
   userType: number
   clientId: string
-  createTime: Date
-  expiresTime: Date
+  createTime: string
+  expiresTime: string
 }
 
 // 查询 token列表

@@ -1,12 +1,11 @@
 import request from '@/config/axios'
-import type { Dayjs } from 'dayjs'
 
 /** 示例联系人信息 */
 export interface Demo01Contact {
   id: number // 编号
   name?: string // 名字
   sex?: number // 性别
-  birthday?: string | Dayjs // 出生年
+  birthday?: string // 出生年
   description?: string // 简介
   avatar: string // 头像
 }

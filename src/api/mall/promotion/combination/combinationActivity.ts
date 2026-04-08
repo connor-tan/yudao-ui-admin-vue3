@@ -7,8 +7,8 @@ export interface CombinationActivityVO {
   spuId?: number
   totalLimitCount?: number
   singleLimitCount?: number
-  startTime?: Date
-  endTime?: Date
+  startTime?: string
+  endTime?: string
   userSize?: number
   totalCount?: number
   successCount?: number

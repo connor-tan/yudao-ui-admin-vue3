@@ -18,7 +18,7 @@ export interface OAuth2ClientVO {
   resourceIds: string[]
   additionalInformation: string
   isAdditionalInformationJson: boolean
-  createTime: Date
+  createTime: string
 }
 
 // 查询 OAuth2 客户端的列表

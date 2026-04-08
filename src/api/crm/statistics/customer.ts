@@ -40,8 +40,8 @@ export interface CrmStatisticsCustomerContractSummaryRespVO {
   customerSource: string
   ownerUserName: string
   creatorUserName: string
-  createTime: Date
-  orderDate: Date
+  createTime: string
+  orderDate: string
 }
 
 export interface CrmStatisticsPoolSummaryByDateRespVO {

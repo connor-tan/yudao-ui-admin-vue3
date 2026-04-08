@@ -8,7 +8,7 @@ export interface ChannelVO {
   remark: string
   feeRate: number
   appId: number
-  createTime: Date
+  createTime: string
 }
 
 // 查询列表支付渠道

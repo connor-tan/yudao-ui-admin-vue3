@@ -19,16 +19,16 @@ export interface TradeAfterSaleVO {
   properties?: ProductPropertiesVO[] // 属性数组
   picUrl?: string // 商品图片
   count?: number | null // 退货商品数量
-  auditTime?: Date // 审批时间
+  auditTime?: string // 审批时间
   auditUserId?: number | null // 审批人
   auditReason?: string // 审批备注
   refundPrice?: number | null // 退款金额，单位：分。
   payRefundId?: number | null // 支付退款编号
-  refundTime?: Date // 退款时间
+  refundTime?: string // 退款时间
   logisticsId?: number | null // 退货物流公司编号
   logisticsNo?: string // 退货物流单号
-  deliveryTime?: Date // 退货时间
-  receiveTime?: Date // 收货时间
+  deliveryTime?: string // 退货时间
+  receiveTime?: string // 收货时间
   receiveReason?: string // 收货备注
 }
 

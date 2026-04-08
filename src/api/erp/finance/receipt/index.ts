@@ -5,7 +5,7 @@ export interface FinanceReceiptVO {
   id: number // 收款单编号
   no: string // 收款单号
   customerId: number // 客户编号
-  receiptTime: Date // 收款时间
+  receiptTime: string // 收款时间
   totalPrice: number // 合计金额，单位：元
   status: number // 状态
   remark: string // 备注

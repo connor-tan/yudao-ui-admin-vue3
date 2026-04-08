@@ -5,7 +5,7 @@ export interface PurchaseInVO {
   id: number // 入库工单编号
   no: string // 采购入库号
   customerId: number // 客户编号
-  inTime: Date // 入库时间
+  inTime: string // 入库时间
   totalCount: number // 合计数量
   totalPrice: number // 合计金额，单位：元
   status: number // 状态

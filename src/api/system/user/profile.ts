@@ -23,8 +23,8 @@ export interface ProfileVO {
   status: number
   remark: string
   loginIp: string
-  loginDate: Date
-  createTime: Date
+  loginDate: string
+  createTime: string
 }
 
 export interface UserProfileUpdateReqVO {

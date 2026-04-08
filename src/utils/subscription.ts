@@ -3,13 +3,34 @@ export const SUBSCRIPTION_SEMESTER_OPTIONS = [
   { label: '下学期', value: 2 }
 ]
 
+export const SUBSCRIPTION_TARGET_PERIOD_OPTIONS = [
+  { label: '上学期', value: 'FIRST_TERM' },
+  { label: '下学期', value: 'SECOND_TERM' },
+  { label: '全学年', value: 'FULL_YEAR' }
+]
+
 export const SUBSCRIPTION_GRADE_CALC_RULE_OPTIONS = [
   { label: '当前学籍年级', value: 'CURRENT_GRADE' },
   { label: '升学后年级', value: 'PROMOTED_GRADE' }
 ]
 
+export const SUBSCRIPTION_RULE_EFFECT_TYPE_OPTIONS = [
+  { label: '允许', value: 'INCLUDE' },
+  { label: '排除', value: 'EXCLUDE' }
+]
+
+export const SUBSCRIPTION_RULE_SCOPE_TYPE_OPTIONS = [
+  { label: '全部学生', value: 'ALL' },
+  { label: '指定学校', value: 'SCHOOL' },
+  { label: '指定年级', value: 'GRADE' },
+  { label: '指定学校+年级', value: 'SCHOOL_GRADE' }
+]
+
 export const getSubscriptionSemesterLabel = (value?: number | null) =>
   SUBSCRIPTION_SEMESTER_OPTIONS.find((item) => item.value === value)?.label || '-'
+
+export const getSubscriptionTargetPeriodLabel = (value?: string | null) =>
+  SUBSCRIPTION_TARGET_PERIOD_OPTIONS.find((item) => item.value === value)?.label || '-'
 
 export const getSubscriptionGradeCalcRuleLabel = (value?: string | null) =>
   value === 'PROMOTED_GRADE'
@@ -17,3 +38,12 @@ export const getSubscriptionGradeCalcRuleLabel = (value?: string | null) =>
     : value === 'CURRENT_GRADE'
       ? '当前学籍年级'
       : '-'
+
+export const getSubscriptionRuleEffectTypeLabel = (value?: string | null) =>
+  SUBSCRIPTION_RULE_EFFECT_TYPE_OPTIONS.find((item) => item.value === value)?.label || '-'
+
+export const getSubscriptionRuleScopeTypeLabel = (value?: string | null) =>
+  SUBSCRIPTION_RULE_SCOPE_TYPE_OPTIONS.find((item) => item.value === value)?.label || '-'
+
+export const buildSubscriptionTargetYearKey = (yearStart?: number, yearEnd?: number) =>
+  yearStart != null && yearEnd != null ? `${yearStart}-${yearEnd}` : undefined

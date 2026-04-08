@@ -4,7 +4,7 @@ import request from '@/config/axios'
 export interface StockMoveVO {
   id: number // 出库编号
   no: string // 出库单号
-  outTime: Date // 出库时间
+  outTime: string // 出库时间
   totalCount: number // 合计数量
   totalPrice: number // 合计金额，单位：元
   status: number // 状态

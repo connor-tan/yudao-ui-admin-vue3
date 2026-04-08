@@ -11,7 +11,7 @@ export interface AppVO {
   transferNotifyUrl: string
   merchantId: number
   merchantName: string
-  createTime: Date
+  createTime: string
 }
 
 export interface AppPageReqVO extends PageParam {
@@ -22,7 +22,7 @@ export interface AppPageReqVO extends PageParam {
   refundNotifyUrl?: string
   transferNotifyUrl?: string
   merchantName?: string
-  createTime?: Date[]
+  createTime?: string[]
 }
 
 export interface AppUpdateStatusReqVO {

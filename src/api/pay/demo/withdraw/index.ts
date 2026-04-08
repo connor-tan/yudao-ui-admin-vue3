@@ -10,7 +10,7 @@ export interface PayDemoWithdrawVO {
   status?: number
   payTransferId?: number
   transferChannelCode?: string
-  transferTime?: Date
+  transferTime?: string
   transferErrorMsg?: string
 }
 

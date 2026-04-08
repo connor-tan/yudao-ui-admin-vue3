@@ -25,7 +25,7 @@ export interface FileConfigVO {
   visible: boolean
   config: FileClientConfig
   remark: string
-  createTime: Date
+  createTime: string
 }
 
 // 查询文件配置列表

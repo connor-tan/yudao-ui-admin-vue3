@@ -31,7 +31,7 @@ export interface ChatMessageVO {
     snippet: string // 内容的简短描述
     summary: string // 内容的文本摘要
   }[]
-  createTime: Date // 创建时间
+  createTime: string // 创建时间
   roleAvatar: string // 角色头像
   userAvatar: string // 用户头像
 }

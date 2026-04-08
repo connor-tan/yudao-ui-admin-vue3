@@ -7,7 +7,7 @@ export interface PostVO {
   sort: number
   status: number
   remark: string
-  createTime?: Date
+  createTime?: string
 }
 
 // 查询岗位列表

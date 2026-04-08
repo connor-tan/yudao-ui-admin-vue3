@@ -2,7 +2,7 @@ import request from '@/config/axios'
 
 export interface DemoOrderVO {
   spuId: number
-  createTime: Date
+  createTime: string
 }
 
 // 创建示例订单

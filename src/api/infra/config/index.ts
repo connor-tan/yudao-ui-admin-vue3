@@ -9,7 +9,7 @@ export interface ConfigVO {
   type: number
   visible: boolean
   remark: string
-  createTime: Date
+  createTime: string
 }
 
 // 查询参数列表

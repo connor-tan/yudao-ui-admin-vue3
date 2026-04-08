@@ -4,7 +4,7 @@ export interface TagVO {
   id?: number
   name: string
   accountId: number
-  createTime: Date
+  createTime: string
 }
 
 // 创建公众号标签

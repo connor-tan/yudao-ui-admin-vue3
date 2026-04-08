@@ -3,9 +3,9 @@ import request from '@/config/axios'
 export interface UserVO {
   id: number
   avatar: string | undefined
-  birthday: number | undefined
-  createTime: number | undefined
-  loginDate: number | undefined
+  birthday: string | undefined
+  createTime: string | undefined
+  loginDate: string | undefined
   loginIp: string
   mark: string
   mobile: string
