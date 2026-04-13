@@ -1,17 +1,44 @@
 import request from '@/config/axios'
 
+export interface SaleOrderItemVO {
+  id?: number
+  orderItemId?: number
+  productId?: number
+  productName?: string
+  productUnitName?: string
+  productBarCode?: string
+  productPrice?: number
+  stockCount?: number
+  count: number
+  totalProductPrice?: number
+  taxPercent?: number
+  taxPrice?: number
+  totalPrice?: number
+  remark?: string
+  outCount?: number
+  returnCount?: number
+  totalCount?: number
+}
+
 // ERP 销售订单 VO
 export interface SaleOrderVO {
-  id: number // 订单工单编号
-  no: string // 销售订单号
-  customerId: number // 客户编号
-  orderTime: string // 订单时间
-  totalCount: number // 合计数量
+  id?: number // 订单工单编号
+  no?: string // 销售订单号
+  customerId?: number // 客户编号
+  accountId?: number // 结算账户
+  saleUserId?: number // 销售人员
+  orderTime?: string // 订单时间
+  totalCount?: number // 合计数量
   totalPrice: number // 合计金额，单位：元
-  status: number // 状态
-  remark: string // 备注
-  outCount: number // 销售出库数量
-  returnCount: number // 销售退货数量
+  status?: number // 状态
+  remark?: string // 备注
+  outCount?: number // 销售出库数量
+  returnCount?: number // 销售退货数量
+  discountPercent: number // 优惠率
+  discountPrice: number // 优惠金额
+  depositPrice: number // 订金
+  fileUrl: string // 附件地址
+  items: SaleOrderItemVO[] // 订单项
 }
 
 // ERP 销售订单 API
@@ -23,7 +50,7 @@ export const SaleOrderApi = {
 
   // 查询销售订单详情
   getSaleOrder: async (id: number) => {
-    return await request.get({ url: `/erp/sale-order/get?id=` + id })
+    return await request.get<SaleOrderVO>({ url: `/erp/sale-order/get?id=` + id })
   },
 
   // 新增销售订单

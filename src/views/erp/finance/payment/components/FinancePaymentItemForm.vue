@@ -74,40 +74,45 @@
   />
 </template>
 <script setup lang="ts">
-import { ProductVO } from '@/api/erp/product/product'
+import type { FormInstance } from 'element-plus'
 import { erpPriceInputFormatter, getSumValue } from '@/utils'
 import PurchaseInPaymentEnableList from '@/views/erp/purchase/in/components/PurchaseInPaymentEnableList.vue'
 import PurchaseReturnRefundEnableList from '@/views/erp/purchase/return/components/PurchaseReturnRefundEnableList.vue'
 import { PurchaseInVO } from '@/api/erp/purchase/in'
 import { ErpBizType } from '@/utils/constants'
 import { PurchaseReturnVO } from '@/api/erp/purchase/return'
+import type { FinancePaymentItemVO } from '@/api/erp/finance/payment'
 
 const props = defineProps<{
-  items: undefined
-  supplierId: undefined
-  disabled: false
+  items: FinancePaymentItemVO[]
+  supplierId?: number
+  disabled: boolean
 }>()
 const message = useMessage()
 
+type SummaryMethodProps<T> = {
+  columns: Array<{ property?: keyof T | string }>
+  data: T[]
+}
+
 const formLoading = ref(false) // 表单的加载中
-const formData = ref([])
+const formData = ref<FinancePaymentItemVO[]>([])
 const formRules = reactive({
   paymentPrice: [{ required: true, message: '本次付款不能为空', trigger: 'blur' }]
 })
-const formRef = ref([]) // 表单 Ref
-const productList = ref<ProductVO[]>([]) // 产品列表
+const formRef = ref<FormInstance>() // 表单 Ref
 
 /** 初始化设置入库项 */
 watch(
   () => props.items,
-  async (val) => {
-    formData.value = val
+  (val) => {
+    formData.value = val ?? []
   },
   { immediate: true }
 )
 
 /** 合计 */
-const getSummaries = (param: SummaryMethodProps) => {
+const getSummaries = (param: SummaryMethodProps<FinancePaymentItemVO>) => {
   const { columns, data } = param
   const sums: string[] = []
   columns.forEach((column, index: number) => {
@@ -115,8 +120,12 @@ const getSummaries = (param: SummaryMethodProps) => {
       sums[index] = '合计'
       return
     }
-    if (['totalPrice', 'paidPrice', 'paymentPrice'].includes(column.property)) {
-      const sum = getSumValue(data.map((item) => Number(item[column.property])))
+    const property = column.property
+    if (
+      property &&
+      ['totalPrice', 'paidPrice', 'paymentPrice'].includes(String(property))
+    ) {
+      const sum = getSumValue(data.map((item) => Number(item[property as keyof FinancePaymentItemVO])))
       sums[index] = erpPriceInputFormatter(sum)
     } else {
       sums[index] = ''
@@ -126,45 +135,49 @@ const getSummaries = (param: SummaryMethodProps) => {
 }
 
 /** 新增【采购入库】按钮操作 */
-const purchaseInPaymentEnableListRef = ref()
+const purchaseInPaymentEnableListRef = ref<InstanceType<typeof PurchaseInPaymentEnableList>>()
 const handleOpenPurchaseIn = () => {
   if (!props.supplierId) {
     message.error('请选择供应商')
     return
   }
-  purchaseInPaymentEnableListRef.value.open(props.supplierId)
+  purchaseInPaymentEnableListRef.value?.open(props.supplierId)
 }
 const handleAddPurchaseIn = (rows: PurchaseInVO[]) => {
   rows.forEach((row) => {
+    const paidPrice = row.paymentPrice ?? 0
     formData.value.push({
       bizId: row.id,
       bizType: ErpBizType.PURCHASE_IN,
       bizNo: row.no,
       totalPrice: row.totalPrice,
-      paidPrice: row.paymentPrice,
-      paymentPrice: row.totalPrice - row.paymentPrice
+      paidPrice,
+      paymentPrice: row.totalPrice - paidPrice
     })
   })
 }
 
 /** 新增【采购退货】按钮操作 */
-const purchaseReturnRefundEnableListRef = ref()
+const purchaseReturnRefundEnableListRef = ref<
+  InstanceType<typeof PurchaseReturnRefundEnableList>
+>()
 const handleOpenPurchaseReturn = () => {
   if (!props.supplierId) {
     message.error('请选择供应商')
     return
   }
-  purchaseReturnRefundEnableListRef.value.open(props.supplierId)
+  purchaseReturnRefundEnableListRef.value?.open(props.supplierId)
 }
 const handleAddPurchaseReturn = (rows: PurchaseReturnVO[]) => {
   rows.forEach((row) => {
+    const refundPrice = row.refundPrice ?? 0
     formData.value.push({
       bizId: row.id,
       bizType: ErpBizType.PURCHASE_RETURN,
       bizNo: row.no,
       totalPrice: -row.totalPrice,
-      paidPrice: -row.refundPrice,
-      paymentPrice: -row.totalPrice + row.refundPrice
+      paidPrice: -refundPrice,
+      paymentPrice: -row.totalPrice + refundPrice
     })
   })
 }
@@ -176,7 +189,7 @@ const handleDelete = (index: number) => {
 
 /** 表单校验 */
 const validate = () => {
-  return formRef.value.validate()
+  return formRef.value?.validate()
 }
 defineExpose({ validate })
 </script>

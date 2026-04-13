@@ -122,6 +122,7 @@
 </template>
 
 <script setup lang="ts">
+import type { FormInstance } from 'element-plus'
 import { getIntDictOptions, DICT_TYPE } from '@/utils/dict'
 import { dateFormatter } from '@/utils/formatTime'
 import { handleTree } from '@/utils/tree'
@@ -135,21 +136,32 @@ defineOptions({ name: 'ErpProductCategory' })
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
 
+type ProductCategoryQueryParams = {
+  pageNo: number
+  pageSize: number
+  name?: string
+  status?: number
+}
+
 const loading = ref(true) // 列表的加载中
 const list = ref<ProductCategoryVO[]>([]) // 列表的数据
-const queryParams = reactive({
+const total = ref(0)
+const queryParams = reactive<ProductCategoryQueryParams>({
+  pageNo: 1,
+  pageSize: 10,
   name: undefined,
   status: undefined
 })
-const queryFormRef = ref() // 搜索的表单
+const queryFormRef = ref<FormInstance>() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
 const getList = async () => {
   loading.value = true
   try {
-    const data = await ProductCategoryApi.getProductCategoryList(queryParams)
+    const data = await ProductCategoryApi.getProductCategoryList()
     list.value = handleTree(data, 'id', 'parentId')
+    total.value = data.length
   } finally {
     loading.value = false
   }
@@ -163,14 +175,14 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
+  queryFormRef.value?.resetFields()
   handleQuery()
 }
 
 /** 添加/修改操作 */
-const formRef = ref()
+const formRef = ref<InstanceType<typeof ProductCategoryForm>>()
 const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
+  formRef.value?.open(type, id)
 }
 
 /** 删除按钮操作 */

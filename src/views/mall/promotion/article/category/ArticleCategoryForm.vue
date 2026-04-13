@@ -50,13 +50,23 @@ const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
-const formData = ref({
+type FormData = {
+  id?: number
+  name?: string
+  picUrl?: string
+  status: number
+  sort: number
+}
+
+const createFormData = (): FormData => ({
   id: undefined,
   name: undefined,
   picUrl: undefined,
-  status: undefined,
-  sort: undefined
+  status: CommonStatusEnum.ENABLE,
+  sort: 0
 })
+
+const formData = ref<FormData>(createFormData())
 const formRules = reactive({
   name: [{ required: true, message: '分类名称不能为空', trigger: 'blur' }],
   status: [{ required: true, message: '状态不能为空', trigger: 'blur' }],
@@ -110,13 +120,7 @@ const submitForm = async () => {
 
 /** 重置表单 */
 const resetForm = () => {
-  formData.value = {
-    id: undefined,
-    name: undefined,
-    picUrl: undefined,
-    status: CommonStatusEnum.ENABLE,
-    sort: 0
-  }
+  formData.value = createFormData()
   formRef.value?.resetFields()
 }
 </script>

@@ -18,28 +18,30 @@ export interface MenuVO {
   createTime: string
 }
 
+export type MenuSaveReqVO = Omit<MenuVO, 'id' | 'createTime'> & { id?: number }
+
 // 查询菜单（精简）列表
-export const getSimpleMenusList = () => {
+export const getSimpleMenusList = (): Promise<MenuVO[]> => {
   return request.get({ url: '/system/menu/simple-list' })
 }
 
 // 查询菜单列表
-export const getMenuList = (params) => {
+export const getMenuList = (params): Promise<MenuVO[]> => {
   return request.get({ url: '/system/menu/list', params })
 }
 
 // 获取菜单详情
-export const getMenu = (id: number) => {
+export const getMenu = (id: number): Promise<MenuVO> => {
   return request.get({ url: '/system/menu/get?id=' + id })
 }
 
 // 新增菜单
-export const createMenu = (data: MenuVO) => {
+export const createMenu = (data: MenuSaveReqVO) => {
   return request.post({ url: '/system/menu/create', data })
 }
 
 // 修改菜单
-export const updateMenu = (data: MenuVO) => {
+export const updateMenu = (data: MenuSaveReqVO) => {
   return request.put({ url: '/system/menu/update', data })
 }
 

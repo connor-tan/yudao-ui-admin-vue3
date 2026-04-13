@@ -14,9 +14,10 @@
 </template>
 
 <script lang="ts" setup>
+import { createDefaultSong, type MusicSongVO } from '../types'
 
 defineOptions({ name: 'Index' })
 
-const currentSong = inject('currentSong', {})
+const currentSong = inject('currentSong', ref<MusicSongVO>(createDefaultSong()))
 
 </script>

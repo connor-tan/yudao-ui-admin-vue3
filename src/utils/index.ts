@@ -471,7 +471,7 @@ export const erpPriceTableColumnFormatter = (_, __, cellValue: any, ___) => {
  * @param count 数量
  * @return 总价格。如果有任一为空，则返回 undefined
  */
-export const erpPriceMultiply = (price: number, count: number) => {
+export const erpPriceMultiply = (price: number | undefined, count: number | undefined) => {
   if (price == null || count == null) {
     return undefined
   }

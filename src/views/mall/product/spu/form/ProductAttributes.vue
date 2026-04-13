@@ -54,6 +54,7 @@
 </template>
 
 <script lang="ts" setup>
+import { PropType } from 'vue'
 import * as PropertyApi from '@/api/mall/product/property'
 import { PropertyAndValues } from '@/views/mall/product/spu/components'
 import { propTypes } from '@/utils/propTypes'
@@ -79,11 +80,11 @@ const setInputRef = (el: any) => {
   }
 }
 const attributeList = ref<PropertyAndValues[]>([]) // 商品属性列表
-const attributeOptions = ref([] as PropertyApi.PropertyValueVO[]) // 商品属性名称下拉框
+const attributeOptions = ref<PropertyApi.PropertyValueVO[]>([]) // 商品属性名称下拉框
 const props = defineProps({
   propertyList: {
-    type: Array,
-    default: () => {}
+    type: Array as PropType<PropertyAndValues[]>,
+    default: () => []
   },
   isDetail: propTypes.bool.def(false) // 是否作为详情组件
 })
@@ -122,9 +123,10 @@ const showInput = async (index: number) => {
 /** 输入框失去焦点或点击回车时触发 */
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const handleInputConfirm = async (index: number, propertyId: number) => {
+  const values = attributeList.value[index].values || (attributeList.value[index].values = [])
   if (inputValue.value) {
     // 1. 重复添加校验
-    if (attributeList.value[index].values.find((item) => item.name === inputValue.value)) {
+    if (values.find((item) => item.name === inputValue.value)) {
       message.warning('已存在相同属性值，请重试')
       attributeIndex.value = null
       inputValue.value = ''
@@ -136,7 +138,7 @@ const handleInputConfirm = async (index: number, propertyId: number) => {
     if (existValue) {
       attributeIndex.value = null
       inputValue.value = ''
-      attributeList.value[index].values.push({ id: existValue.id, name: existValue.name })
+      values.push({ id: existValue.id!, name: existValue.name })
       emit('success', attributeList.value)
       return
     }
@@ -144,7 +146,7 @@ const handleInputConfirm = async (index: number, propertyId: number) => {
     // 2.2 情况二：新属性值，则进行保存
     try {
       const id = await PropertyApi.createPropertyValue({ propertyId, name: inputValue.value })
-      attributeList.value[index].values.push({ id, name: inputValue.value })
+      values.push({ id, name: inputValue.value })
       message.success(t('common.createSuccess'))
       emit('success', attributeList.value)
     } catch {

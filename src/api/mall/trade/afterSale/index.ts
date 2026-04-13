@@ -1,4 +1,5 @@
 import request from '@/config/axios'
+import type { OrderItemRespVO, OrderVO } from '@/api/mall/trade/order'
 
 export interface TradeAfterSaleVO {
   id?: number | null // 售后编号，主键自增
@@ -39,6 +40,31 @@ export interface ProductPropertiesVO {
   valueName?: string // 属性值的名称
 }
 
+export interface TradeAfterSalePicVO {
+  url?: string
+}
+
+export interface TradeAfterSaleLogVO {
+  id?: number | null
+  createTime?: string
+  content?: string
+  userType?: number
+}
+
+export interface TradeAfterSaleUserVO {
+  id?: number | null
+  nickname?: string
+  avatar?: string
+}
+
+export interface TradeAfterSaleDetailVO extends Omit<TradeAfterSaleVO, 'applyPicUrls'> {
+  applyPicUrls: TradeAfterSalePicVO[]
+  order: OrderVO
+  orderItem?: OrderItemRespVO
+  logs: TradeAfterSaleLogVO[]
+  user?: TradeAfterSaleUserVO
+}
+
 // 获得交易售后分页
 export const getAfterSalePage = async (params) => {
   return await request.get({ url: `/trade/after-sale/page`, params })
@@ -46,7 +72,7 @@ export const getAfterSalePage = async (params) => {
 
 // 获得交易售后详情
 export const getAfterSale = async (id: any) => {
-  return await request.get({ url: `/trade/after-sale/get-detail?id=${id}` })
+  return await request.get<TradeAfterSaleDetailVO>({ url: `/trade/after-sale/get-detail?id=${id}` })
 }
 
 // 同意售后

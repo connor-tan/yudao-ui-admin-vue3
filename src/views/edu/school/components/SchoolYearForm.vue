@@ -74,12 +74,12 @@ const formRules = reactive({
 const formRef = ref()
 
 // Compatible with old LocalDate array responses during backend rollout.
-const normalizeSchoolYearDate = (value?: string | number[]) => {
+const normalizeSchoolYearDate = (value?: string | number[]): string | undefined => {
   if (Array.isArray(value) && value.length === 3) {
     const [year, month, day] = value
     return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
   }
-  return value
+  return typeof value === 'string' ? value : undefined
 }
 
 const open = async (type: string, id?: number, schoolId?: number) => {

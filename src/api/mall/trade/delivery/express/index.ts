@@ -16,12 +16,12 @@ export const getDeliveryExpressPage = async (params: PageParam) => {
 
 // 查询快递公司详情
 export const getDeliveryExpress = async (id: number) => {
-  return await request.get({ url: '/trade/delivery/express/get?id=' + id })
+  return await request.get<DeliveryExpressVO>({ url: '/trade/delivery/express/get?id=' + id })
 }
 
 // 获得快递公司精简信息列表
 export const getSimpleDeliveryExpressList = () => {
-  return request.get({ url: '/trade/delivery/express/list-all-simple' })
+  return request.get<DeliveryExpressVO[]>({ url: '/trade/delivery/express/list-all-simple' })
 }
 
 // 新增快递公司

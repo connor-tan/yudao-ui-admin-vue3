@@ -61,7 +61,7 @@ export const deleteApp = (id: number) => {
 }
 
 // 获得支付应用列表
-export const getAppList = () => {
+export const getAppList = (): Promise<AppVO[]> => {
   return request.get({
     url: '/pay/app/list'
   })

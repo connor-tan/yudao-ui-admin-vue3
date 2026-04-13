@@ -86,10 +86,10 @@ const close = () => {
 }
 
 /** 初始化 */
-const { params } = useRoute()
 onMounted(async () => {
-  const id = props.id || route.params.id
-  if (!id) {
+  const routeId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
+  const id = props.id ?? (routeId ? Number(routeId) : undefined)
+  if (!id || Number.isNaN(id)) {
     message.warning('参数错误，回款不能为空！')
     close()
     return

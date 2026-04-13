@@ -187,7 +187,23 @@ const { push } = useRouter() // 路由跳转
 const loading = ref(true) // 列表的加载中
 const total = ref(0) // 列表的总页数
 const list = ref<AfterSaleApi.TradeAfterSaleVO[]>([]) // 列表的数据
-const statusTabs = ref([
+type StatusTab = {
+  label: string
+  value: string
+}
+interface QueryParams {
+  pageNo: number
+  pageSize: number
+  no: string | null
+  status?: string
+  orderNo: string | null
+  spuName: string | null
+  createTime: string[]
+  way: number | null
+  type: number | null
+}
+
+const statusTabs = ref<StatusTab[]>([
   {
     label: '全部',
     value: '0'
@@ -195,7 +211,7 @@ const statusTabs = ref([
 ])
 const queryFormRef = ref() // 搜索的表单
 // 查询参数
-const queryParams = reactive({
+const queryParams = reactive<QueryParams>({
   pageNo: 1,
   pageSize: 10,
   no: null,
@@ -211,7 +227,7 @@ const queryParams = reactive({
 const getList = async () => {
   loading.value = true
   try {
-    const data = cloneDeep(queryParams)
+    const data = cloneDeep(queryParams) as QueryParams
     // 处理掉全部的状态，不传就是全部
     if (data.status === '0') {
       delete data.status
@@ -239,7 +255,7 @@ const resetQuery = () => {
 
 /** tab 切换 */
 const tabClick = async (tab: TabsPaneContext) => {
-  queryParams.status = tab.paneName
+  queryParams.status = String(tab.paneName ?? '0')
   await getList()
 }
 

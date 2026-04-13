@@ -73,7 +73,7 @@
           v-model:expanded-row-keys="expandedRowKeys"
           :columns="columns"
           :data="list"
-          :expand-column-key="columns[0].key"
+          :expand-column-key="expandColumnKey"
           :height="1000"
           :width="width"
           fixed
@@ -87,6 +87,7 @@
   <MenuForm ref="formRef" @success="getList" />
 </template>
 <script lang="tsx" setup>
+import type { Column, FormInstance } from 'element-plus'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import { handleTree } from '@/utils/tree'
 import * as MenuApi from '@/api/system/menu'
@@ -101,8 +102,10 @@ import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 
 defineOptions({ name: 'SystemMenu' })
 
+type MenuTreeVO = MenuVO & { children?: MenuTreeVO[] }
+
 // 虚拟列表表格
-const columns = [
+const columns: Column<MenuTreeVO>[] = [
   {
     key: 'name',
     title: '菜单名称',
@@ -219,24 +222,24 @@ const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
 
 const loading = ref(true) // 列表的加载中
-const list = ref<any[]>([]) // 列表的数据
+const list = ref<MenuTreeVO[]>([]) // 列表的数据
 const queryParams = reactive({
   name: undefined,
   status: undefined
 })
-const queryFormRef = ref() // 搜索的表单
+const queryFormRef = ref<FormInstance>() // 搜索的表单
 const isExpandAll = ref(false) // 是否展开，默认全部折叠
-const refreshTable = ref(true) // 重新渲染表格状态
 
 // 添加展开行控制
 const expandedRowKeys = ref<number[]>([])
+const expandColumnKey = 'name'
 
 /** 查询列表 */
 const getList = async () => {
   loading.value = true
   try {
     const data = await MenuApi.getMenuList(queryParams)
-    list.value = handleTree(data)
+    list.value = handleTree(data) as MenuTreeVO[]
   } finally {
     loading.value = false
   }
@@ -249,14 +252,14 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
+  queryFormRef.value?.resetFields()
   handleQuery()
 }
 
 /** 添加/修改操作 */
-const formRef = ref()
+const formRef = ref<InstanceType<typeof MenuForm>>()
 const openForm = (type: string, id?: number, parentId?: number) => {
-  formRef.value.open(type, id, parentId)
+  formRef.value?.open(type, id, parentId)
 }
 
 /** 展开/折叠操作 */
@@ -297,7 +300,7 @@ const handleDelete = async (id: number) => {
 }
 
 /** 开启/关闭菜单的状态 */
-const menuStatusUpdating = ref({}) // 菜单状态更新中的 menu 映射。key：菜单编号，value：是否更新中
+const menuStatusUpdating = ref<Record<number, boolean>>({}) // 菜单状态更新中的 menu 映射。key：菜单编号，value：是否更新中
 const handleStatusChanged = async (menu: MenuVO, val: number) => {
   // 1. 标记 menu.id 更新中
   menuStatusUpdating.value[menu.id] = true

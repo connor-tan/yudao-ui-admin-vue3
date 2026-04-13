@@ -70,14 +70,46 @@ defineProps<{
   provider: any
 }>()
 
-const tinyflowRef = ref()
-const workflowData = inject('workflowData') as Ref
+interface WorkflowParamDefinition {
+  name: string
+  dataType?: string
+  description?: string
+  disabled?: boolean
+  required?: boolean
+  defaultValue?: string
+}
+
+interface WorkflowNode {
+  type: string
+  data?: {
+    parameters?: WorkflowParamDefinition[]
+  }
+}
+
+interface WorkflowGraphData {
+  nodes: WorkflowNode[]
+}
+
+interface WorkflowTestParam {
+  key: string
+  value: string
+}
+
+const getErrorMessage = (error: unknown) => {
+  if (error instanceof Error) {
+    return error.message
+  }
+  return String(error)
+}
+
+const tinyflowRef = ref<{ getData: () => WorkflowGraphData }>()
+const workflowData = inject<Ref<WorkflowGraphData | null>>('workflowData', ref(null))
 const showTestDrawer = ref(false)
-const params4Test = ref([])
-const paramsOfStartNode = ref({})
-const testResult = ref(null)
+const params4Test = ref<WorkflowTestParam[]>([])
+const paramsOfStartNode = ref<Record<string, WorkflowParamDefinition>>({})
+const testResult = ref<unknown>(null)
 const loading = ref(false)
-const error = ref(null)
+const error = ref<string | null>(null)
 
 /** 展示工作流测试抽屉 */
 const testWorkflowModel = () => {
@@ -87,7 +119,10 @@ const testWorkflowModel = () => {
 /** 运行流程 */
 const goRun = async () => {
   try {
-    const val = tinyflowRef.value.getData()
+    const val = tinyflowRef.value?.getData()
+    if (!val) {
+      throw new Error('请设计流程')
+    }
     loading.value = true
     error.value = null
     testResult.value = null
@@ -96,13 +131,13 @@ const goRun = async () => {
 
     // 获取参数定义
     const parameters = startNode.data?.parameters || []
-    const paramDefinitions = {}
+    const paramDefinitions: Record<string, string> = {}
     parameters.forEach((param) => {
-      paramDefinitions[param.name] = param.dataType
+      paramDefinitions[param.name] = param.dataType ?? 'String'
     })
 
     // 参数类型转换
-    const convertedParams = {}
+    const convertedParams: Record<string, unknown> = {}
     for (const { key, value } of params4Test.value) {
       const paramKey = key.trim()
       if (!paramKey) continue
@@ -114,8 +149,8 @@ const goRun = async () => {
 
       try {
         convertedParams[paramKey] = convertParamValue(value, dataType)
-      } catch (e) {
-        throw new Error(`参数 ${paramKey} 转换失败: ${e.message}`)
+      } catch (e: unknown) {
+        throw new Error(`参数 ${paramKey} 转换失败: ${getErrorMessage(e)}`)
       }
     }
 
@@ -126,8 +161,8 @@ const goRun = async () => {
 
     const response = await WorkflowApi.testWorkflow(data)
     testResult.value = response
-  } catch (err) {
-    error.value = err.response?.data?.message || '运行失败，请检查参数和网络连接'
+  } catch (err: unknown) {
+    error.value = getErrorMessage(err) || '运行失败，请检查参数和网络连接'
   } finally {
     loading.value = false
   }
@@ -142,20 +177,20 @@ watch(showTestDrawer, (value) => {
 
   // 获取参数定义
   const parameters = startNode.data?.parameters || []
-  const paramDefinitions = {}
+  const paramDefinitions: Record<string, WorkflowParamDefinition> = {}
 
   // 加入参数选项方便用户添加非必须参数
   parameters.forEach((param) => {
     paramDefinitions[param.name] = param
   })
 
-  function mergeIfRequiredButNotSet(target) {
-    let needPushList = []
+  function mergeIfRequiredButNotSet(target: WorkflowTestParam[]) {
+    const needPushList: WorkflowTestParam[] = []
     for (let key in paramDefinitions) {
-      let param = paramDefinitions[key]
+      const param = paramDefinitions[key]
 
       if (param.required) {
-        let item = target.find((item) => item.key === key)
+        const item = target.find((item) => item.key === key)
 
         if (!item) {
           needPushList.push({ key: param.name, value: param.defaultValue || '' })
@@ -172,7 +207,10 @@ watch(showTestDrawer, (value) => {
 
 /** 获取开始节点 */
 const getStartNode = () => {
-  const val = tinyflowRef.value.getData()
+  const val = tinyflowRef.value?.getData()
+  if (!val) {
+    throw new Error('请设计流程')
+  }
   const startNode = val.nodes.find((node) => node.type === 'startNode')
   if (!startNode) {
     throw new Error('流程缺少开始节点')
@@ -186,12 +224,12 @@ const addParam = () => {
 }
 
 /** 删除参数项 */
-const removeParam = (index) => {
+const removeParam = (index: number) => {
   params4Test.value.splice(index, 1)
 }
 
 /** 类型转换函数 */
-const convertParamValue = (value, dataType) => {
+const convertParamValue = (value: string, dataType: string) => {
   if (value === '') return null // 空值处理
 
   switch (dataType) {
@@ -209,8 +247,8 @@ const convertParamValue = (value, dataType) => {
     case 'Array':
       try {
         return JSON.parse(value)
-      } catch (e) {
-        throw new Error(`JSON格式错误: ${e.message}`)
+      } catch (e: unknown) {
+        throw new Error(`JSON格式错误: ${getErrorMessage(e)}`)
       }
     default:
       throw new Error(`不支持的类型: ${dataType}`)
@@ -223,6 +261,9 @@ const validate = async () => {
     // 获取最新的流程数据
     if (!workflowData.value) {
       throw new Error('请设计流程')
+    }
+    if (!tinyflowRef.value) {
+      throw new Error('流程设计器未初始化')
     }
     workflowData.value = tinyflowRef.value.getData()
     return true

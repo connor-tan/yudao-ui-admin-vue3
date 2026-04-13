@@ -64,13 +64,14 @@ const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
-const formData = ref({
+const createDefaultFormData = (): Demo03Student => ({
   id: undefined,
   name: undefined,
   sex: undefined,
   birthday: undefined,
   description: undefined
 })
+const formData = ref<Demo03Student>(createDefaultFormData())
 const formRules = reactive({
   name: [{ required: true, message: '名字不能为空', trigger: 'blur' }],
   sex: [{ required: true, message: '性别不能为空', trigger: 'blur' }],
@@ -144,13 +145,7 @@ const submitForm = async () => {
 
 /** 重置表单 */
 const resetForm = () => {
-  formData.value = {
-    id: undefined,
-    name: undefined,
-    sex: undefined,
-    birthday: undefined,
-    description: undefined
-  }
+  formData.value = createDefaultFormData()
   formRef.value?.resetFields()
 }
 </script>

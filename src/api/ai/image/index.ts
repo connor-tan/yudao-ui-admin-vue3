@@ -14,7 +14,7 @@ export interface ImageVO {
   errorMessage: string // 错误信息
   options: any // 配置 Map<string, string>
   taskId: number // 任务编号
-  buttons: ImageMidjourneyButtonsVO[] // mj 操作按钮
+  buttons?: ImageMidjourneyButtonsVO[] // mj 操作按钮
   createTime: string // 创建时间
   finishTime: string // 完成时间
 }
@@ -22,19 +22,20 @@ export interface ImageVO {
 export interface ImageDrawReqVO {
   prompt: string // 提示词
   modelId: number // 模型
-  style: string // 图像生成的风格
-  width: string // 图片宽度
-  height: string // 图片高度
-  options: object // 绘制参数，Map<String, String>
+  style?: string // 图像生成的风格
+  width: string | number // 图片宽度
+  height: string | number // 图片高度
+  options: Record<string, unknown> // 绘制参数，Map<String, String>
 }
 
 export interface ImageMidjourneyImagineReqVO {
   prompt: string // 提示词
   modelId: number // 模型
-  base64Array: string[] // size不能为空
-  width: string // 图片宽度
-  height: string // 图片高度
-  version: string // 版本
+  base64Array?: string[] // size不能为空
+  referImageUrl?: string
+  width: string | number // 图片宽度
+  height: string | number // 图片高度
+  version?: string // 版本
 }
 
 export interface ImageMidjourneyActionVO {

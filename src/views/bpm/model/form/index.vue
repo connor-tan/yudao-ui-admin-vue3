@@ -187,7 +187,7 @@ provide('processData', processData)
 provide('modelData', formData)
 
 // 数据列表
-const formList = ref([])
+const formList = ref<FormApi.FormVO[]>([])
 const categoryList = ref<CategoryVO[]>([])
 const userList = ref<UserApi.UserVO[]>([])
 const deptList = ref<DeptApi.DeptVO[]>([])

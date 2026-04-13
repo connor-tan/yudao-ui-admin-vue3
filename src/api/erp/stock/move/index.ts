@@ -1,14 +1,31 @@
 import request from '@/config/axios'
 
+export interface StockMoveItemVO {
+  id?: number
+  fromWarehouseId?: number
+  toWarehouseId?: number
+  productId?: number
+  productName?: string
+  productUnitName?: string
+  productBarCode?: string
+  productPrice?: number
+  stockCount?: number
+  count: number
+  totalPrice?: number
+  remark?: string
+}
+
 // ERP 库存调度单 VO
 export interface StockMoveVO {
-  id: number // 出库编号
-  no: string // 出库单号
-  outTime: string // 出库时间
-  totalCount: number // 合计数量
+  id?: number // 调度编号
+  no?: string // 调度单号
+  moveTime?: string // 调度时间
+  totalCount?: number // 合计数量
   totalPrice: number // 合计金额，单位：元
-  status: number // 状态
-  remark: string // 备注
+  status?: number // 状态
+  remark?: string // 备注
+  fileUrl: string // 附件
+  items: StockMoveItemVO[] // 明细项
 }
 
 // ERP 库存调度单 API
@@ -20,7 +37,7 @@ export const StockMoveApi = {
 
   // 查询库存调度单详情
   getStockMove: async (id: number) => {
-    return await request.get({ url: `/erp/stock-move/get?id=` + id })
+    return await request.get<StockMoveVO>({ url: `/erp/stock-move/get?id=` + id })
   },
 
   // 新增库存调度单

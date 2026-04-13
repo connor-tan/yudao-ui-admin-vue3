@@ -166,6 +166,7 @@
   />
 </template>
 <script setup lang="ts">
+import type { FormInstance } from 'element-plus'
 import { PurchaseReturnApi, PurchaseReturnVO } from '@/api/erp/purchase/return'
 import PurchaseReturnItemForm from './components/PurchaseReturnItemForm.vue'
 import { SupplierApi, SupplierVO } from '@/api/erp/purchase/supplier'
@@ -185,10 +186,11 @@ const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改；detail - 详情
-const formData = ref({
+const createFormData = (): PurchaseReturnVO => ({
   id: undefined,
   supplierId: undefined,
   accountId: undefined,
+  orderId: undefined,
   returnTime: undefined,
   remark: undefined,
   fileUrl: '',
@@ -200,19 +202,20 @@ const formData = ref({
   items: [],
   no: undefined // 退货单号，后端返回
 })
+const formData = ref<PurchaseReturnVO>(createFormData())
 const formRules = reactive({
   supplierId: [{ required: true, message: '供应商不能为空', trigger: 'blur' }],
   returnTime: [{ required: true, message: '退货时间不能为空', trigger: 'blur' }]
 })
 const disabled = computed(() => formType.value === 'detail')
-const formRef = ref() // 表单 Ref
+const formRef = ref<FormInstance>() // 表单 Ref
 const supplierList = ref<SupplierVO[]>([]) // 供应商列表
 const accountList = ref<AccountVO[]>([]) // 账户列表
 const userList = ref<UserApi.UserVO[]>([]) // 用户列表
 
 /** 子表的表单 */
 const subTabsName = ref('item')
-const itemFormRef = ref()
+const itemFormRef = ref<InstanceType<typeof PurchaseReturnItemForm>>()
 
 /** 计算 discountPrice、totalPrice 价格 */
 watch(
@@ -222,11 +225,13 @@ watch(
       return
     }
     // 计算
-    const totalPrice = val.items.reduce((prev, curr) => prev + curr.totalPrice, 0)
+    const totalPrice = val.items.reduce((prev, curr) => prev + (curr.totalPrice || 0), 0)
     const discountPrice =
-      val.discountPercent != null ? erpPriceMultiply(totalPrice, val.discountPercent / 100.0) : 0
+      val.discountPercent != null
+        ? (erpPriceMultiply(totalPrice, val.discountPercent / 100.0) ?? 0)
+        : 0
     formData.value.discountPrice = discountPrice
-    formData.value.totalPrice = totalPrice - discountPrice + val.otherPrice
+    formData.value.totalPrice = totalPrice - discountPrice + (val.otherPrice || 0)
   },
   { deep: true }
 )
@@ -260,9 +265,9 @@ const open = async (type: string, id?: number) => {
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 
 /** 打开【可退货的订单列表】弹窗 */
-const purchaseOrderReturnEnableListRef = ref() // 可退货的订单列表 Ref
+const purchaseOrderReturnEnableListRef = ref<InstanceType<typeof PurchaseOrderReturnEnableList>>() // 可退货的订单列表 Ref
 const openPurchaseOrderReturnEnableList = () => {
-  purchaseOrderReturnEnableListRef.value.open()
+  purchaseOrderReturnEnableListRef.value?.open()
 }
 
 const handlePurchaseOrderChange = (order: PurchaseOrderVO) => {
@@ -276,7 +281,7 @@ const handlePurchaseOrderChange = (order: PurchaseOrderVO) => {
   formData.value.fileUrl = order.fileUrl
   // 将订单项设置到退货单项
   order.items.forEach((item) => {
-    item.count = item.inCount - item.returnCount
+    item.count = (item.inCount || 0) - (item.returnCount || 0)
     item.orderItemId = item.id
     item.id = undefined
   })
@@ -287,8 +292,8 @@ const handlePurchaseOrderChange = (order: PurchaseOrderVO) => {
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  await formRef.value.validate()
-  await itemFormRef.value.validate()
+  await formRef.value?.validate()
+  await itemFormRef.value?.validate()
   // 提交请求
   formLoading.value = true
   try {
@@ -310,19 +315,7 @@ const submitForm = async () => {
 
 /** 重置表单 */
 const resetForm = () => {
-  formData.value = {
-    id: undefined,
-    supplierId: undefined,
-    accountId: undefined,
-    returnTime: undefined,
-    remark: undefined,
-    fileUrl: undefined,
-    discountPercent: 0,
-    discountPrice: 0,
-    totalPrice: 0,
-    otherPrice: 0,
-    items: []
-  }
+  formData.value = createFormData()
   formRef.value?.resetFields()
 }
 </script>

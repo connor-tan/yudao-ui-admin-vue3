@@ -28,12 +28,39 @@ export interface OrderVO {
   createTime: string
 }
 
+export interface OrderDetailVO {
+  appId?: number
+  appName?: string
+  body?: string
+  channelCode?: string
+  channelFeePrice?: number
+  channelFeeRate?: number
+  channelOrderNo?: string
+  channelUserId?: string
+  createTime?: string
+  expireTime?: string
+  extension: {
+    channelNotifyData?: string
+  }
+  merchantOrderId?: string
+  no?: string
+  notifyUrl?: string
+  price?: number
+  refundPrice?: number
+  status?: number
+  subject?: string
+  successTime?: string
+  updateTime?: string
+  userIp?: string
+}
+
 export interface OrderPageReqVO extends PageParam {
   merchantId?: number
   appId?: number
   channelId?: number
   channelCode?: string
   merchantOrderId?: string
+  no?: string
   subject?: string
   body?: string
   notifyUrl?: string
@@ -59,6 +86,7 @@ export interface OrderExportReqVO {
   channelId?: number
   channelCode?: string
   merchantOrderId?: string
+  no?: string
   subject?: string
   body?: string
   notifyUrl?: string
@@ -96,7 +124,7 @@ export const getOrder = async (id: number, sync?: boolean) => {
 
 // 获得支付订单的明细
 export const getOrderDetail = async (id: number) => {
-  return await request.get({ url: '/pay/order/get-detail?id=' + id })
+  return await request.get<OrderDetailVO>({ url: '/pay/order/get-detail?id=' + id })
 }
 
 // 提交支付订单

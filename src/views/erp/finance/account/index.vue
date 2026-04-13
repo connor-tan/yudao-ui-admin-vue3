@@ -128,7 +128,7 @@
 </template>
 
 <script setup lang="ts">
-import { getIntDictOptions, DICT_TYPE } from '@/utils/dict'
+import { DICT_TYPE } from '@/utils/dict'
 import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { AccountApi, AccountVO } from '@/api/erp/finance/account'
@@ -179,9 +179,9 @@ const resetQuery = () => {
 }
 
 /** 添加/修改操作 */
-const formRef = ref()
+const formRef = ref<InstanceType<typeof AccountForm>>()
 const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
+  formRef.value?.open(type, id)
 }
 
 /** 删除按钮操作 */
@@ -198,7 +198,7 @@ const handleDelete = async (id: number) => {
 }
 
 /** 修改默认状态 */
-const handleDefaultStatusChange = async (row: WarehouseVO) => {
+const handleDefaultStatusChange = async (row: AccountVO) => {
   try {
     // 修改状态的二次确认
     const text = row.defaultStatus ? '设置' : '取消'

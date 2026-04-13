@@ -28,7 +28,8 @@ const { currentRoute } = useRouter()
 
 const route = useRoute()
 const message = useMessage()
-const id = route.params.id // 编号
+const idParam = route.params.id // 编号
+const id = Array.isArray(idParam) ? Number(idParam[0]) : Number(idParam)
 const loading = ref(true) // 加载中
 const product = ref<ProductVO>({} as ProductVO) // 详情
 const activeTab = ref('info') // 默认为 info 标签页
@@ -57,7 +58,7 @@ const getDeviceCount = async (productId: number) => {
 
 /** 初始化 */
 onMounted(async () => {
-  if (!id) {
+  if (!id || Number.isNaN(id)) {
     message.warning('参数错误，产品不能为空！')
     delView(unref(currentRoute))
     return

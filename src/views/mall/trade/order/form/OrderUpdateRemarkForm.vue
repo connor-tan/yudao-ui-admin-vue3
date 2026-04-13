@@ -26,10 +26,17 @@ const message = useMessage() // 消息弹窗
 
 const dialogVisible = ref(false) // 弹窗的是否展示
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
-const formData = ref({
+type FormData = {
+  id?: number | null
+  remark: string
+}
+
+const createFormData = (): FormData => ({
   id: undefined, // 订单编号
   remark: '' // 订单备注
 })
+
+const formData = ref<FormData>(createFormData())
 const formRef = ref() // 表单 Ref
 
 /** 打开弹窗 */
@@ -37,7 +44,7 @@ const open = async (row: TradeOrderApi.OrderVO) => {
   resetForm()
   // 设置数据
   formData.value.id = row.id
-  formData.value.remark = row.remark
+  formData.value.remark = row.remark ?? ''
   dialogVisible.value = true
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
@@ -61,10 +68,7 @@ const submitForm = async () => {
 
 /** 重置表单 */
 const resetForm = () => {
-  formData.value = {
-    id: undefined, // 订单编号
-    remark: '' // 订单备注
-  }
+  formData.value = createFormData()
   formRef.value?.resetFields()
 }
 </script>

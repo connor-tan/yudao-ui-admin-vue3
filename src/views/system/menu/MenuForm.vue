@@ -113,6 +113,7 @@
   </Dialog>
 </template>
 <script lang="ts" setup>
+import type { FormInstance, FormRules } from 'element-plus'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import * as MenuApi from '@/api/system/menu'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
@@ -129,12 +130,12 @@ const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
-const formData = ref({
+const createDefaultFormData = (): MenuApi.MenuSaveReqVO => ({
   id: undefined,
   name: '',
   permission: '',
   type: SystemMenuTypeEnum.DIR,
-  sort: Number(undefined),
+  sort: 0,
   parentId: 0,
   path: '',
   icon: '',
@@ -145,14 +146,15 @@ const formData = ref({
   keepAlive: true,
   alwaysShow: true
 })
-const formRules = reactive({
+const formData = ref<MenuApi.MenuSaveReqVO>(createDefaultFormData())
+const formRules: FormRules<MenuApi.MenuSaveReqVO> = reactive({
   name: [{ required: true, message: '菜单名称不能为空', trigger: 'blur' }],
   type: [{ required: true, message: '菜单类型不能为空', trigger: 'blur' }],
   sort: [{ required: true, message: '菜单顺序不能为空', trigger: 'blur' }],
   path: [{ required: true, message: '路由地址不能为空', trigger: 'blur' }],
   status: [{ required: true, message: '状态不能为空', trigger: 'blur' }]
 })
-const formRef = ref() // 表单 Ref
+const formRef = ref<FormInstance>() // 表单 Ref
 
 /** 打开弹窗 */
 const open = async (type: string, id?: number, parentId?: number) => {
@@ -181,7 +183,7 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  if (!formRef) return
+  if (!formRef.value) return
   const valid = await formRef.value.validate()
   if (!valid) return
   // 提交请求
@@ -201,7 +203,7 @@ const submitForm = async () => {
         }
       }
     }
-    const data = formData.value as unknown as MenuApi.MenuVO
+    const data = { ...formData.value }
     if (formType.value === 'create') {
       await MenuApi.createMenu(data)
       message.success(t('common.createSuccess'))
@@ -231,22 +233,7 @@ const getTree = async () => {
 
 /** 重置表单 */
 const resetForm = () => {
-  formData.value = {
-    id: undefined,
-    name: '',
-    permission: '',
-    type: SystemMenuTypeEnum.DIR,
-    sort: Number(undefined),
-    parentId: 0,
-    path: '',
-    icon: '',
-    component: '',
-    componentName: '',
-    status: CommonStatusEnum.ENABLE,
-    visible: true,
-    keepAlive: true,
-    alwaysShow: true
-  }
+  formData.value = createDefaultFormData()
   formRef.value?.resetFields()
 }
 

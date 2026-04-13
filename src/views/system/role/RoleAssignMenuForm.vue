@@ -45,6 +45,7 @@
   </Dialog>
 </template>
 <script lang="ts" setup>
+import type { FormInstance, TreeInstance } from 'element-plus'
 import { defaultProps, handleTree } from '@/utils/tree'
 import * as RoleApi from '@/api/system/role'
 import * as MenuApi from '@/api/system/menu'
@@ -57,34 +58,49 @@ const message = useMessage() // 消息弹窗
 
 const dialogVisible = ref(false) // 弹窗的是否展示
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
-const formData = reactive({
+interface RoleAssignMenuFormData {
+  id?: number
+  name: string
+  code: string
+  menuIds: number[]
+}
+
+const createDefaultFormData = (): RoleAssignMenuFormData => ({
   id: undefined,
   name: '',
   code: '',
   menuIds: []
 })
-const formRef = ref() // 表单 Ref
-const menuOptions = ref<any[]>([]) // 菜单树形结构
+
+const formData = reactive<RoleAssignMenuFormData>(createDefaultFormData())
+const formRef = ref<FormInstance>() // 表单 Ref
+const menuOptions = ref<(MenuApi.MenuVO & { children?: MenuApi.MenuVO[] })[]>([]) // 菜单树形结构
 const menuExpand = ref(false) // 展开/折叠
-const treeRef = ref() // 菜单树组件 Ref
+const treeRef = ref<TreeInstance>() // 菜单树组件 Ref
 const treeNodeAll = ref(false) // 全选/全不选
+
+const collectMenuIds = (menus: (MenuApi.MenuVO & { children?: MenuApi.MenuVO[] })[]): number[] => {
+  return menus.flatMap((menu) => [menu.id, ...collectMenuIds(menu.children ?? [])])
+}
 
 /** 打开弹窗 */
 const open = async (row: RoleApi.RoleVO) => {
   dialogVisible.value = true
   resetForm()
   // 加载 Menu 列表。注意，必须放在前面，不然下面 setChecked 没数据节点
-  menuOptions.value = handleTree(await MenuApi.getSimpleMenusList())
+  menuOptions.value = handleTree(await MenuApi.getSimpleMenusList()) as (
+    MenuApi.MenuVO & { children?: MenuApi.MenuVO[] }
+  )[]
   // 设置数据
   formData.id = row.id
   formData.name = row.name
   formData.code = row.code
   formLoading.value = true
   try {
-    formData.value.menuIds = await PermissionApi.getRoleMenuList(row.id)
+    formData.menuIds = await PermissionApi.getRoleMenuList(row.id)
     // 设置选中
-    formData.value.menuIds.forEach((menuId: number) => {
-      treeRef.value.setChecked(menuId, true, false)
+    formData.menuIds.forEach((menuId: number) => {
+      treeRef.value?.setChecked(menuId, true, false)
     })
   } finally {
     formLoading.value = false
@@ -96,17 +112,19 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  if (!formRef) return
+  if (!formRef.value || formData.id === undefined) return
   const valid = await formRef.value.validate()
   if (!valid) return
+  const tree = treeRef.value
+  if (!tree) return
   // 提交请求
   formLoading.value = true
   try {
     const data = {
       roleId: formData.id,
       menuIds: [
-        ...(treeRef.value.getCheckedKeys(false) as unknown as Array<number>), // 获得当前选中节点
-        ...(treeRef.value.getHalfCheckedKeys() as unknown as Array<number>) // 获得半选中的父节点
+        ...(tree.getCheckedKeys(false) as unknown as Array<number>), // 获得当前选中节点
+        ...(tree.getHalfCheckedKeys() as unknown as Array<number>) // 获得半选中的父节点
       ]
     }
     await PermissionApi.assignRoleMenu(data)
@@ -125,19 +143,14 @@ const resetForm = () => {
   treeNodeAll.value = false
   menuExpand.value = false
   // 重置表单
-  formData.value = {
-    id: undefined,
-    name: '',
-    code: '',
-    menuIds: []
-  }
+  Object.assign(formData, createDefaultFormData())
   treeRef.value?.setCheckedNodes([])
   formRef.value?.resetFields()
 }
 
 /** 全选/全不选 */
 const handleCheckedTreeNodeAll = () => {
-  treeRef.value.setCheckedNodes(treeNodeAll.value ? menuOptions.value : [])
+  treeRef.value?.setCheckedKeys(treeNodeAll.value ? collectMenuIds(menuOptions.value) : [])
 }
 
 /** 展开/折叠全部 */

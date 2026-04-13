@@ -260,7 +260,13 @@ const typeTableRef = ref()
 const typeQueryFormRef = ref()
 const typeFormRef = ref()
 const currentTypeRow = ref<PublicationTypeApi.PublicationTypeVO>()
-const typeQueryParams = reactive({
+const typeQueryParams = reactive<{
+  pageNo: number
+  pageSize: number
+  name: string | undefined
+  status: number | undefined
+  createTime: string[]
+}>({
   pageNo: 1,
   pageSize: 10,
   name: undefined,
@@ -277,7 +283,15 @@ const changeTypeLoading = ref(false)
 const changeTypeFormRef = ref()
 const changeTypeTitleName = ref('')
 const changeTypeOptions = ref<PublicationTypeApi.PublicationTypeSimpleVO[]>([])
-const titleQueryParams = reactive({
+const titleQueryParams = reactive<{
+  pageNo: number
+  pageSize: number
+  name: string | undefined
+  typeId: number | undefined
+  publisherId: number | undefined
+  status: number | undefined
+  createTime: string[]
+}>({
   pageNo: 1,
   pageSize: 10,
   name: undefined,

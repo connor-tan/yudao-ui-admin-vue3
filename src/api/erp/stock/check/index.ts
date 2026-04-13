@@ -1,14 +1,31 @@
 import request from '@/config/axios'
 
+export interface StockCheckItemVO {
+  id?: number
+  warehouseId?: number
+  productId?: number
+  productName?: string
+  productUnitName?: string
+  productBarCode?: string
+  productPrice?: number
+  stockCount?: number
+  actualCount?: number
+  count?: number
+  totalPrice?: number
+  remark?: string
+}
+
 // ERP 库存盘点单 VO
 export interface StockCheckVO {
-  id: number // 出库编号
-  no: string // 出库单号
-  outTime: string // 出库时间
-  totalCount: number // 合计数量
+  id?: number // 盘点编号
+  no?: string // 盘点单号
+  checkTime?: string // 盘点时间
+  totalCount?: number // 合计数量
   totalPrice: number // 合计金额，单位：元
-  status: number // 状态
-  remark: string // 备注
+  status?: number // 状态
+  remark?: string // 备注
+  fileUrl: string // 附件
+  items: StockCheckItemVO[] // 明细项
 }
 
 // ERP 库存盘点单 API
@@ -20,7 +37,7 @@ export const StockCheckApi = {
 
   // 查询库存盘点单详情
   getStockCheck: async (id: number) => {
-    return await request.get({ url: `/erp/stock-check/get?id=` + id })
+    return await request.get<StockCheckVO>({ url: `/erp/stock-check/get?id=` + id })
   },
 
   // 新增库存盘点单

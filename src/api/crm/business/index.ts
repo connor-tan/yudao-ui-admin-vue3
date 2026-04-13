@@ -2,44 +2,45 @@ import request from '@/config/axios'
 import { TransferReqVO } from '@/api/crm/permission'
 
 export interface BusinessVO {
-  id: number
-  name: string
-  customerId: number
+  id?: number
+  name?: string
+  customerId?: number
   customerName?: string
-  followUpStatus: boolean
-  contactLastTime: string
-  contactNextTime: string
-  ownerUserId: number
+  followUpStatus?: boolean
+  contactLastTime?: string
+  contactNextTime?: string
+  ownerUserId?: number
   ownerUserName?: string // 负责人的用户名称
   ownerUserDept?: string // 负责人的部门名称
-  statusTypeId: number
+  ownerUserDeptName?: string
+  statusTypeId?: number
   statusTypeName?: string
-  statusId: number
+  statusId?: number
   statusName?: string
-  endStatus: number
-  endRemark: string
-  dealTime: string
-  totalProductPrice: number
-  totalPrice: number
-  discountPercent: number
-  remark: string
-  creator: string // 创建人
+  endStatus?: number
+  endRemark?: string
+  dealTime?: string
+  totalProductPrice?: number
+  totalPrice?: number
+  discountPercent?: number
+  remark?: string
+  creator?: string // 创建人
   creatorName?: string // 创建人名称
-  createTime: string // 创建时间
-  updateTime: string // 更新时间
-  products?: [
-    {
-      id: number
-      productId: number
-      productName: string
-      productNo: string
-      productUnit: number
-      productPrice: number
-      businessPrice: number
-      count: number
-      totalPrice: number
-    }
-  ]
+  createTime?: string // 创建时间
+  updateTime?: string // 更新时间
+  products?: BusinessProductItemVO[]
+}
+
+export interface BusinessProductItemVO {
+  id?: number
+  productId?: number
+  productName?: string
+  productNo?: string
+  productUnit?: number
+  productPrice?: number
+  businessPrice?: number
+  count?: number
+  totalPrice?: number
 }
 
 // 查询 CRM 商机列表
@@ -58,7 +59,7 @@ export const getBusiness = async (id: number) => {
 }
 
 // 获得 CRM 商机列表（精简）
-export const getSimpleBusinessList = async () => {
+export const getSimpleBusinessList = async (): Promise<BusinessVO[]> => {
   return await request.get({ url: `/crm/business/simple-all-list` })
 }
 

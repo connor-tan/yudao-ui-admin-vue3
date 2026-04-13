@@ -1,5 +1,5 @@
 <template>
-  <el-table :data="contacts" :show-overflow-tooltip="true" :stripe="true" height="150">
+  <el-table :data="formData" :show-overflow-tooltip="true" :stripe="true" height="150">
     <el-table-column label="姓名" fixed="left" align="center" prop="name">
       <template #default="scope">
         <el-link type="primary" :underline="false" @click="openDetail(scope.row.id)">
@@ -24,12 +24,13 @@
 </template>
 
 <script lang="ts" setup>
+import * as ContactApi from '@/api/crm/contact'
 import { DICT_TYPE } from '@/utils/dict'
 
 const props = defineProps<{
-  contacts: undefined
+  contacts: ContactApi.ContactVO[]
 }>()
-const formData = ref([])
+const formData = ref<ContactApi.ContactVO[]>([])
 
 /** 初始化联系人列表 */
 watch(
@@ -39,6 +40,11 @@ watch(
   },
   { immediate: true }
 )
+
+const { push } = useRouter()
+const openDetail = (id: number) => {
+  push({ name: 'CrmContactDetail', params: { id } })
+}
 
 /** 删除按钮操作 */
 const handleDelete = (index: number) => {

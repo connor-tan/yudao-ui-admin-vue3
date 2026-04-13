@@ -88,7 +88,7 @@
     <!-- 任务管理 -->
     <OtaTaskList
       :firmware-id="firmwareId"
-      :product-id="firmware?.productId"
+      :product-id="firmware?.productId ?? 0"
       @success="getStatistics"
     />
   </div>

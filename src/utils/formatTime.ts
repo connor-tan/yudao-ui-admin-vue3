@@ -1,4 +1,4 @@
-import dayjs from 'dayjs'
+import dayjs, { type ConfigType } from 'dayjs'
 import type { TableColumnCtx } from 'element-plus'
 
 /**
@@ -63,7 +63,7 @@ export const defaultShortcuts = [
  * @description format 季度 + 星期 + 几周："YYYY-MM-DD HH:mm:ss WWW QQQQ ZZZ"
  * @returns 返回拼接后的时间字符串
  */
-export function formatDate(date: Date, format?: string): string {
+export function formatDate(date: ConfigType, format?: string): string {
   // 日期不存在，则返回空
   if (!date) {
     return ''
@@ -84,8 +84,8 @@ export function getNowDateTime() {
  * @param dateTime 当前传入的日期值
  * @returns 返回第几周数字值
  */
-export function getWeek(dateTime: Date): number {
-  const temptTime = new Date(dateTime.getTime())
+export function getWeek(dateTime: ConfigType): number {
+  const temptTime = dayjs(dateTime).toDate()
   // 周几
   const weekday = temptTime.getDay() || 7
   // 周1+5天=周六
@@ -110,13 +110,13 @@ export function getWeek(dateTime: Date): number {
  * @description param 3天：   60 * 60* 24 * 1000 * 3
  * @returns 返回拼接后的时间字符串
  */
-export function formatPast(param: string | Date, format = 'YYYY-MM-DD HH:mm:ss'): string {
+export function formatPast(param: ConfigType, format = 'YYYY-MM-DD HH:mm:ss'): string {
   // 传入格式处理、存储转换值
-  let t: any, s: number
+  let s: number
   // 获取js 时间戳
   let time: number = new Date().getTime()
   // 是否是对象
-  typeof param === 'string' || 'object' ? (t = new Date(param).getTime()) : (t = param)
+  const t = dayjs(param).toDate().getTime()
   // 当前时间戳 - 传入时间戳
   time = Number.parseInt(`${time - t}`)
   if (time < 10000) {
@@ -140,7 +140,7 @@ export function formatPast(param: string | Date, format = 'YYYY-MM-DD HH:mm:ss')
     return `${s}天前`
   } else {
     // 超过3天
-    const date = typeof param === 'string' || 'object' ? new Date(param) : param
+    const date = dayjs(param).toDate()
     return formatDate(date, format)
   }
 }
@@ -151,8 +151,8 @@ export function formatPast(param: string | Date, format = 'YYYY-MM-DD HH:mm:ss')
  * @description param 调用 `formatAxis(new Date())` 输出 `上午好`
  * @returns 返回拼接后的时间字符串
  */
-export function formatAxis(param: Date): string {
-  const hour: number = new Date(param).getHours()
+export function formatAxis(param: ConfigType): string {
+  const hour: number = dayjs(param).toDate().getHours()
   if (hour < 6) return '凌晨好'
   else if (hour < 9) return '早上好'
   else if (hour < 12) return '上午好'
@@ -193,8 +193,8 @@ export function formatPast2(ms: number): string {
 /**
  * element plus 的时间 Formatter 实现，使用 YYYY-MM-DD HH:mm:ss 格式
  *
- * @param row 行数据
- * @param column 字段
+ * @param _row
+ * @param _column
  * @param cellValue 字段值
  */
 export function dateFormatter(_row: any, _column: TableColumnCtx<any>, cellValue: any): string {
@@ -204,8 +204,8 @@ export function dateFormatter(_row: any, _column: TableColumnCtx<any>, cellValue
 /**
  * element plus 的时间 Formatter 实现，使用 YYYY-MM-DD 格式
  *
- * @param row 行数据
- * @param column 字段
+ * @param _row
+ * @param _column
  * @param cellValue 字段值
  */
 export function dateFormatter2(_row: any, _column: TableColumnCtx<any>, cellValue: any): string {
@@ -217,8 +217,9 @@ export function dateFormatter2(_row: any, _column: TableColumnCtx<any>, cellValu
  * @param param 传入日期
  * @returns 带时间00:00:00的日期
  */
-export function beginOfDay(param: Date): Date {
-  return new Date(param.getFullYear(), param.getMonth(), param.getDate(), 0, 0, 0)
+export function beginOfDay(param: ConfigType): Date {
+  const date = convertDate(param)
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0)
 }
 
 /**
@@ -226,8 +227,9 @@ export function beginOfDay(param: Date): Date {
  * @param param 传入日期
  * @returns 带时间23:59:59的日期
  */
-export function endOfDay(param: Date): Date {
-  return new Date(param.getFullYear(), param.getMonth(), param.getDate(), 23, 59, 59)
+export function endOfDay(param: ConfigType): Date {
+  const date = convertDate(param)
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59)
 }
 
 /**
@@ -235,7 +237,7 @@ export function endOfDay(param: Date): Date {
  * @param param1 日期1
  * @param param2 日期2
  */
-export function betweenDay(param1: Date, param2: Date): number {
+export function betweenDay(param1: ConfigType, param2: ConfigType): number {
   param1 = convertDate(param1)
   param2 = convertDate(param2)
   // 计算差值
@@ -247,7 +249,7 @@ export function betweenDay(param1: Date, param2: Date): number {
  * @param param1 日期
  * @param param2 添加的时间
  */
-export function addTime(param1: Date, param2: number): Date {
+export function addTime(param1: ConfigType, param2: number): Date {
   param1 = convertDate(param1)
   return new Date(param1.getTime() + param2)
 }
@@ -256,11 +258,8 @@ export function addTime(param1: Date, param2: number): Date {
  * 日期转换
  * @param param 日期
  */
-export function convertDate(param: Date | string): Date {
-  if (typeof param === 'string') {
-    return new Date(param)
-  }
-  return param
+export function convertDate(param: ConfigType): Date {
+  return dayjs(param).toDate()
 }
 
 /**

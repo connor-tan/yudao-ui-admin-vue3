@@ -89,7 +89,7 @@
             <el-radio-group v-model="formData.master">
               <el-radio
                 v-for="dict in getBoolDictOptions(DICT_TYPE.INFRA_BOOLEAN_STRING)"
-                :key="dict.value"
+                :key="String(dict.value)"
                 :value="dict.value"
               >
                 {{ dict.label }}
@@ -182,12 +182,18 @@ import { useUserStore } from '@/store/modules/user'
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
 
+type ContactFormData = Partial<ContactApi.ContactVO> & {
+  businessId?: number
+  customerDefault: boolean
+  master: boolean
+}
+
 const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
-const areaList = ref([]) // 地区列表
-const formData = ref({
+const areaList = ref<AreaApi.AreaNodeVO[]>([]) // 地区列表
+const formData = ref<ContactFormData>({
   id: undefined,
   name: undefined,
   customerId: undefined,
@@ -228,7 +234,13 @@ const open = async (type: string, id?: number, customerId?: number, businessId?:
   if (id) {
     formLoading.value = true
     try {
-      formData.value = await ContactApi.getContact(id)
+      const contact = await ContactApi.getContact(id)
+      formData.value = {
+        ...contact,
+        businessId: undefined,
+        customerDefault: false,
+        master: !!contact.master
+      }
     } finally {
       formLoading.value = false
     }
@@ -261,7 +273,7 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  if (!formRef) return
+  if (!formRef.value) return
   const valid = await formRef.value.validate()
   if (!valid) return
   // 提交请求

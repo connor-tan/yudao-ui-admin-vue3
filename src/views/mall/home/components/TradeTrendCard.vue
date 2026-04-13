@@ -197,7 +197,9 @@ const getOrderCountTrendComparison = async (
   eChartOptions.xAxis!['data'] = dates
   eChartOptions.series = series
   // legend 在 4 个切换到 2 个的时候，还是显示成 4 个，需要手动配置一下
-  eChartOptions.legend['data'] = series.map((item) => item.name)
+  if (eChartOptions.legend) {
+    eChartOptions.legend['data'] = series.map((item) => item.name)
+  }
   loading.value = false
 }
 

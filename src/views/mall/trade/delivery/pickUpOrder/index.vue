@@ -111,7 +111,7 @@
         icon-bg-color="text-purple-500"
         prefix="￥"
         :decimals="2"
-        :value="fenToYuan(summary?.orderPayPrice || 0)"
+        :value="toYuanNumber(summary?.orderPayPrice)"
       />
     </el-col>
     <el-col :sm="6" :xs="12" v-loading="loading">
@@ -131,7 +131,7 @@
         icon-bg-color="text-green-500"
         prefix="￥"
         :decimals="2"
-        :value="fenToYuan(summary?.afterSalePrice || 0)"
+        :value="toYuanNumber(summary?.afterSalePrice)"
       />
     </el-col>
   </el-row>
@@ -231,9 +231,23 @@ import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/store/modules/user'
 const message = useMessage() // 消息弹窗
 
-const port = ref('')
-const ports = ref([])
-const reader = ref('')
+interface QueryParams {
+  pageNo: number
+  pageSize: number
+  createTime?: string[]
+  deliveryType: number
+  pickUpStoreIds: number
+  no?: string
+  userId?: string
+  userNickname?: string
+  userMobile?: string
+}
+
+const toYuanNumber = (price?: string | number | null) => Number(fenToYuan(price ?? 0))
+
+const port = ref<SerialPort | null>(null)
+const ports = ref<SerialPort[]>([])
+const reader = ref<ReadableStreamDefaultReader<Uint8Array> | null>(null)
 
 defineOptions({ name: 'PickUpOrder' })
 
@@ -241,7 +255,7 @@ const loading = ref(true) // 列表的加载中
 const total = ref(2) // 列表的总页数
 const list = ref<TradeOrderApi.OrderVO[]>([]) // 列表的数据
 const queryFormRef = ref<FormInstance>() // 搜索的表单
-const INIT_QUERY_PARAMS = {
+const INIT_QUERY_PARAMS: QueryParams = {
   // 页数
   pageNo: 1,
   // 每页显示数量
@@ -254,7 +268,7 @@ const INIT_QUERY_PARAMS = {
   pickUpStoreIds: -1
 } // 初始表单参数
 
-const queryParams = ref({ ...INIT_QUERY_PARAMS }) // 表单搜索
+const queryParams = ref<QueryParams>({ ...INIT_QUERY_PARAMS }) // 表单搜索
 const queryType = reactive({ queryParam: 'no' }) // 订单搜索类型 queryParam
 const summary = ref<TradeOrderSummaryRespVO>() // 订单统计数据
 
@@ -326,30 +340,25 @@ const getPickUpStoreList = async () => {
 }
 
 /** 显示核销表单 */
-const pickUpForm = ref()
+const pickUpForm = ref<InstanceType<typeof OrderPickUpForm>>()
 const handlePickup = () => {
-  pickUpForm.value.open()
+  pickUpForm.value?.open()
 }
 
 /** 连接扫码枪 */
 const connectToSerialPort = async () => {
   try {
-    // 判断浏览器支持串口通信
-    if (
-      'serial' in navigator &&
-      navigator.serial != null &&
-      typeof navigator.serial === 'object' &&
-      'requestPort' in navigator.serial
-    ) {
-      // 提示用户选择一个串口
-      port.value = await navigator.serial.requestPort()
-    } else {
+    const serial = navigator.serial
+    if (!serial) {
       message.error('浏览器不支持扫码枪连接，请更换浏览器重试')
       return
     }
 
+    // 提示用户选择一个串口
+    port.value = await serial.requestPort()
+
     // 获取用户之前授予该网站访问权限的所有串口。
-    ports.value = await navigator.serial.getPorts()
+    ports.value = await serial.getPorts()
 
     // console.log(port.value, ports.value);
     // console.log(port.value)
@@ -360,7 +369,7 @@ const connectToSerialPort = async () => {
     message.success('成功连接扫码枪')
     serialPort.value = true
     // readData(port.value);
-    readData()
+    await readData()
   } catch (error) {
     // 处理连接串口出错的情况
     console.log('Error connecting to serial port:', error)
@@ -369,6 +378,9 @@ const connectToSerialPort = async () => {
 
 /** 监听扫码枪输入 */
 const readData = async () => {
+  if (!port.value?.readable) {
+    return
+  }
   reader.value = port.value.readable.getReader()
   let data = '' //扫码数据
   // 监听来自串口的数据
@@ -388,17 +400,17 @@ const readData = async () => {
       data = '' //清空下次读取不会叠加
       console.log(`二维码数据:${codeData}`)
       //处理拿到数据逻辑
-      pickUpForm.value.open(codeData)
+      pickUpForm.value?.open(codeData)
     }
   }
 }
 
 /** 断开扫码枪 */
 const cutPort = async () => {
-  if (port.value !== '') {
-    await reader.value.cancel()
+  if (port.value) {
+    await reader.value?.cancel()
     await port.value.close()
-    port.value = ''
+    port.value = null
     console.log('断开扫码枪连接')
     message.success('已成功断开扫码枪连接')
     serialPort.value = false

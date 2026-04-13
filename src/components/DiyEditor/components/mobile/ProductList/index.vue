@@ -54,7 +54,7 @@
               class="text-12px"
               :style="{ color: property.fields.price.color }"
             >
-              ￥{{ fenToYuan(spu.price) }}
+              ￥{{ fenToYuan(spu.price ?? 0) }}
             </span>
           </div>
         </div>

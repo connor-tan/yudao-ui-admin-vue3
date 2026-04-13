@@ -138,11 +138,20 @@ import { ProductApi, ProductVO } from '@/api/erp/product/product'
 
 defineOptions({ name: 'PurchaseOrderReturnEnableList' })
 
+interface QueryParams {
+  pageNo: number
+  pageSize: number
+  no?: string
+  productId?: number
+  orderTime: string[]
+  returnEnable: boolean
+}
+
 const list = ref<PurchaseOrderVO[]>([]) // 列表的数据
 const total = ref(0) // 列表的总页数
 const loading = ref(false) // 列表的加载中
 const dialogVisible = ref(false) // 弹窗的是否展示
-const queryParams = reactive({
+const queryParams = reactive<QueryParams>({
   pageNo: 1,
   pageSize: 10,
   no: undefined,
@@ -154,9 +163,9 @@ const queryFormRef = ref() // 搜索的表单
 const productList = ref<ProductVO[]>([]) // 产品列表
 
 /** 选中行 */
-const currentRowValue = ref(undefined) // 选中行的 value
-const currentRow = ref(undefined) // 选中行
-const handleCurrentChange = (row) => {
+const currentRowValue = ref<number>() // 选中行的 value
+const currentRow = ref<PurchaseOrderVO>() // 选中行
+const handleCurrentChange = (row: PurchaseOrderVO) => {
   currentRow.value = row
 }
 
@@ -176,6 +185,9 @@ const emits = defineEmits<{
   (e: 'success', value: PurchaseOrderVO): void
 }>()
 const submitForm = () => {
+  if (!currentRow.value) {
+    return
+  }
   try {
     emits('success', currentRow.value)
   } finally {

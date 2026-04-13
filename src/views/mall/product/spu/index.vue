@@ -240,6 +240,7 @@ import { fenToYuan } from '@/utils'
 import download from '@/utils/download'
 import * as ProductSpuApi from '@/api/mall/product/spu'
 import * as ProductCategoryApi from '@/api/mall/product/category'
+import type { LocationQueryValue } from 'vue-router'
 
 defineOptions({ name: 'ProductSpu' })
 
@@ -281,7 +282,15 @@ const tabsData = ref([
   }
 ])
 
-const queryParams = ref({
+const queryParams = ref<{
+  pageNo: number
+  pageSize: number
+  tabType: number
+  domainType: string
+  name: string
+  categoryId: LocationQueryValue | undefined
+  createTime: string[] | undefined
+}>({
   pageNo: 1,
   pageSize: 10,
   tabType: 0,
@@ -435,7 +444,7 @@ onActivated(() => {
 watch(
   () => route.query.categoryId,
   (categoryId) => {
-    queryParams.value.categoryId = categoryId || undefined
+    queryParams.value.categoryId = Array.isArray(categoryId) ? categoryId[0] : categoryId || undefined
   },
   { immediate: true }
 )

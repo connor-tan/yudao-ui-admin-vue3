@@ -215,7 +215,7 @@ const handleGenerateImage = async () => {
     // 回调
     emits('onDrawStart', AiPlatformEnum.STABLE_DIFFUSION)
     // 发送请求
-    const form = {
+    const form: ImageDrawReqVO = {
       modelId: matchedModel.id,
       prompt: prompt.value, // 提示词
       width: width.value, // 图片宽度
@@ -228,7 +228,7 @@ const handleGenerateImage = async () => {
         clipGuidancePreset: clipGuidancePreset.value, // 文本提示相匹配的图像 CLIP
         stylePreset: stylePreset.value // 风格
       }
-    } as ImageDrawReqVO
+    }
     await ImageApi.drawImage(form)
   } finally {
     // 回调
@@ -254,4 +254,3 @@ const settingValues = async (detail: ImageVO) => {
 /** 暴露组件方法 */
 defineExpose({ settingValues })
 </script>
-

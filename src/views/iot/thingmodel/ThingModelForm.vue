@@ -59,6 +59,7 @@
 </template>
 
 <script lang="ts" setup>
+import type { FormInstance } from 'element-plus'
 import { ProductVO } from '@/api/iot/product/product'
 import ThingModelProperty from './ThingModelProperty.vue'
 import ThingModelService from './ThingModelService.vue'
@@ -85,20 +86,40 @@ const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
-const formData = ref<ThingModelData>({
-  type: IoTThingModelTypeEnum.PROPERTY,
+
+const createDefaultProperty = () => ({
+  identifier: '',
+  name: '',
+  accessMode: '',
   dataType: IoTDataSpecsDataTypeEnum.INT,
-  property: {
-    dataType: IoTDataSpecsDataTypeEnum.INT,
-    dataSpecs: {
-      dataType: IoTDataSpecsDataTypeEnum.INT
-    }
-  },
-  service: {},
-  event: {}
+  dataSpecs: {
+    dataType: IoTDataSpecsDataTypeEnum.INT
+  }
 })
 
-const formRef = ref() // 表单 Ref
+const createDefaultService = () => ({
+  identifier: '',
+  name: '',
+  callType: ''
+})
+
+const createDefaultEvent = () => ({
+  identifier: '',
+  name: '',
+  type: ''
+})
+
+const createDefaultFormData = (): ThingModelData => ({
+  type: IoTThingModelTypeEnum.PROPERTY,
+  dataType: IoTDataSpecsDataTypeEnum.INT,
+  property: createDefaultProperty(),
+  service: createDefaultService(),
+  event: createDefaultEvent()
+})
+
+const formData = ref<ThingModelData>(createDefaultFormData())
+
+const formRef = ref<FormInstance>() // 表单 Ref
 
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {
@@ -113,20 +134,15 @@ const open = async (type: string, id?: number) => {
       // 情况一：属性初始化
       if (isEmpty(formData.value.property)) {
         formData.value.dataType = IoTDataSpecsDataTypeEnum.INT
-        formData.value.property = {
-          dataType: IoTDataSpecsDataTypeEnum.INT,
-          dataSpecs: {
-            dataType: IoTDataSpecsDataTypeEnum.INT
-          }
-        }
+        formData.value.property = createDefaultProperty()
       }
       // 情况二：服务初始化
       if (isEmpty(formData.value.service)) {
-        formData.value.service = {}
+        formData.value.service = createDefaultService()
       }
       // 情况三：事件初始化
       if (isEmpty(formData.value.event)) {
-        formData.value.event = {}
+        formData.value.event = createDefaultEvent()
       }
     } finally {
       formLoading.value = false
@@ -138,7 +154,7 @@ defineExpose({ open, close: () => (dialogVisible.value = false) })
 /** 提交表单 */
 const emit = defineEmits(['success'])
 const submitForm = async () => {
-  await formRef.value.validate()
+  await formRef.value?.validate()
   formLoading.value = true
   try {
     const data = cloneDeep(formData.value) as ThingModelData
@@ -204,18 +220,7 @@ const removeDataSpecs = (val: any) => {
 
 /** 重置表单 */
 const resetForm = () => {
-  formData.value = {
-    type: IoTThingModelTypeEnum.PROPERTY,
-    dataType: IoTDataSpecsDataTypeEnum.INT,
-    property: {
-      dataType: IoTDataSpecsDataTypeEnum.INT,
-      dataSpecs: {
-        dataType: IoTDataSpecsDataTypeEnum.INT
-      }
-    },
-    service: {},
-    event: {}
-  }
+  formData.value = createDefaultFormData()
   formRef.value?.resetFields()
 }
 </script>

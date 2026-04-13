@@ -276,7 +276,18 @@ const titleList = ref<PublicationTitleApi.PublicationTitleSimpleVO[]>([])
 const typeList = ref<PublicationTypeApi.PublicationTypeSimpleVO[]>([])
 const publisherList = ref<PublicationPublisherApi.PublicationPublisherSimpleVO[]>([])
 const gradeList = ref<PublicationProductApi.PublicationGradeSimpleVO[]>([])
-const queryParams = reactive({
+const queryParams = reactive<{
+  pageNo: number
+  pageSize: number
+  tabType: number
+  name: string | undefined
+  categoryId: number | undefined
+  publicationTitleId: number | undefined
+  publicationTypeId: number | undefined
+  publisherId: number | undefined
+  gradeCatalogId: number | undefined
+  createTime: string[]
+}>({
   pageNo: 1,
   pageSize: 10,
   tabType: 0,

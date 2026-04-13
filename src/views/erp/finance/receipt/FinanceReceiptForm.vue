@@ -145,7 +145,12 @@
   </Dialog>
 </template>
 <script setup lang="ts">
-import { FinanceReceiptApi, FinanceReceiptVO } from '@/api/erp/finance/receipt'
+import type { FormInstance } from 'element-plus'
+import {
+  FinanceReceiptApi,
+  FinanceReceiptVO,
+  type FinanceReceiptItemVO
+} from '@/api/erp/finance/receipt'
 import FinanceReceiptItemForm from './components/FinanceReceiptItemForm.vue'
 import { erpPriceInputFormatter } from '@/utils'
 import * as UserApi from '@/api/system/user'
@@ -162,7 +167,22 @@ const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改；detail - 详情
-const formData = ref({
+type FinanceReceiptFormData = {
+  id?: number
+  customerId?: number
+  accountId?: number
+  financeUserId?: number
+  receiptTime?: string
+  remark?: string
+  fileUrl: string
+  totalPrice: number
+  discountPrice: number
+  receiptPrice: number
+  items: FinanceReceiptItemVO[]
+  no?: string
+}
+
+const createFormData = (): FinanceReceiptFormData => ({
   id: undefined,
   customerId: undefined,
   accountId: undefined,
@@ -176,19 +196,21 @@ const formData = ref({
   items: [],
   no: undefined // 订单单号，后端返回
 })
+
+const formData = ref<FinanceReceiptFormData>(createFormData())
 const formRules = reactive({
   customerId: [{ required: true, message: '客户不能为空', trigger: 'blur' }],
   receiptTime: [{ required: true, message: '订单时间不能为空', trigger: 'blur' }]
 })
 const disabled = computed(() => formType.value === 'detail')
-const formRef = ref() // 表单 Ref
+const formRef = ref<FormInstance>() // 表单 Ref
 const customerList = ref<CustomerVO[]>([]) // 客户列表
 const accountList = ref<AccountVO[]>([]) // 账户列表
 const userList = ref<UserApi.UserVO[]>([]) // 用户列表
 
 /** 子表的表单 */
 const subTabsName = ref('item')
-const itemFormRef = ref()
+const itemFormRef = ref<InstanceType<typeof FinanceReceiptItemForm>>()
 
 /** 计算 discountPrice、totalPrice 价格 */
 watch(
@@ -236,8 +258,8 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  await formRef.value.validate()
-  await itemFormRef.value.validate()
+  await formRef.value?.validate()
+  await itemFormRef.value?.validate()
   // 提交请求
   formLoading.value = true
   try {
@@ -259,20 +281,7 @@ const submitForm = async () => {
 
 /** 重置表单 */
 const resetForm = () => {
-  formData.value = {
-    id: undefined,
-    customerId: undefined,
-    accountId: undefined,
-    financeUserId: undefined,
-    receiptTime: undefined,
-    remark: undefined,
-    fileUrl: undefined,
-    totalPrice: 0,
-    discountPrice: 0,
-    receiptPrice: 0,
-    items: [],
-    no: undefined
-  }
+  formData.value = createFormData()
   formRef.value?.resetFields()
 }
 </script>

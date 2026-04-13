@@ -121,7 +121,6 @@
 
 <script lang="ts" setup>
 import { propTypes } from '@/utils/propTypes'
-import { CHANGE_EVENT } from 'element-plus'
 import { PointActivityApi, PointActivityVO } from '@/api/mall/promotion/point'
 import { fenToYuanFormat } from '@/utils/formatter'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
@@ -160,7 +159,7 @@ const queryParams = ref({
   name: null,
   status: undefined
 })
-const getRedeemedQuantity = computed(() => (row: any) => (row.totalStock || 0) - (row.stock || 0)) // 获得商品已兑换数量
+const getRedeemedQuantity = (row: PointActivityVO) => (row.totalStock || 0) - (row.stock || 0) // 获得商品已兑换数量
 /** 打开弹窗 */
 const open = (pointList?: PointActivityVO[]) => {
   // 重置
@@ -227,10 +226,10 @@ const checkedActivities = ref<PointActivityVO[]>([])
 const checkedStatus = ref<Record<string, boolean>>({})
 
 // 选中的活动 activityId
-const selectedActivityId = ref()
+const selectedActivityId = ref<number>()
 /** 单选中时触发 */
 const handleSingleSelected = (pointActivityVO: PointActivityVO) => {
-  emits(CHANGE_EVENT, pointActivityVO)
+  emits('change', pointActivityVO)
   // 关闭弹窗
   dialogVisible.value = false
   // 记住上次选择的ID
@@ -241,12 +240,12 @@ const handleSingleSelected = (pointActivityVO: PointActivityVO) => {
 const handleEmitChange = () => {
   // 关闭弹窗
   dialogVisible.value = false
-  emits(CHANGE_EVENT, [...checkedActivities.value])
+  emits('change', [...checkedActivities.value])
 }
 
 /** 确认选择时的触发事件 */
 const emits = defineEmits<{
-  (e: CHANGE_EVENT, v: PointActivityVO | PointActivityVO[] | any): void
+  (e: 'change', v: PointActivityVO | PointActivityVO[]): void
 }>()
 
 /** 全选/全不选 */

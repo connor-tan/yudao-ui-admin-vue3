@@ -2,7 +2,7 @@
   <el-container class="absolute flex-1 top-0 left-0 h-full w-full">
     <!-- 左侧：对话列表 -->
     <ConversationList
-      :active-id="activeConversationId?.toString() || ''"
+      :active-id="activeConversationId"
       ref="conversationListRef"
       @on-conversation-create="handleConversationCreateSuccess"
       @on-conversation-click="handleConversationClick"
@@ -304,7 +304,7 @@ const messageList = computed(() => {
         modelId: 0,
         content: activeConversation.value.systemMessage,
         tokens: 0,
-        createTime: new Date(),
+        createTime: new Date().toISOString(),
         roleAvatar: '',
         userAvatar: ''
       } as ChatMessageVO
@@ -441,22 +441,40 @@ const doSendMessageStream = async (userMessage: ChatMessageVO) => {
   receiveMessageFullText.value = ''
 
   try {
+    const conversationId = userMessage.conversationId ?? activeConversationId.value
+    if (conversationId == null) {
+      return
+    }
     // 1.1 先添加两个假数据，等 stream 返回再替换
     activeMessageList.value.push({
       id: -1,
-      conversationId: activeConversationId.value,
+      conversationId: activeConversationId.value ?? 0,
       type: 'user',
+      userId: '',
+      roleId: '',
+      model: 0,
+      modelId: 0,
       content: userMessage.content,
       attachmentUrls: userMessage.attachmentUrls || [],
-      createTime: new Date()
+      tokens: 0,
+      createTime: new Date().toISOString(),
+      roleAvatar: '',
+      userAvatar: ''
     } as ChatMessageVO)
     activeMessageList.value.push({
       id: -2,
-      conversationId: activeConversationId.value,
+      conversationId: activeConversationId.value ?? 0,
       type: 'assistant',
+      userId: '',
+      roleId: '',
+      model: 0,
+      modelId: 0,
       content: '思考中...',
       reasoningContent: '',
-      createTime: new Date()
+      tokens: 0,
+      createTime: new Date().toISOString(),
+      roleAvatar: '',
+      userAvatar: ''
     } as ChatMessageVO)
     // 1.2 滚动到最下面
     await nextTick()
@@ -467,7 +485,7 @@ const doSendMessageStream = async (userMessage: ChatMessageVO) => {
     // 2. 发送 event stream
     let isFirstChunk = true // 是否是第一个 chunk 消息段
     await ChatMessageApi.sendChatMessageStream(
-      userMessage.conversationId,
+      conversationId,
       userMessage.content,
       conversationInAbortController.value,
       enableContext.value,

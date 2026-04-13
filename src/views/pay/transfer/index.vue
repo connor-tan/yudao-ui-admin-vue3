@@ -218,7 +218,9 @@ const queryParams = reactive({
   price: null,
   subject: null,
   userName: null,
+  accountNo: null,
   userAccount: null,
+  channelTransferNo: null,
   createTime: []
 })
 const queryFormRef = ref() // 搜索的表单
@@ -244,7 +246,7 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
+  queryFormRef.value?.resetFields()
   handleQuery()
 }
 

@@ -2,21 +2,39 @@
   <div>
     <ContentWrap>
       <el-form :inline="true" class="-mb-15px" label-width="88px">
+        <el-form-item label="学校">
+          <el-select
+            v-model="schoolId"
+            class="!w-280px"
+            clearable
+            filterable
+            placeholder="请先选择学校"
+          >
+            <el-option
+              v-for="item in schoolList"
+              :key="item.id"
+              :label="item.schoolName"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="学生">
           <el-select
             v-model="studentId"
             class="!w-320px"
             clearable
+            :disabled="!schoolId"
             filterable
             remote
             reserve-keyword
+            :loading="studentLoading"
             :remote-method="loadStudentList"
-            placeholder="请输入学生姓名搜索"
+            :placeholder="schoolId ? '请输入学生姓名搜索' : '请先选择学校'"
           >
             <el-option
               v-for="item in studentList"
               :key="item.id"
-              :label="item.currentSchoolName ? `${item.studentName}（${item.currentSchoolName}）` : item.studentName"
+              :label="buildStudentOptionLabel(item)"
               :value="item.id"
             />
           </el-select>
@@ -48,8 +66,8 @@
         <el-alert
           v-if="previewData.blockedReason"
           :title="previewData.blockedReason"
-          type="warning"
           :closable="false"
+          type="warning"
         />
 
         <template v-else>
@@ -67,10 +85,10 @@
                     {{ publication.publicationTitleName || '-' }} / {{ publication.categoryName || '-' }}
                   </div>
                   <el-table
-                    class="mt-12px"
                     :data="publication.skus || []"
                     :show-overflow-tooltip="true"
                     :stripe="true"
+                    class="mt-12px"
                   >
                     <el-table-column label="SKU" min-width="220">
                       <template #default="{ row }">
@@ -96,6 +114,7 @@
 
 <script setup lang="ts">
 import { fenToYuan } from '@/utils'
+import { SchoolApi, type SchoolSimple } from '@/api/edu/school'
 import {
   SubscriptionSupportApi,
   type SubscriptionSupportStudentSimple
@@ -110,16 +129,41 @@ const props = defineProps<{
 
 const message = useMessage()
 const loading = ref(false)
+const studentLoading = ref(false)
+const schoolId = ref<number>()
+const schoolList = ref<SchoolSimple[]>([])
 const studentId = ref<number>()
 const studentList = ref<SubscriptionSupportStudentSimple[]>([])
 const previewData = ref<SubscriptionRulePreviewRespVO>()
 
+const buildStudentOptionLabel = (item: SubscriptionSupportStudentSimple) => {
+  const meta = [item.gradeName, item.studentCode].filter(Boolean).join(' / ')
+  return meta ? `${item.studentName}（${meta}）` : item.studentName || ''
+}
+
 const loadStudentList = async (keyword?: string) => {
-  studentList.value = await SubscriptionSupportApi.getStudentSimpleList(keyword)
+  if (!schoolId.value) {
+    studentList.value = []
+    return
+  }
+  if (!keyword?.trim()) {
+    studentList.value = []
+    return
+  }
+  studentLoading.value = true
+  try {
+    studentList.value = await SubscriptionSupportApi.getStudentSimpleListBySchool(schoolId.value, keyword)
+  } finally {
+    studentLoading.value = false
+  }
 }
 
 const handlePreview = async () => {
   if (!props.windowId) {
+    return
+  }
+  if (!schoolId.value) {
+    message.warning('请先选择学校')
     return
   }
   if (!studentId.value) {
@@ -137,12 +181,29 @@ const handlePreview = async () => {
   }
 }
 
+watch(schoolId, () => {
+  studentId.value = undefined
+  studentList.value = []
+  previewData.value = undefined
+})
+
 watch(
   () => props.windowId,
   () => {
+    schoolId.value = undefined
     studentId.value = undefined
+    schoolList.value = []
     studentList.value = []
     previewData.value = undefined
+    loadSchoolList()
   }
 )
+
+const loadSchoolList = async () => {
+  schoolList.value = await SchoolApi.getSchoolSimpleList()
+}
+
+onMounted(() => {
+  loadSchoolList()
+})
 </script>

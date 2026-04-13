@@ -315,10 +315,10 @@ const parseThingModelData = () => {
   if (tsl.properties && Array.isArray(tsl.properties)) {
     tsl.properties.forEach((prop) => {
       properties.push({
-        identifier: prop.identifier,
-        name: prop.name,
+        identifier: prop.identifier ?? '',
+        name: prop.name ?? '',
         description: prop.description,
-        dataType: prop.dataType,
+        dataType: prop.dataType ?? '',
         type: IoTThingModelTypeEnum.PROPERTY,
         accessMode: prop.accessMode,
         required: prop.required,
@@ -333,8 +333,8 @@ const parseThingModelData = () => {
   if (tsl.events && Array.isArray(tsl.events)) {
     tsl.events.forEach((event) => {
       properties.push({
-        identifier: event.identifier,
-        name: event.name,
+        identifier: event.identifier ?? '',
+        name: event.name ?? '',
         description: event.description,
         dataType: 'struct',
         type: IoTThingModelTypeEnum.EVENT,
@@ -350,8 +350,8 @@ const parseThingModelData = () => {
   if (tsl.services && Array.isArray(tsl.services)) {
     tsl.services.forEach((service) => {
       properties.push({
-        identifier: service.identifier,
-        name: service.name,
+        identifier: service.identifier ?? '',
+        name: service.name ?? '',
         description: service.description,
         dataType: 'struct',
         type: IoTThingModelTypeEnum.SERVICE,

@@ -170,7 +170,7 @@ const { t } = useI18n() // 国际化
 
 const loading = ref(true) // 列表的加载中
 const total = ref(0) // 列表的总页数
-const list = ref([]) // 列表的数据
+const list = ref<SeckillActivityApi.SeckillActivityVO[]>([]) // 列表的数据
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
@@ -178,7 +178,6 @@ const queryParams = reactive({
   status: null
 })
 const queryFormRef = ref() // 搜索的表单
-const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
 const getList = async () => {
@@ -205,9 +204,9 @@ const resetQuery = () => {
 }
 
 /** 添加/修改操作 */
-const formRef = ref()
+const formRef = ref<InstanceType<typeof SeckillActivityForm>>()
 const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
+  formRef.value?.open(type, id)
 }
 
 /** 关闭按钮操作 */
@@ -236,13 +235,13 @@ const handleDelete = async (id: number) => {
   } catch {}
 }
 
-const configList = ref([]) // 时段配置精简列表
-const formatConfigNames = (configId) => {
+const configList = ref<Awaited<ReturnType<typeof SeckillConfigApi.getSimpleSeckillConfigList>>>([]) // 时段配置精简列表
+const formatConfigNames = (configId: number) => {
   const config = configList.value.find((item) => item.id === configId)
   return config != null ? `${config.name}[${config.startTime} ~ ${config.endTime}]` : ''
 }
 
-const formatSeckillPrice = (products) => {
+const formatSeckillPrice = (products: SeckillActivityApi.SeckillProductVO[] = []) => {
   const seckillPrice = Math.min(...products.map((item) => item.seckillPrice))
   return `￥${fenToYuan(seckillPrice)}`
 }

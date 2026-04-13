@@ -62,6 +62,7 @@
 </template>
 
 <script lang="ts" setup>
+import type { DialogBeforeCloseFn } from 'element-plus'
 import WxAccountSelect from '@/views/mp/components/wx-account-select'
 import * as MpDraftApi from '@/api/mp/draft'
 import * as MpFreePublishApi from '@/api/mp/freePublish'
@@ -106,7 +107,7 @@ const onAccountChanged = (id: number) => {
 }
 
 // 关闭弹窗
-const onBeforeDialogClose = async (onDone: () => {}) => {
+const onBeforeDialogClose: DialogBeforeCloseFn = async (onDone) => {
   try {
     await message.confirm('修改内容可能还未保存，确定关闭吗?')
     onDone()

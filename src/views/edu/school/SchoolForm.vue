@@ -14,7 +14,7 @@
         <el-cascader
           v-model="formData.areaId"
           :options="areaList"
-          :props="defaultProps"
+          :props="formAreaProps"
           class="w-1/1"
           clearable
           filterable
@@ -55,7 +55,11 @@ const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
-const areaList = ref([]) // 地区列表
+const areaList = ref<AreaApi.AreaNodeVO[]>([]) // 地区列表
+const formAreaProps = {
+  ...defaultProps,
+  checkStrictly: true
+}
 type SchoolFormData = {
   id?: number
   schoolName?: string
@@ -84,7 +88,9 @@ const getAreaNamePath = (areaId?: number) => {
   if (!areaId || !areaList.value.length) {
     return []
   }
-  const path = findPath(areaList.value, (node: any) => node.id === areaId) as any[] | null
+  const path = findPath<AreaApi.AreaNodeVO>(areaList.value, (node) => node.id === areaId) as
+    | AreaApi.AreaNodeVO[]
+    | null
   return path?.map((node) => node.name) || []
 }
 

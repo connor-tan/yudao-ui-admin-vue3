@@ -2,6 +2,7 @@ import request from '@/config/axios'
 
 export interface TagVO {
   id?: number
+  tagId?: number
   name: string
   accountId: number
   createTime: string
@@ -46,7 +47,7 @@ export const getTagPage = (query: PageParam) => {
 }
 
 // 获取公众号标签精简信息列表
-export const getSimpleTagList = () => {
+export const getSimpleTagList = (): Promise<TagVO[]> => {
   return request.get({
     url: '/mp/tag/list-all-simple'
   })

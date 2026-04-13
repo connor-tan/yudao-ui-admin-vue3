@@ -140,7 +140,6 @@ import { handleTree } from '@/utils/tree'
 
 import * as ProductCategoryApi from '@/api/mall/product/category'
 import { propTypes } from '@/utils/propTypes'
-import { CHANGE_EVENT } from 'element-plus'
 import * as SeckillActivityApi from '@/api/mall/promotion/seckill/seckillActivity'
 import { fenToYuanFormat } from '@/utils/formatter'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
@@ -148,6 +147,12 @@ import { dateFormatter, formatDate } from '@/utils/formatTime'
 import { fenToYuan } from '@/utils'
 
 type SeckillActivityVO = Required<SeckillActivityApi.SeckillActivityVO>
+type SeckillActivityQueryParams = {
+  pageNo: number
+  pageSize: number
+  name: string | null
+  status: number | undefined
+}
 
 /**
  * 活动表格选择对话框
@@ -176,7 +181,7 @@ const loading = ref(false)
 // 弹窗的是否展示
 const dialogVisible = ref(false)
 // 查询参数
-const queryParams = ref({
+const queryParams = ref<SeckillActivityQueryParams>({
   pageNo: 1,
   pageSize: 10,
   name: null,
@@ -233,8 +238,8 @@ const resetQuery = () => {
   queryParams.value = {
     pageNo: 1,
     pageSize: 10,
-    name: undefined,
-    createTime: []
+    name: null,
+    status: undefined
   }
   getList()
 }
@@ -243,7 +248,7 @@ const resetQuery = () => {
  * 格式化拼团价格
  * @param products
  */
-const formatSeckillPrice = (products) => {
+const formatSeckillPrice = (products: SeckillActivityApi.SeckillProductVO[]) => {
   const seckillPrice = Math.min(...products.map((item) => item.seckillPrice))
   return `￥${fenToYuan(seckillPrice)}`
 }
@@ -258,10 +263,10 @@ const checkedActivitys = ref<SeckillActivityVO[]>([])
 const checkedStatus = ref<Record<string, boolean>>({})
 
 // 选中的活动 activityId
-const selectedActivityId = ref()
+const selectedActivityId = ref<number>()
 /** 单选中时触发 */
 const handleSingleSelected = (seckillActivityVO: SeckillActivityVO) => {
-  emits(CHANGE_EVENT, seckillActivityVO)
+  emits('change', seckillActivityVO)
   // 关闭弹窗
   dialogVisible.value = false
   // 记住上次选择的ID
@@ -272,12 +277,12 @@ const handleSingleSelected = (seckillActivityVO: SeckillActivityVO) => {
 const handleEmitChange = () => {
   // 关闭弹窗
   dialogVisible.value = false
-  emits(CHANGE_EVENT, [...checkedActivitys.value])
+  emits('change', [...checkedActivitys.value])
 }
 
 /** 确认选择时的触发事件 */
 const emits = defineEmits<{
-  change: [SeckillActivityApi: SeckillActivityVO | SeckillActivityVO[] | any]
+  (e: 'change', value: SeckillActivityVO | SeckillActivityVO[]): void
 }>()
 
 /** 全选/全不选 */

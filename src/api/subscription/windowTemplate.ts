@@ -2,10 +2,10 @@ import request from '@/config/axios'
 
 export interface SubscriptionWindowTemplate {
   id?: number
-  code: string
   name: string
   targetPeriod: string
   gradeCalcRule: string
+  gradeResolveMode: string
   description?: string
   status: number
   sort: number
@@ -16,10 +16,10 @@ export interface SubscriptionWindowTemplate {
 
 export interface SubscriptionWindowTemplateSimple {
   id: number
-  code: string
   name: string
   targetPeriod: string
   gradeCalcRule: string
+  gradeResolveMode: string
   description?: string
   status?: number
   builtIn?: boolean

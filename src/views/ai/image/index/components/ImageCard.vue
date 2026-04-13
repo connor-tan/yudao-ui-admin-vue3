@@ -46,7 +46,7 @@
     <div class="!overflow-hidden !mt-20px !h-280px !flex-1" ref="cardImageRef">
       <el-image
         class="!w-full !rounded-10px"
-        :src="detail?.picUrl"
+        :src="detail.picUrl"
         :preview-src-list="[detail.picUrl]"
         preview-teleported
       />
@@ -58,8 +58,8 @@
     <div class="!mt-5px !w-full !flex !flex-row !flex-wrap !justify-start">
       <el-button
         size="small"
-        v-for="button in detail?.buttons"
-        :key="button"
+        v-for="button in detail.buttons || []"
+        :key="button.customId"
         class="min-w-40px ml-0 mr-10px mt-5px"
         @click="handleMidjourneyBtnClick(button)"
       >
@@ -71,18 +71,14 @@
 <script setup lang="ts">
 import { Delete, Download, More, RefreshRight } from '@element-plus/icons-vue'
 import { ImageVO, ImageMidjourneyButtonsVO } from '@/api/ai/image'
-import { PropType } from 'vue'
 import { ElLoading, LoadingOptionsResolved } from 'element-plus'
 import { AiImageStatusEnum } from '@/views/ai/utils/constants'
 
 const message = useMessage() // 消息
 
-const props = defineProps({
-  detail: {
-    type: Object as PropType<ImageVO>,
-    require: true
-  }
-})
+const props = defineProps<{
+  detail: ImageVO
+}>()
 
 const cardImageRef = ref<any>() // 卡片 image ref
 const cardImageLoadingInstance = ref<any>() // 卡片 image ref
@@ -102,10 +98,12 @@ const handleMidjourneyBtnClick = async (button: ImageMidjourneyButtonsVO) => {
 const emits = defineEmits(['onBtnClick', 'onMjBtnClick']) // emits
 
 /** 监听详情 */
-const { detail } = toRefs(props)
-watch(detail, async (newVal, oldVal) => {
-  await handleLoading(newVal.status as string)
-})
+watch(
+  () => props.detail.status,
+  async (newStatus) => {
+    await handleLoading(newStatus)
+  }
+)
 
 /** 处理加载状态 */
 const handleLoading = async (status: number) => {
@@ -126,6 +124,6 @@ const handleLoading = async (status: number) => {
 
 /** 初始化 */
 onMounted(async () => {
-  await handleLoading(props.detail.status as string)
+  await handleLoading(props.detail.status)
 })
 </script>

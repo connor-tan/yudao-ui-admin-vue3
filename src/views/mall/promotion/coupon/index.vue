@@ -123,8 +123,16 @@ const message = useMessage() // 消息弹窗
 const loading = ref(true) // 列表的加载中
 const total = ref(0) // 列表的总页数
 const list = ref([]) // 字典表格数据
+type CouponStatusTabValue = 'all' | number
+type CouponQueryParams = {
+  pageNo: number
+  pageSize: number
+  createTime: string[]
+  status: number | undefined
+  nickname: string | undefined
+}
 // 查询参数
-const queryParams = reactive({
+const queryParams = reactive<CouponQueryParams>({
   pageNo: 1,
   pageSize: 10,
   createTime: [],
@@ -133,8 +141,8 @@ const queryParams = reactive({
 })
 const queryFormRef = ref() // 搜索的表单
 
-const activeTab = ref('all') // Tab 筛选
-const statusTabs = reactive([
+const activeTab = ref<CouponStatusTabValue>('all') // Tab 筛选
+const statusTabs = reactive<{ label: string; value: CouponStatusTabValue }[]>([
   {
     label: '全部',
     value: 'all'
@@ -182,8 +190,8 @@ const handleDelete = async (id: number) => {
 }
 
 /** tab 切换 */
-const onTabChange = (tabName) => {
-  queryParams.status = tabName === 'all' ? undefined : tabName
+const onTabChange = (tabName: string | number) => {
+  queryParams.status = tabName === 'all' ? undefined : Number(tabName)
   getList()
 }
 
@@ -194,7 +202,7 @@ onMounted(() => {
   for (const dict of getIntDictOptions(DICT_TYPE.PROMOTION_COUPON_STATUS)) {
     statusTabs.push({
       label: dict.label,
-      value: dict.value as string
+      value: Number(dict.value)
     })
   }
 })

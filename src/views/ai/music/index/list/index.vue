@@ -33,6 +33,7 @@
 import songCard from './songCard/index.vue'
 import songInfo from './songInfo/index.vue'
 import audioBar from './audioBar/index.vue'
+import { createDefaultSong, type MusicSongVO } from './types'
 
 defineOptions({ name: 'Index' })
 
@@ -41,10 +42,10 @@ const currentType = ref('mine')
 // loading 状态
 const loading = ref(false)
 // 当前音乐
-const currentSong = ref({})
+const currentSong = ref<MusicSongVO>(createDefaultSong())
 
-const mySongList = ref<Recordable[]>([])
-const squareSongList = ref<Recordable[]>([])
+const mySongList = ref<MusicSongVO[]>([])
+const squareSongList = ref<MusicSongVO[]>([])
 
 provide('currentSong', currentSong)
 
@@ -86,7 +87,7 @@ function generateMusic (formData: Recordable) {
  *@MethodAuthor: xiaohong
  *@Date: 2024-07-19 11:22:33
 */
-function setCurrentSong (music: Recordable) {
+function setCurrentSong (music: MusicSongVO) {
   currentSong.value = music
 }
 

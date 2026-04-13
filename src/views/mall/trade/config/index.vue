@@ -210,7 +210,7 @@ const message = useMessage() // 消息弹窗
 
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formRef = ref()
-const formData = ref({
+const createFormData = (): ConfigApi.ConfigVO => ({
   id: null,
   afterSaleRefundReasons: [],
   afterSaleReturnReasons: [],
@@ -228,6 +228,7 @@ const formData = ref({
   brokerageFrozenDays: 0,
   brokerageWithdrawTypes: []
 })
+const formData = ref<ConfigApi.ConfigVO>(createFormData())
 const formRules = reactive({
   deliveryExpressFreePrice: [{ required: true, message: '满额包邮不能为空', trigger: 'blur' }],
   brokerageEnabledCondition: [{ required: true, message: '分佣模式不能为空', trigger: 'blur' }],

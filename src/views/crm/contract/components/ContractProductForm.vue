@@ -94,29 +94,30 @@
   </el-row>
 </template>
 <script setup lang="ts">
+import * as ContractApi from '@/api/crm/contract'
 import * as ProductApi from '@/api/crm/product'
 import { erpPriceInputFormatter, erpPriceMultiply } from '@/utils'
 import { DICT_TYPE } from '@/utils/dict'
 
 const props = defineProps<{
-  products: undefined
-  disabled: false
+  products: ContractApi.ContractProductItemVO[]
+  disabled: boolean
 }>()
 const formLoading = ref(false) // 表单的加载中
-const formData = ref([])
+const formData = ref<ContractApi.ContractProductItemVO[]>([])
 const formRules = reactive({
   productId: [{ required: true, message: '产品不能为空', trigger: 'blur' }],
   contractPrice: [{ required: true, message: '合同价格不能为空', trigger: 'blur' }],
   count: [{ required: true, message: '产品数量不能为空', trigger: 'blur' }]
 })
-const formRef = ref([]) // 表单 Ref
+const formRef = ref() // 表单 Ref
 const productList = ref<ProductApi.ProductVO[]>([]) // 产品列表
 
 /** 初始化设置产品项 */
 watch(
   () => props.products,
   async (val) => {
-    formData.value = val
+    formData.value = val || []
   },
   { immediate: true }
 )
@@ -142,14 +143,15 @@ watch(
 
 /** 新增按钮操作 */
 const handleAdd = () => {
-  const row = {
+  const row: ContractApi.ContractProductItemVO = {
     id: undefined,
     productId: undefined,
     productUnit: undefined, // 产品单位
     productNo: undefined, // 产品条码
     productPrice: undefined, // 产品价格
     contractPrice: undefined,
-    count: 1
+    count: 1,
+    totalPrice: undefined
   }
   formData.value.push(row)
 }
@@ -160,7 +162,7 @@ const handleDelete = (index: number) => {
 }
 
 /** 处理产品变更 */
-const onChangeProduct = (productId, row) => {
+const onChangeProduct = (productId: number, row: ContractApi.ContractProductItemVO) => {
   const product = productList.value.find((item) => item.id === productId)
   if (product) {
     row.productUnit = product.unit
@@ -172,7 +174,7 @@ const onChangeProduct = (productId, row) => {
 
 /** 表单校验 */
 const validate = () => {
-  return formRef.value.validate()
+  return formRef.value?.validate()
 }
 defineExpose({ validate })
 

@@ -206,11 +206,15 @@ import ContractProductForm from '@/views/crm/contract/components/ContractProduct
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
 
+type ContractFormData = Partial<ContractApi.ContractVO> & {
+  products: ContractApi.ContractProductItemVO[]
+}
+
 const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
-const formData = ref({
+const formData = ref<ContractFormData>({
   id: undefined,
   no: undefined,
   name: undefined,
@@ -224,6 +228,7 @@ const formData = ref({
   ownerUserId: undefined,
   discountPercent: 0,
   totalProductPrice: undefined,
+  totalPrice: undefined,
   remark: undefined,
   products: []
 })
@@ -235,13 +240,14 @@ const formRules = reactive({
 })
 const formRef = ref() // 表单 Ref
 const userOptions = ref<UserApi.UserVO[]>([]) // 用户列表
-const customerList = ref([]) // 客户列表的数据
+const customerList = ref<CustomerApi.CustomerVO[]>([]) // 客户列表的数据
 const businessList = ref<BusinessApi.BusinessVO[]>([])
 const contactList = ref<ContactApi.ContactVO[]>([])
+const disabled = false
 
 /** 子表的表单 */
 const subTabsName = ref('product')
-const productFormRef = ref()
+const productFormRef = ref<InstanceType<typeof ContractProductForm>>()
 
 /** 计算 discountPrice、totalPrice 价格 */
 watch(
@@ -250,10 +256,10 @@ watch(
     if (!val) {
       return
     }
-    const totalProductPrice = val.products.reduce((prev, curr) => prev + curr.totalPrice, 0)
+    const totalProductPrice = val.products.reduce((prev, curr) => prev + (curr.totalPrice || 0), 0)
     const discountPrice =
       val.discountPercent != null
-        ? erpPriceMultiply(totalProductPrice, val.discountPercent / 100.0)
+        ? erpPriceMultiply(totalProductPrice, val.discountPercent / 100.0) || 0
         : 0
     const totalPrice = totalProductPrice - discountPrice
     // 赋值
@@ -273,7 +279,11 @@ const open = async (type: string, id?: number) => {
   if (id) {
     formLoading.value = true
     try {
-      formData.value = await ContractApi.getContract(id)
+      const contract = await ContractApi.getContract(id)
+      formData.value = {
+        ...contract,
+        products: contract.products || []
+      }
     } finally {
       formLoading.value = false
     }
@@ -297,12 +307,12 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  if (!formRef) return
+  if (!formRef.value) return
   const valid = await formRef.value.validate()
   if (!valid) return
   // 提交请求
   formLoading.value = true
-  productFormRef.value.validate()
+  await productFormRef.value?.validate()
   try {
     const data = unref(formData.value) as unknown as ContractApi.ContractVO
     if (formType.value === 'create') {
@@ -336,6 +346,7 @@ const resetForm = () => {
     ownerUserId: undefined,
     discountPercent: 0,
     totalProductPrice: undefined,
+    totalPrice: undefined,
     remark: undefined,
     products: []
   }
@@ -352,10 +363,11 @@ const handleCustomerChange = () => {
 /** 处理商机变化 */
 const handleBusinessChange = async (businessId: number) => {
   const business = await BusinessApi.getBusiness(businessId)
-  business.products.forEach((item) => {
+  const products = business.products || []
+  products.forEach((item) => {
     item.contractPrice = item.businessPrice
   })
-  formData.value.products = business.products
+  formData.value.products = products
 }
 
 /** 动态获取客户联系人 */

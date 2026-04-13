@@ -41,11 +41,13 @@ import { fenToYuan, yuanToFen } from '@/utils'
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
 
+type WalletRechargePackageFormData = Partial<WalletRechargePackageApi.WalletRechargePackageVO>
+
 const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
-const formData = ref({
+const formData = ref<WalletRechargePackageFormData>({
   id: undefined,
   name: undefined,
   payPrice: undefined,
@@ -70,9 +72,12 @@ const open = async (type: string, id?: number) => {
   if (id) {
     formLoading.value = true
     try {
-      formData.value = await WalletRechargePackageApi.getWalletRechargePackage(id)
-      formData.value.payPrice = fenToYuan(formData.value.payPrice)
-      formData.value.bonusPrice = fenToYuan(formData.value.bonusPrice)
+      const walletRechargePackage = await WalletRechargePackageApi.getWalletRechargePackage(id)
+      formData.value = {
+        ...walletRechargePackage,
+        payPrice: Number(fenToYuan(walletRechargePackage.payPrice ?? 0)),
+        bonusPrice: Number(fenToYuan(walletRechargePackage.bonusPrice ?? 0))
+      }
     } finally {
       formLoading.value = false
     }
@@ -84,15 +89,15 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  if (!formRef) return
+  if (!formRef.value) return
   const valid = await formRef.value.validate()
   if (!valid) return
   // 提交请求
   formLoading.value = true
   try {
-    const data = { ...formData.value }
-    data.payPrice = yuanToFen(data.payPrice)
-    data.bonusPrice = yuanToFen(data.bonusPrice)
+    const data = { ...formData.value } as WalletRechargePackageApi.WalletRechargePackageVO
+    data.payPrice = yuanToFen(data.payPrice ?? 0)
+    data.bonusPrice = yuanToFen(data.bonusPrice ?? 0)
     if (formType.value === 'create') {
       await WalletRechargePackageApi.createWalletRechargePackage(data)
       message.success(t('common.createSuccess'))

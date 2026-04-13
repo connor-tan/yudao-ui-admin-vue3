@@ -112,6 +112,7 @@
 </template>
 
 <script setup lang="ts">
+import type { FormInstance } from 'element-plus'
 import { dateFormatter } from '@/utils/formatTime'
 import { handleTree } from '@/utils/tree'
 import download from '@/utils/download'
@@ -123,22 +124,34 @@ defineOptions({ name: 'Demo02Category' })
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
 
+type Demo02CategoryQueryParams = {
+  pageNo: number
+  pageSize: number
+  name: string | null
+  parentId: number | null
+  createTime: string[] | undefined
+}
+
 const loading = ref(true) // 列表的加载中
-const list = ref([]) // 列表的数据
-const queryParams = reactive({
+const list = ref<Demo02CategoryApi.Demo02CategoryVO[]>([]) // 列表的数据
+const total = ref(0)
+const queryParams = reactive<Demo02CategoryQueryParams>({
+  pageNo: 1,
+  pageSize: 10,
   name: null,
   parentId: null,
-  createTime: []
+  createTime: undefined
 })
-const queryFormRef = ref() // 搜索的表单
+const queryFormRef = ref<FormInstance>() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
 const getList = async () => {
   loading.value = true
   try {
-    const data = await Demo02CategoryApi.getDemo02CategoryList(queryParams)
+    const data = await Demo02CategoryApi.getDemo02CategoryList()
     list.value = handleTree(data, 'id', 'parentId')
+    total.value = data.length
   } finally {
     loading.value = false
   }
@@ -152,14 +165,14 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
+  queryFormRef.value?.resetFields()
   handleQuery()
 }
 
 /** 添加/修改操作 */
-const formRef = ref()
+const formRef = ref<InstanceType<typeof Demo02CategoryForm>>()
 const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
+  formRef.value?.open(type, id)
 }
 
 /** 删除按钮操作 */

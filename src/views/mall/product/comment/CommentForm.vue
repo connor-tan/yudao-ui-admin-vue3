@@ -59,7 +59,7 @@ const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
-const formData = ref({
+const formData = ref<CommentApi.CommentVO & { spuId: number; picUrls: string[] }>({
   id: undefined,
   userId: undefined,
   userNickname: undefined,
@@ -81,7 +81,7 @@ const formRules = reactive({
   benefitScores: [{ required: true, message: '服务星级不能为空', trigger: 'blur' }]
 })
 const formRef = ref() // 表单 Ref
-const skuData = ref({
+const skuData = ref<ProductSpuApi.Sku>({
   id: -1,
   name: '',
   picUrl: ''

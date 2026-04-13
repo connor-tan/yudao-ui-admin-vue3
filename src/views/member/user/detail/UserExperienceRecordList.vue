@@ -110,7 +110,7 @@ const list = ref([]) // 列表的数据
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  userId: null,
+  userId: undefined as number | undefined,
   bizId: null,
   bizType: null,
   title: null,

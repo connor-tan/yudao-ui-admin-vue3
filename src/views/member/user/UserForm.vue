@@ -108,7 +108,7 @@ const formRules = reactive({
   status: [{ required: true, message: '状态不能为空', trigger: 'blur' }]
 })
 const formRef = ref() // 表单 Ref
-const areaList = ref([]) // 地区列表
+const areaList = ref<AreaApi.AreaNodeVO[]>([]) // 地区列表
 
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {

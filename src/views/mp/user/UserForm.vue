@@ -17,9 +17,9 @@
         <el-select v-model="formData.tagIds" clearable multiple placeholder="请选择标签">
           <el-option
             v-for="item in tagList"
-            :key="item.tagId"
+            :key="item.tagId ?? item.id ?? 0"
             :label="item.name"
-            :value="item.tagId"
+            :value="item.tagId ?? item.id ?? 0"
           />
         </el-select>
       </el-form-item>
@@ -33,6 +33,7 @@
 <script lang="ts" setup>
 import * as MpTagApi from '@/api/mp/tag'
 import * as MpUserApi from '@/api/mp/user'
+import type { FormInstance } from 'element-plus'
 
 defineOptions({ name: 'MpUserForm' })
 
@@ -41,15 +42,16 @@ const message = useMessage() // 消息弹窗
 
 const dialogVisible = ref(false) // 弹窗的是否展示
 const formLoading = ref(false) // 表单的加载中
-const formData = ref({
+const createDefaultFormData = (): MpUserApi.UserVO => ({
   id: undefined,
   nickname: undefined,
   remark: undefined,
   tagIds: []
 })
+const formData = ref<MpUserApi.UserVO>(createDefaultFormData())
 const formRules = reactive({}) // 表单的校验
-const formRef = ref() // 表单 Ref
-const tagList = ref([]) // 公众号标签列表
+const formRef = ref<FormInstance>() // 表单 Ref
+const tagList = ref<MpTagApi.TagVO[]>([]) // 公众号标签列表
 
 /** 打开弹窗 */
 const open = async (id: number) => {
@@ -73,7 +75,7 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  if (!formRef) return
+  if (!formRef.value) return
   const valid = await formRef.value.validate()
   if (!valid) return
   // 提交请求
@@ -91,12 +93,7 @@ const submitForm = async () => {
 
 /** 重置表单 */
 const resetForm = () => {
-  formData.value = {
-    id: undefined,
-    nickname: undefined,
-    remark: undefined,
-    tagIds: []
-  }
+  formData.value = createDefaultFormData()
   formRef.value?.resetFields()
 }
 </script>

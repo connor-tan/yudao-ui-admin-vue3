@@ -5,12 +5,15 @@ export interface SeckillActivityVO {
   id?: number
   spuId?: number
   name?: string
+  spuName?: string
+  picUrl?: string
+  marketPrice?: number
   status?: number
   remark?: string
   startTime?: string
   endTime?: string
   sort?: number
-  configIds?: string
+  configIds?: number[]
   orderCount?: number
   userCount?: number
   totalPrice?: number
@@ -19,6 +22,10 @@ export interface SeckillActivityVO {
   stock?: number
   totalStock?: number
   seckillPrice?: number
+  groupCount?: number
+  groupSuccessCount?: number
+  recordCount?: number
+  createTime?: string
   products?: SeckillProductVO[]
 }
 

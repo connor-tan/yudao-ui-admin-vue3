@@ -19,12 +19,13 @@
 </template>
 
 <script lang="ts" setup>
+import * as BusinessApi from '@/api/crm/business'
 import { erpPriceTableColumnFormatter } from '@/utils'
 
 const props = defineProps<{
-  businesses: undefined
+  businesses: BusinessApi.BusinessVO[]
 }>()
-const formData = ref([])
+const formData = ref<BusinessApi.BusinessVO[]>([])
 
 /** 初始化商机列表 */
 watch(

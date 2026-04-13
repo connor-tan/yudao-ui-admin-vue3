@@ -1,15 +1,30 @@
 import request from '@/config/axios'
+import type { SaleOrderItemVO } from '@/api/erp/sale/order'
+
+export interface SaleReturnItemVO extends SaleOrderItemVO {
+  warehouseId?: number
+}
 
 // ERP 销售退货 VO
 export interface SaleReturnVO {
-  id: number // 销售退货编号
-  no: string // 销售退货号
-  customerId: number // 客户编号
-  returnTime: string // 退货时间
-  totalCount: number // 合计数量
+  id?: number // 销售退货编号
+  no?: string // 销售退货号
+  customerId?: number // 客户编号
+  accountId?: number // 结算账户
+  saleUserId?: number // 销售人员
+  orderId?: number // 关联订单编号
+  orderNo?: string // 关联订单号
+  returnTime?: string // 退货时间
+  totalCount?: number // 合计数量
   totalPrice: number // 合计金额，单位：元
-  status: number // 状态
-  remark: string // 备注
+  otherPrice: number // 其它费用
+  refundPrice?: number // 已退金额
+  discountPercent: number // 优惠率
+  discountPrice: number // 优惠金额
+  status?: number // 状态
+  remark?: string // 备注
+  fileUrl: string // 附件
+  items: SaleReturnItemVO[] // 明细项
 }
 
 // ERP 销售退货 API
@@ -21,7 +36,7 @@ export const SaleReturnApi = {
 
   // 查询销售退货详情
   getSaleReturn: async (id: number) => {
-    return await request.get({ url: `/erp/sale-return/get?id=` + id })
+    return await request.get<SaleReturnVO>({ url: `/erp/sale-return/get?id=` + id })
   },
 
   // 新增销售退货

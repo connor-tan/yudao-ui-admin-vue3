@@ -63,7 +63,8 @@
       <el-table-column label="标签" align="center" prop="tagIds" width="200">
         <template #default="scope">
           <span v-for="(tagId, index) in scope.row.tagIds" :key="index">
-            <el-tag>{{ tagList.find((tag) => tag.tagId === tagId)?.name }} </el-tag>&nbsp;
+            <el-tag>{{ tagList.find((tag) => (tag.tagId ?? tag.id) === tagId)?.name }} </el-tag
+            >&nbsp;
           </span>
         </template>
       </el-table-column>
@@ -112,11 +113,9 @@ import * as MpTagApi from '@/api/mp/tag'
 import WxAccountSelect from '@/views/mp/components/wx-account-select'
 import type {FormInstance} from 'element-plus'
 import UserForm from './UserForm.vue'
-import {ref} from "vue";
 
 defineOptions({ name: 'MpUser' })
 
-const { t } = useI18n() // 国际化
 const message = useMessage() // 消息
 
 const isDialog = ref(false) // 是不是弹窗调用
@@ -133,7 +132,7 @@ const queryParams = reactive({
   nickname: ''
 })
 const queryFormRef = ref<FormInstance | null>(null) // 搜索的表单
-const tagList = ref<any[]>([]) // 公众号标签列表
+const tagList = ref<MpTagApi.TagVO[]>([]) // 公众号标签列表
 
 /** 侦听公众号变化 **/
 const onAccountChanged = (id: number) => {

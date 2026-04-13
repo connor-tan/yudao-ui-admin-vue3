@@ -5,7 +5,7 @@
     </el-button>
     <el-button
       v-if="permissionListRef?.validateWrite"
-      :disabled="business.endStatus"
+      :disabled="!!business.endStatus"
       type="success"
       @click="openStatusForm()"
     >
@@ -109,7 +109,9 @@ const openStatusForm = () => {
 /** 联系人转移 */
 const transferFormRef = ref<InstanceType<typeof CrmTransferForm>>() // 联系人转移表单 ref
 const transfer = () => {
-  transferFormRef.value?.open(business.value.id)
+  if (business.value.id != null) {
+    transferFormRef.value?.open(business.value.id)
+  }
 }
 
 /** 获取操作日志 */

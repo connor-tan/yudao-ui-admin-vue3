@@ -148,7 +148,7 @@
         <el-button
           type="danger"
           plain
-          @click="handleDelete(selectionList.map((item) => item.id))"
+          @click="handleDelete(getSelectionIds())"
           v-hasPermi="['erp:finance-payment:delete']"
           :disabled="selectionList.length === 0"
         >
@@ -224,7 +224,7 @@
           <el-button
             link
             type="primary"
-            @click="handleUpdateStatus(scope.row.id, 20)"
+            @click="handleRowStatusChange(scope.row, 20)"
             v-hasPermi="['erp:finance-payment:update-status']"
             v-if="scope.row.status === 10"
           >
@@ -233,7 +233,7 @@
           <el-button
             link
             type="danger"
-            @click="handleUpdateStatus(scope.row.id, 10)"
+            @click="handleRowStatusChange(scope.row, 10)"
             v-hasPermi="['erp:finance-payment:update-status']"
             v-else
           >
@@ -242,7 +242,7 @@
           <el-button
             link
             type="danger"
-            @click="handleDelete([scope.row.id])"
+            @click="handleRowDelete(scope.row)"
             v-hasPermi="['erp:finance-payment:delete']"
           >
             删除
@@ -284,7 +284,21 @@ const { t } = useI18n() // 国际化
 const loading = ref(true) // 列表的加载中
 const list = ref<FinancePaymentVO[]>([]) // 列表的数据
 const total = ref(0) // 列表的总页数
-const queryParams = reactive({
+interface QueryParams {
+  pageNo: number
+  pageSize: number
+  no?: string
+  paymentTime: string[]
+  supplierId?: number
+  creator?: number
+  financeUserId?: number
+  accountId?: number
+  status?: number
+  remark?: string
+  bizNo?: string
+}
+
+const queryParams = reactive<QueryParams>({
   pageNo: 1,
   pageSize: 10,
   no: undefined,
@@ -328,9 +342,26 @@ const resetQuery = () => {
 }
 
 /** 添加/修改操作 */
-const formRef = ref()
+const formRef = ref<InstanceType<typeof FinancePaymentForm>>()
 const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
+  formRef.value?.open(type, id)
+}
+
+const getSelectionIds = () =>
+  selectionList.value.map((item) => item.id).filter((id): id is number => id != null)
+
+const handleRowDelete = (row: FinancePaymentVO) => {
+  if (row.id == null) {
+    return
+  }
+  return handleDelete([row.id])
+}
+
+const handleRowStatusChange = (row: FinancePaymentVO, status: number) => {
+  if (row.id == null) {
+    return
+  }
+  return handleUpdateStatus(row.id, status)
 }
 
 /** 删除按钮操作 */
@@ -343,7 +374,7 @@ const handleDelete = async (ids: number[]) => {
     message.success(t('common.delSuccess'))
     // 刷新列表
     await getList()
-    selectionList.value = selectionList.value.filter((item) => !ids.includes(item.id))
+    selectionList.value = selectionList.value.filter((item) => item.id == null || !ids.includes(item.id))
   } catch {}
 }
 

@@ -61,7 +61,7 @@
                 v-for="item in statusTypeList"
                 :key="item.id"
                 :label="item.name"
-                :value="item.id"
+                :value="item.id!"
               />
             </el-select>
           </el-form-item>
@@ -147,11 +147,17 @@ import { erpPriceMultiply, erpPriceInputFormatter } from '@/utils'
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
 
+type BusinessFormData = Partial<BusinessApi.BusinessVO> & {
+  products: BusinessApi.BusinessProductItemVO[]
+  contactId?: number
+  customerDefault: boolean
+}
+
 const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
-const formData = ref({
+const formData = ref<BusinessFormData>({
   id: undefined,
   name: undefined,
   customerId: undefined,
@@ -174,12 +180,13 @@ const formRules = reactive({
 })
 const formRef = ref() // 表单 Ref
 const userOptions = ref<UserApi.UserVO[]>([]) // 用户列表
-const statusTypeList = ref([]) // 商机状态类型列表
-const customerList = ref([]) // 客户列表的数据
+const statusTypeList = ref<Awaited<ReturnType<typeof BusinessStatusApi.getBusinessStatusTypeSimpleList>>>([]) // 商机状态类型列表
+const customerList = ref<Awaited<ReturnType<typeof CustomerApi.getCustomerSimpleList>>>([]) // 客户列表的数据
+const disabled = false
 
 /** 子表的表单 */
 const subTabsName = ref('product')
-const productFormRef = ref()
+const productFormRef = ref<InstanceType<typeof BusinessProductForm>>()
 
 /** 计算 discountPrice、totalPrice 价格 */
 watch(
@@ -188,10 +195,10 @@ watch(
     if (!val) {
       return
     }
-    const totalProductPrice = val.products.reduce((prev, curr) => prev + curr.totalPrice, 0)
+    const totalProductPrice = val.products.reduce((prev, curr) => prev + (curr.totalPrice || 0), 0)
     const discountPrice =
       val.discountPercent != null
-        ? erpPriceMultiply(totalProductPrice, val.discountPercent / 100.0)
+        ? erpPriceMultiply(totalProductPrice, val.discountPercent / 100.0) || 0
         : 0
     const totalPrice = totalProductPrice - discountPrice
     // 赋值
@@ -211,7 +218,12 @@ const open = async (type: string, id?: number, customerId?: number, contactId?: 
   if (id) {
     formLoading.value = true
     try {
-      formData.value = await BusinessApi.getBusiness(id)
+      const business = await BusinessApi.getBusiness(id)
+      formData.value = {
+        ...business,
+        products: business.products || [],
+        customerDefault: false
+      }
     } finally {
       formLoading.value = false
     }
@@ -242,10 +254,10 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  if (!formRef) return
+  if (!formRef.value) return
   const valid = await formRef.value.validate()
   if (!valid) return
-  await productFormRef.value.validate()
+  await productFormRef.value?.validate()
   // 提交请求
   formLoading.value = true
   try {

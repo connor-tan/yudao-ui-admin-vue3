@@ -60,6 +60,7 @@
 </template>
 
 <script setup lang="ts">
+import type { FormInstance } from 'element-plus'
 import { IoTOtaTaskApi, OtaTask } from '@/api/iot/ota/task'
 import { IoTOtaTaskDeviceScopeEnum } from '@/views/iot/utils/constants'
 import { DeviceApi, DeviceVO } from '@/api/iot/device/device'
@@ -76,14 +77,15 @@ const message = useMessage() // 消息弹窗
 
 const dialogVisible = ref(false) // 弹窗的是否展示
 const formLoading = ref(false) // 表单的加载中：修改时的数据加载
-const formData = ref<OtaTask>({
+const createDefaultFormData = (): OtaTask => ({
   name: '',
   deviceScope: IoTOtaTaskDeviceScopeEnum.ALL.value,
   firmwareId: props.firmwareId,
   description: '',
   deviceIds: []
 })
-const formRef = ref() // 表单 Ref
+const formData = ref<OtaTask>(createDefaultFormData())
+const formRef = ref<FormInstance>() // 表单 Ref
 const formRules = {
   name: [{ required: true, message: '请输入任务名称', trigger: 'blur' }],
   deviceScope: [{ required: true, message: '请选择升级范围', trigger: 'change' }],
@@ -104,7 +106,7 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  await formRef.value.validate()
+  await formRef.value?.validate()
   // 提交请求
   formLoading.value = true
   try {
@@ -120,13 +122,7 @@ const submitForm = async () => {
 
 /** 重置表单 */
 const resetForm = () => {
-  formData.value = {
-    name: '',
-    deviceScope: IoTOtaTaskDeviceScopeEnum.ALL.value,
-    firmwareId: props.firmwareId,
-    description: '',
-    deviceIds: []
-  }
+  formData.value = createDefaultFormData()
   formRef.value?.resetFields()
 }
 </script>

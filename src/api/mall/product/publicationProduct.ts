@@ -8,6 +8,12 @@ export interface PublicationGradeSimpleVO {
   aliasName?: string
 }
 
+export interface PublicationSpuGradeRespVO {
+  productSpuId: number
+  gradeCatalogIds: number[]
+  gradeNames?: string[]
+}
+
 export interface PublicationProductSkuVO {
   skuId?: number
   id?: number
@@ -32,25 +38,25 @@ export interface PublicationProductSkuVO {
 export interface PublicationProductVO {
   id?: number
   domainType?: string
-  name: string
-  keyword: string
-  introduction: string
-  description: string
+  name?: string
+  keyword?: string
+  introduction?: string
+  description?: string
   categoryId?: number
   brandId?: number
-  picUrl: string
+  picUrl?: string
   sliderPicUrls?: string[]
-  sort: number
+  sort?: number
   status?: number
-  specType: boolean
+  specType?: boolean
   price?: number
   marketPrice?: number
   costPrice?: number
   stock?: number
-  deliveryTypes: number[]
+  deliveryTypes?: number[]
   deliveryTemplateId?: number
-  giveIntegral: number
-  subCommissionType: boolean
+  giveIntegral?: number
+  subCommissionType?: boolean
   salesCount?: number
   virtualSalesCount?: number
   browseCount?: number
@@ -65,9 +71,9 @@ export interface PublicationProductVO {
   issn?: string
   cnCode?: string
   postDistributionCode?: string
-  applicableGradeCatalogIds: number[]
+  applicableGradeCatalogIds?: number[]
   applicableGradeNames?: string[]
-  skus: PublicationProductSkuVO[]
+  skus?: PublicationProductSkuVO[]
   createTime?: string
 }
 
@@ -101,4 +107,8 @@ export const deletePublicationProduct = (id: number) => {
 
 export const getPublicationGradeSimpleList = () => {
   return request.get({ url: '/product/publication-spu-grade/simple-list' })
+}
+
+export const getPublicationSpuGradeBySpuId = (productSpuId: number) => {
+  return request.get({ url: '/product/publication-spu-grade/get-by-spu-id', params: { productSpuId } })
 }

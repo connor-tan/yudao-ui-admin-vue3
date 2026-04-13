@@ -162,7 +162,7 @@ const usedmemoryEchartChika = reactive<any>({
 })
 
 // 指令使用情况
-const commandStatsRefChika = reactive({
+const commandStatsRefChika = reactive<any>({
   title: {
     text: '命令统计',
     left: 'center'

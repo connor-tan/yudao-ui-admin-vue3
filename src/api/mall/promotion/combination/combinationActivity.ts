@@ -5,6 +5,9 @@ export interface CombinationActivityVO {
   id?: number
   name?: string
   spuId?: number
+  spuName?: string
+  picUrl?: string
+  marketPrice?: number
   totalLimitCount?: number
   singleLimitCount?: number
   startTime?: string
@@ -17,6 +20,10 @@ export interface CombinationActivityVO {
   status?: number
   limitDuration?: number
   combinationPrice?: number
+  groupCount?: number
+  groupSuccessCount?: number
+  recordCount?: number
+  createTime?: string
   products: CombinationProductVO[]
 }
 

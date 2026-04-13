@@ -75,12 +75,12 @@
   <!-- 弹窗 -->
   <ContactListModal
     ref="contactTableSelectRef"
-    :customer-id="formData.bizId"
+    :customer-id="formData.bizId ?? 0"
     @success="handleAddContact"
   />
   <BusinessListModal
     ref="businessTableSelectRef"
-    :customer-id="formData.bizId"
+    :customer-id="formData.bizId ?? 0"
     @success="handleAddBusiness"
   />
 </template>
@@ -97,15 +97,23 @@ import * as ContactApi from '@/api/crm/contact'
 
 defineOptions({ name: 'FollowUpRecordForm' })
 
+type FollowUpRecordFormData = Partial<FollowUpRecordVO> & {
+  businesses: BusinessApi.BusinessVO[]
+  contacts: ContactApi.ContactVO[]
+  picUrls: string[]
+  fileUrls: string[]
+}
+
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
 
 const dialogVisible = ref(false) // 弹窗的是否展示
-const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
-const formData = ref({
+const formData = ref<FollowUpRecordFormData>({
   bizType: undefined,
   bizId: undefined,
+  picUrls: [],
+  fileUrls: [],
   businesses: [],
   contacts: []
 })
@@ -154,7 +162,7 @@ const contactTableSelectRef = ref<InstanceType<typeof ContactListModal>>()
 const handleOpenContact = () => {
   contactTableSelectRef.value?.open()
 }
-const handleAddContact = (contactId: [], newContacts: ContactApi.ContactVO[]) => {
+const handleAddContact = (_contactIds: number[], newContacts: ContactApi.ContactVO[]) => {
   newContacts.forEach((contact) => {
     if (!formData.value.contacts.some((item) => item.id === contact.id)) {
       formData.value.contacts.push(contact)
@@ -167,7 +175,7 @@ const businessTableSelectRef = ref<InstanceType<typeof BusinessListModal>>()
 const handleOpenBusiness = () => {
   businessTableSelectRef.value?.open()
 }
-const handleAddBusiness = (businessId: [], newBusinesses: BusinessApi.BusinessVO[]) => {
+const handleAddBusiness = (_businessIds: number[], newBusinesses: BusinessApi.BusinessVO[]) => {
   newBusinesses.forEach((business) => {
     if (!formData.value.businesses.some((item) => item.id === business.id)) {
       formData.value.businesses.push(business)
@@ -181,6 +189,8 @@ const resetForm = () => {
   formData.value = {
     bizId: undefined,
     bizType: undefined,
+    picUrls: [],
+    fileUrls: [],
     businesses: [],
     contacts: []
   }

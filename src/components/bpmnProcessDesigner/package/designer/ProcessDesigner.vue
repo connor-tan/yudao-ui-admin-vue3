@@ -4,7 +4,7 @@
       <slot name="control-header"></slot>
       <template v-if="!$slots['control-header']">
         <ElButtonGroup key="file-control">
-          <XButton preIcon="ep:folder-opened" title="打开文件" @click="refFile.click()" />
+          <XButton preIcon="ep:folder-opened" title="打开文件" @click="openLocalFilePicker" />
           <el-tooltip effect="light" placement="bottom">
             <template #content>
               <div style="color: #409eff">
@@ -235,11 +235,12 @@ import { XmlNode, XmlNodeType, parseXmlString } from 'steady-xml'
 // })
 import hljs from 'highlight.js' // 导入代码高亮文件
 import 'highlight.js/styles/github.css' // 导入代码高亮样式
+import type { ModuleDeclaration } from 'didi'
 
 defineOptions({ name: 'MyProcessDesigner' })
 
-const bpmnCanvas = ref()
-const refFile = ref()
+const bpmnCanvas = ref<HTMLDivElement>()
+const refFile = ref<HTMLInputElement>()
 const emit = defineEmits([
   'destroy',
   'init-finished',
@@ -327,33 +328,39 @@ const previewResult = ref('')
 const previewType = ref('xml')
 const recoverable = ref(false)
 const revocable = ref(false)
-const additionalModules = computed(() => {
+const normalizeAdditionalModules = (modules: unknown): ModuleDeclaration[] => {
+  if (Array.isArray(modules)) {
+    return modules as ModuleDeclaration[]
+  }
+  if (
+    modules &&
+    typeof modules === 'object' &&
+    Object.keys(modules as Record<string, unknown>).length > 0
+  ) {
+    return [modules as ModuleDeclaration]
+  }
+  return []
+}
+const additionalModules = computed<ModuleDeclaration[]>(() => {
   console.log(props.additionalModel, 'additionalModel')
-  const Modules: any[] = []
+  const modules: ModuleDeclaration[] = []
   // 仅保留用户自定义扩展模块
   if (props.onlyCustomizeAddi) {
-    if (Object.prototype.toString.call(props.additionalModel) == '[object Array]') {
-      return props.additionalModel || []
-    }
-    return [props.additionalModel]
+    return normalizeAdditionalModules(props.additionalModel)
   }
 
   // 插入用户自定义扩展模块
-  if (Object.prototype.toString.call(props.additionalModel) == '[object Array]') {
-    Modules.push(...(props.additionalModel as any[]))
-  } else {
-    props.additionalModel && Modules.push(props.additionalModel)
-  }
+  modules.push(...normalizeAdditionalModules(props.additionalModel))
 
   // 翻译模块
-  const TranslateModule = {
+  const translateModule: ModuleDeclaration = {
     translate: ['value', customTranslate(props.translations || translationsCN)]
   }
-  Modules.push(TranslateModule)
+  modules.push(translateModule)
 
   // 模拟流转模块
   if (props.simulation) {
-    Modules.push(tokenSimulation)
+    modules.push(tokenSimulation as ModuleDeclaration)
   }
 
   // 根据需要的流程类型设置扩展元素构建模块
@@ -362,16 +369,16 @@ const additionalModules = computed(() => {
   // }
   console.log(props.prefix, 'props.prefix ')
   if (props.prefix === 'camunda') {
-    Modules.push(camundaModdleExtension)
+    modules.push(camundaModdleExtension as ModuleDeclaration)
   }
   if (props.prefix === 'flowable') {
-    Modules.push(flowableModdleExtension)
+    modules.push(flowableModdleExtension as ModuleDeclaration)
   }
   if (props.prefix === 'activiti') {
-    Modules.push(activitiModdleExtension)
+    modules.push(activitiModdleExtension as ModuleDeclaration)
   }
 
-  return Modules
+  return modules
 })
 const moddleExtensions = computed(() => {
   console.log(props.onlyCustomizeModdle, 'props.onlyCustomizeModdle')
@@ -406,8 +413,11 @@ console.log(additionalModules, 'additionalModules()')
 console.log(moddleExtensions, 'moddleExtensions()')
 const initBpmnModeler = () => {
   if (bpmnModeler) return
-  let data = document.getElementById('bpmnCanvas')
-  console.log(data, 'data')
+  const container = document.getElementById('bpmnCanvas') ?? bpmnCanvas.value
+  if (!container) {
+    return
+  }
+  console.log(container, 'data')
   console.log(props.keyboard, 'props.keyboard')
   console.log(additionalModules, 'additionalModules()')
   console.log(moddleExtensions, 'moddleExtensions()')
@@ -417,7 +427,7 @@ const initBpmnModeler = () => {
     // container: getCurrentInstance(),
     // container: needClass,
     // container: bpmnCanvas.value,
-    container: data,
+    container,
     // width: '100%',
     // 添加控制板
     // propertiesPanel: {
@@ -549,9 +559,16 @@ const setEncoded = (type, data) => {
   }
 }
 
+const openLocalFilePicker = () => {
+  refFile.value?.click()
+}
+
 // 加载本地文件
 const importLocalFile = () => {
-  const file = refFile.value.files[0]
+  const file = refFile.value?.files?.[0]
+  if (!file) {
+    return
+  }
   const reader = new FileReader()
   reader.readAsText(file)
   reader.onload = function () {

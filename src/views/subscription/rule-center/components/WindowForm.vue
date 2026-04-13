@@ -10,22 +10,22 @@
       <el-form-item label="窗口名称" prop="name">
         <el-input v-model="formData.name" placeholder="请输入窗口名称" />
       </el-form-item>
-      <el-form-item label="开始时间" prop="startTime">
+      <el-form-item label="开始日期" prop="startDate">
         <el-date-picker
-          v-model="formData.startTime"
+          v-model="formData.startDate"
           class="!w-full"
-          type="datetime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          placeholder="请选择开始时间"
+          type="date"
+          value-format="YYYY-MM-DD"
+          placeholder="请选择开始日期"
         />
       </el-form-item>
-      <el-form-item label="结束时间" prop="endTime">
+      <el-form-item label="结束日期" prop="endDate">
         <el-date-picker
-          v-model="formData.endTime"
+          v-model="formData.endDate"
           class="!w-full"
-          type="datetime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          placeholder="请选择结束时间"
+          type="date"
+          value-format="YYYY-MM-DD"
+          placeholder="请选择结束日期"
         />
       </el-form-item>
       <el-form-item label="目标学年" prop="targetYearStart">
@@ -69,6 +69,9 @@
           <el-descriptions-item label="年级判定">
             {{ getSubscriptionGradeCalcRuleLabel(templateSummary.gradeCalcRule) }}
           </el-descriptions-item>
+          <el-descriptions-item label="解析模式">
+            {{ getSubscriptionGradeResolveModeLabel(templateSummary.gradeResolveMode) }}
+          </el-descriptions-item>
           <el-descriptions-item label="模板说明">
             {{ templateSummary.description || '-' }}
           </el-descriptions-item>
@@ -103,6 +106,7 @@ import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import {
   buildSubscriptionTargetYearKey,
   getSubscriptionGradeCalcRuleLabel,
+  getSubscriptionGradeResolveModeLabel,
   getSubscriptionTargetPeriodLabel
 } from '@/utils/subscription'
 import {
@@ -128,17 +132,23 @@ const windowYearList = ref<SubscriptionSupportWindowYearSimple[]>([])
 const templateList = ref<SubscriptionWindowTemplateSimple[]>([])
 const formRef = ref()
 const targetYearKey = ref<string>()
-const formData = ref<SubscriptionWindow>({
+type SubscriptionWindowFormData = Omit<SubscriptionWindow, 'startTime' | 'endTime'> & {
+  startDate?: string
+  endDate?: string
+}
+
+const formData = ref<SubscriptionWindowFormData>({
   id: undefined,
   name: '',
-  startTime: undefined,
-  endTime: undefined,
+  startDate: undefined,
+  endDate: undefined,
   targetYearStart: undefined,
   targetYearEnd: undefined,
   templateId: undefined,
   templateNameSnapshot: '',
   targetPeriod: '',
   gradeCalcRule: '',
+  gradeResolveMode: '',
   templateLocked: false,
   status: 0,
   remark: ''
@@ -146,8 +156,24 @@ const formData = ref<SubscriptionWindow>({
 
 const formRules = reactive({
   name: [{ required: true, message: '窗口名称不能为空', trigger: 'blur' }],
-  startTime: [{ required: true, message: '开始时间不能为空', trigger: 'change' }],
-  endTime: [{ required: true, message: '结束时间不能为空', trigger: 'change' }],
+  startDate: [{ required: true, message: '开始日期不能为空', trigger: 'change' }],
+  endDate: [
+    { required: true, message: '结束日期不能为空', trigger: 'change' },
+    {
+      validator: (_rule: any, value: string, callback: any) => {
+        if (!value || !formData.value.startDate) {
+          callback()
+          return
+        }
+        if (dayjs(value).isBefore(dayjs(formData.value.startDate), 'day')) {
+          callback(new Error('结束日期不能早于开始日期'))
+          return
+        }
+        callback()
+      },
+      trigger: 'change'
+    }
+  ],
   targetYearStart: [
     {
       validator: (_rule: any, _value: any, callback: any) => {
@@ -189,6 +215,7 @@ const templateOptions = computed(() => {
       name: formData.value.templateNameSnapshot,
       targetPeriod: formData.value.targetPeriod || '',
       gradeCalcRule: formData.value.gradeCalcRule || '',
+      gradeResolveMode: formData.value.gradeResolveMode || '',
       description: '',
       builtIn: false,
       status: 0
@@ -202,13 +229,19 @@ const templateSummary = computed(() => {
   if (selectedTemplate) {
     return selectedTemplate
   }
-  if (formData.value.templateNameSnapshot || formData.value.targetPeriod || formData.value.gradeCalcRule) {
+  if (
+    formData.value.templateNameSnapshot ||
+    formData.value.targetPeriod ||
+    formData.value.gradeCalcRule ||
+    formData.value.gradeResolveMode
+  ) {
     return {
       id: formData.value.templateId || 0,
       code: '',
       name: formData.value.templateNameSnapshot || '历史窗口快照',
       targetPeriod: formData.value.targetPeriod || '',
       gradeCalcRule: formData.value.gradeCalcRule || '',
+      gradeResolveMode: formData.value.gradeResolveMode || '',
       description: '',
       builtIn: false,
       status: 0
@@ -230,42 +263,63 @@ watch(targetYearKey, (value) => {
   nextTick(() => formRef.value?.validateField('targetYearStart'))
 })
 
-const loadWindowYearList = async () => {
-  if (windowYearList.value.length > 0) {
-    return
+watch(
+  () => formData.value.startDate,
+  () => {
+    if (formData.value.endDate) {
+      nextTick(() => formRef.value?.validateField('endDate'))
+    }
   }
-  windowYearList.value = await SubscriptionSupportApi.getWindowYearSimpleList()
+)
+
+const resetForm = () => {
+  formData.value = {
+    id: undefined,
+    name: '',
+    startDate: undefined,
+    endDate: undefined,
+    targetYearStart: undefined,
+    targetYearEnd: undefined,
+    templateId: undefined,
+    templateNameSnapshot: '',
+    targetPeriod: '',
+    gradeCalcRule: '',
+    gradeResolveMode: '',
+    templateLocked: false,
+    status: 0,
+    remark: ''
+  }
+  targetYearKey.value = undefined
+  formRef.value?.resetFields()
 }
 
-const loadTemplateList = async () => {
-  templateList.value = await SubscriptionWindowTemplateApi.getWindowTemplateSimpleList()
-}
-
-const normalizeDateTimeValue = (value?: string | number) => {
-  if (value === undefined || value === null || value === '') {
-    return undefined
-  }
-  const datetime = dayjs(value)
-  return datetime.isValid() ? datetime.format('YYYY-MM-DD HH:mm:ss') : undefined
+const loadSupportData = async () => {
+  const [windowYears, templateOptionsResp] = await Promise.all([
+    SubscriptionSupportApi.getWindowYearSimpleList(),
+    SubscriptionWindowTemplateApi.getWindowTemplateSimpleList()
+  ])
+  windowYearList.value = windowYears
+  templateList.value = templateOptionsResp
 }
 
 const open = async (type: 'create' | 'update', id?: number) => {
   dialogVisible.value = true
-  dialogTitle.value = type === 'create' ? t('action.create') : t('action.update')
+  dialogTitle.value = t(`action.${type}`)
   formType.value = type
   resetForm()
   formLoading.value = true
   try {
-    await Promise.all([loadWindowYearList(), loadTemplateList()])
-    if (id) {
-      formData.value = await SubscriptionWindowApi.getWindow(id)
-      formData.value.startTime = normalizeDateTimeValue(formData.value.startTime)
-      formData.value.endTime = normalizeDateTimeValue(formData.value.endTime)
-      targetYearKey.value = buildSubscriptionTargetYearKey(
-        formData.value.targetYearStart,
-        formData.value.targetYearEnd
-      )
+    await loadSupportData()
+    if (!id) {
+      return
     }
+    const data = await SubscriptionWindowApi.getWindow(id)
+    formData.value = {
+      ...data,
+      startDate: data.startTime ? dayjs(data.startTime).format('YYYY-MM-DD') : undefined,
+      endDate: data.endTime ? dayjs(data.endTime).format('YYYY-MM-DD') : undefined
+    }
+    targetYearKey.value = buildSubscriptionTargetYearKey(data.targetYearStart, data.targetYearEnd)
   } finally {
     formLoading.value = false
   }
@@ -275,14 +329,26 @@ defineExpose({ open })
 const emit = defineEmits(['success'])
 
 const submitForm = async () => {
-  await formRef.value.validate()
+  const valid = await formRef.value?.validate()
+  if (!valid) return
   formLoading.value = true
   try {
+    const data: SubscriptionWindow = {
+      id: formData.value.id,
+      name: formData.value.name,
+      startTime: formData.value.startDate ? `${formData.value.startDate} 00:00:00` : undefined,
+      endTime: formData.value.endDate ? `${formData.value.endDate} 23:59:59` : undefined,
+      targetYearStart: formData.value.targetYearStart,
+      targetYearEnd: formData.value.targetYearEnd,
+      templateId: formData.value.templateId,
+      status: formData.value.status,
+      remark: formData.value.remark
+    }
     if (formType.value === 'create') {
-      await SubscriptionWindowApi.createWindow(formData.value)
+      await SubscriptionWindowApi.createWindow(data)
       message.success(t('common.createSuccess'))
     } else {
-      await SubscriptionWindowApi.updateWindow(formData.value)
+      await SubscriptionWindowApi.updateWindow(data)
       message.success(t('common.updateSuccess'))
     }
     dialogVisible.value = false
@@ -290,25 +356,5 @@ const submitForm = async () => {
   } finally {
     formLoading.value = false
   }
-}
-
-const resetForm = () => {
-  targetYearKey.value = undefined
-  formData.value = {
-    id: undefined,
-    name: '',
-    startTime: undefined,
-    endTime: undefined,
-    targetYearStart: undefined,
-    targetYearEnd: undefined,
-    templateId: undefined,
-    templateNameSnapshot: '',
-    targetPeriod: '',
-    gradeCalcRule: '',
-    templateLocked: false,
-    status: 0,
-    remark: ''
-  }
-  formRef.value?.resetFields()
 }
 </script>

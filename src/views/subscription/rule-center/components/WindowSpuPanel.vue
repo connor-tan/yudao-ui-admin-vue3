@@ -107,9 +107,9 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="刊物类型" min-width="100" prop="publicationTypeName" />
+        <el-table-column label="刊物类型" min-width="100" prop="publicationTypeName" align="center"/>
         <el-table-column label="出版社" min-width="160" prop="publisherName" />
-        <el-table-column label="基础可见年级" min-width="220" prop="gradeNames" />
+        <el-table-column label="基础可见年级" min-width="160" prop="gradeNames" />
         <el-table-column align="center" label="推荐" min-width="80">
           <template #default="{ row }">
             <el-tag v-if="row.recommendFlag" type="success">推荐</el-tag>

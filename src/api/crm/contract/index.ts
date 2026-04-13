@@ -31,19 +31,19 @@ export interface ContractVO {
   creator: string
   creatorName: string
   updateTime?: string
-  products?: [
-    {
-      id: number
-      productId: number
-      productName: string
-      productNo: string
-      productUnit: number
-      productPrice: number
-      contractPrice: number
-      count: number
-      totalPrice: number
-    }
-  ]
+  products?: ContractProductItemVO[]
+}
+
+export interface ContractProductItemVO {
+  id?: number
+  productId?: number
+  productName?: string
+  productNo?: string
+  productUnit?: number
+  productPrice?: number
+  contractPrice?: number
+  count?: number
+  totalPrice?: number
 }
 
 // 查询 CRM 合同列表
@@ -62,7 +62,7 @@ export const getContractPageByBusiness = async (params: any) => {
 }
 
 // 查询 CRM 合同详情
-export const getContract = async (id: number) => {
+export const getContract = async (id: number): Promise<ContractVO> => {
   return await request.get({ url: `/crm/contract/get?id=` + id })
 }
 

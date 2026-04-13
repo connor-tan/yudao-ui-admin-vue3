@@ -88,7 +88,6 @@
 
 <script setup lang="ts" name="MemberTag">
 import { dateFormatter } from '@/utils/formatTime'
-import download from '@/utils/download'
 import * as TagApi from '@/api/member/tag'
 import TagForm from './TagForm.vue'
 const message = useMessage() // 消息弹窗
@@ -125,7 +124,7 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
+  queryFormRef.value?.resetFields()
   handleQuery()
 }
 

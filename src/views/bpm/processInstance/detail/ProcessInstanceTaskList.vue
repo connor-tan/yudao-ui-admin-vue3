@@ -48,8 +48,8 @@
   <!-- 弹窗：表单 -->
   <Dialog title="表单详情" v-model="taskFormVisible" width="600">
     <form-create
-      ref="fApi"
       v-model="taskForm.value"
+      v-model:api="fApi"
       :option="taskForm.option"
       :rule="taskForm.rule"
     />
@@ -69,12 +69,27 @@ const props = defineProps({
   loading: propTypes.bool.def(false), // 是否加载中
   id: propTypes.string // 流程实例的编号
 })
-const tasks = ref([]) // 流程任务的数组
+type TaskDetail = {
+  id: string | number
+  name: string
+  formId: number
+  formConf: string
+  formFields: string[]
+  formVariables?: Record<string, any>
+  assigneeUser?: { nickname?: string }
+  ownerUser?: { nickname?: string }
+  createTime?: string
+  endTime?: string
+  status?: number
+  reason?: string
+  durationInMillis?: number
+}
+const tasks = ref<TaskDetail[]>([]) // 流程任务的数组
 
 /** 查看表单 */
-const fApi = ref<ApiAttrs>() // form-create 的 API 操作类
+const fApi = ref<ApiAttrs & { disabled: (value: boolean) => void }>() // form-create 的 API 操作类
 const taskForm = ref({
-  rule: [],
+  rule: [] as any[],
   option: {},
   value: {}
 }) // 流程任务的表单详情
@@ -86,9 +101,9 @@ const handleFormDetail = async (row: any) => {
   taskFormVisible.value = true
   // 隐藏提交、重置按钮，设置禁用只读
   await nextTick()
-  fApi.value.fapi.btn.show(false)
-  fApi.value?.fapi?.resetBtn.show(false)
-  fApi.value?.fapi?.disabled(true)
+  fApi.value?.btn.show(false)
+  fApi.value?.resetBtn.show(false)
+  fApi.value?.disabled(true)
 }
 
 /** 只有 loading 完成时，才去加载流程列表 */

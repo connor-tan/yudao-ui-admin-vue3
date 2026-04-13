@@ -191,6 +191,7 @@
 import { CommonStatusEnum } from '@/utils/constants'
 import { DICT_TYPE, getDictOptions } from '@/utils/dict'
 import * as ChannelApi from '@/api/pay/channel'
+import type { UploadRequestOptions } from 'element-plus'
 
 defineOptions({ name: 'AlipayChannelForm' })
 
@@ -240,6 +241,9 @@ const formRules = {
 }
 const fileAccept = '.crt'
 const formRef = ref() // 表单 Ref
+const close = () => {
+  formRef.value?.resetFields()
+}
 
 /** 打开弹窗 */
 const open = async (appId, code) => {
@@ -264,7 +268,7 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  if (!formRef) return
+  if (!formRef.value) return
   const valid = await formRef.value.validate()
   if (!valid) return
   // 提交请求
@@ -312,7 +316,7 @@ const resetForm = (appId, code) => {
   formRef.value?.resetFields()
 }
 
-const fileBeforeUpload = (file) => {
+const fileBeforeUpload = (file: File) => {
   let format = '.' + file.name.split('.')[1]
   if (format !== fileAccept) {
     message.error(`请上传指定格式"${fileAccept}"文件`)
@@ -325,26 +329,29 @@ const fileBeforeUpload = (file) => {
   return isRightSize
 }
 
-const appCertUpload = (event) => {
+const appCertUpload = async (event: UploadRequestOptions) => {
   const readFile = new FileReader()
   readFile.onload = (e: any) => {
     formData.value.config.appCertContent = e.target.result
+    event.onSuccess(e.target.result)
   }
   readFile.readAsText(event.file)
 }
 
-const alipayPublicCertUpload = (event) => {
+const alipayPublicCertUpload = async (event: UploadRequestOptions) => {
   const readFile = new FileReader()
   readFile.onload = (e: any) => {
     formData.value.config.alipayPublicCertContent = e.target.result
+    event.onSuccess(e.target.result)
   }
   readFile.readAsText(event.file)
 }
 
-const rootCertUpload = (event) => {
+const rootCertUpload = async (event: UploadRequestOptions) => {
   const readFile = new FileReader()
   readFile.onload = (e: any) => {
     formData.value.config.rootCertContent = e.target.result
+    event.onSuccess(e.target.result)
   }
   readFile.readAsText(event.file)
 }

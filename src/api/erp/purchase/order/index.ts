@@ -1,17 +1,44 @@
 import request from '@/config/axios'
 
+export interface PurchaseOrderItemVO {
+  id?: number
+  orderItemId?: number
+  productId?: number
+  productName?: string
+  productUnitName?: string
+  productBarCode?: string
+  productPrice?: number
+  stockCount?: number
+  count: number
+  totalProductPrice?: number
+  taxPercent?: number
+  taxPrice?: number
+  totalPrice?: number
+  remark?: string
+  inCount?: number
+  returnCount?: number
+  totalCount?: number
+}
+
 // ERP 采购订单 VO
 export interface PurchaseOrderVO {
-  id: number // 订单工单编号
-  no: string // 采购订单号
-  customerId: number // 客户编号
-  orderTime: string // 订单时间
-  totalCount: number // 合计数量
+  id?: number // 订单工单编号
+  no?: string // 采购订单号
+  customerId?: number // 保留兼容旧字段
+  supplierId?: number // 供应商编号
+  accountId?: number // 结算账户
+  orderTime?: string // 订单时间
+  totalCount?: number // 合计数量
   totalPrice: number // 合计金额，单位：元
-  status: number // 状态
-  remark: string // 备注
-  outCount: number // 采购出库数量
-  returnCount: number // 采购退货数量
+  status?: number // 状态
+  remark?: string // 备注
+  inCount?: number // 采购入库数量
+  returnCount?: number // 采购退货数量
+  discountPercent: number // 优惠率
+  discountPrice: number // 优惠金额
+  depositPrice: number // 订金
+  fileUrl: string // 附件地址
+  items: PurchaseOrderItemVO[] // 订单项
 }
 
 // ERP 采购订单 API
@@ -23,7 +50,7 @@ export const PurchaseOrderApi = {
 
   // 查询采购订单详情
   getPurchaseOrder: async (id: number) => {
-    return await request.get({ url: `/erp/purchase-order/get?id=` + id })
+    return await request.get<PurchaseOrderVO>({ url: `/erp/purchase-order/get?id=` + id })
   },
 
   // 新增采购订单

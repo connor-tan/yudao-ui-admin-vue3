@@ -17,13 +17,7 @@
   </el-form-item>
   <!-- 数值型配置 -->
   <ThingModelNumberDataSpecs
-    v-if="
-      [
-        IoTDataSpecsDataTypeEnum.INT,
-        IoTDataSpecsDataTypeEnum.DOUBLE,
-        IoTDataSpecsDataTypeEnum.FLOAT
-      ].includes(property.dataType || '')
-    "
+    v-if="isNumericDataType(property.dataType)"
     v-model="property.dataSpecs"
   />
   <!-- 枚举型配置 -->
@@ -60,7 +54,7 @@
     label="数据长度"
     prop="property.dataSpecs.length"
   >
-    <el-input v-model="property.dataSpecs.length" class="w-255px!" placeholder="请输入文本字节长度">
+    <el-input v-model="property.dataSpecs!.length" class="w-255px!" placeholder="请输入文本字节长度">
       <template #append>字节</template>
     </el-input>
   </el-form-item>
@@ -117,6 +111,13 @@ defineOptions({ name: 'ThingModelProperty' })
 const props = defineProps<{ modelValue: any; isStructDataSpecs?: boolean; isParams?: boolean }>()
 const emits = defineEmits(['update:modelValue'])
 const property = useVModel(props, 'modelValue', emits) as Ref<ThingModelProperty>
+const isNumericDataType = (dataType?: string) => {
+  return [
+    IoTDataSpecsDataTypeEnum.INT,
+    IoTDataSpecsDataTypeEnum.DOUBLE,
+    IoTDataSpecsDataTypeEnum.FLOAT
+  ].includes((dataType ?? '') as 'int' | 'double' | 'float')
+}
 const getDataTypeOptions2 = computed(() => {
   if (!props.isStructDataSpecs) {
     return getDataTypeOptions()

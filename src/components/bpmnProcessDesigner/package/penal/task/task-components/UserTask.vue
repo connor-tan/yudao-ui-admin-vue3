@@ -115,7 +115,7 @@
       prop="formUser"
     >
       <el-select
-        v-model="userTaskForm.candidateParam"
+        v-model="singleCandidateParam"
         clearable
         style="width: 100%"
         @change="handleFormUserChange"
@@ -135,7 +135,7 @@
       prop="formDept"
     >
       <el-select
-        v-model="userTaskForm.candidateParam"
+        v-model="singleCandidateParam"
         clearable
         style="width: 100%"
         @change="updateElementTask"
@@ -156,7 +156,7 @@
         userTaskForm.candidateStrategy == CandidateStrategy.START_USER_MULTI_LEVEL_DEPT_LEADER ||
         userTaskForm.candidateStrategy == CandidateStrategy.FORM_DEPT_LEADER
       "
-      :label="deptLevelLabel!"
+      :label="deptLevelLabel"
       prop="deptLevel"
       span="24"
     >
@@ -176,7 +176,7 @@
     >
       <el-input
         type="textarea"
-        v-model="userTaskForm.candidateParam[0]"
+        v-model="expressionCandidateParam"
         clearable
         style="width: 100%"
         @change="updateElementTask"
@@ -227,18 +227,34 @@ const props = defineProps({
   id: String,
   type: String
 })
-const prefix = inject('prefix')
-const userTaskForm = ref({
+const prefix = inject('prefix', 'flowable')
+
+type CandidateParamItem = string | number
+type UserTaskFormState = {
+  candidateStrategy: CandidateStrategy | undefined
+  candidateParam: CandidateParamItem[]
+  skipExpression: string
+}
+
+type DeptTreeNode = DeptApi.DeptVO & {
+  children?: DeptTreeNode[]
+}
+
+type PostOption = PostApi.PostVO & {
+  id: number
+}
+
+const userTaskForm = ref<UserTaskFormState>({
   candidateStrategy: undefined, // 分配规则
   candidateParam: [], // 分配选项
   skipExpression: '' // 跳过表达式
 })
-const bpmnElement = ref()
+const bpmnElement = ref<any>()
 const bpmnInstances = () => (window as any)?.bpmnInstances
 
 const roleOptions = ref<RoleApi.RoleVO[]>([]) // 角色列表
-const deptTreeOptions = ref() // 部门树
-const postOptions = ref<PostApi.PostVO[]>([]) // 岗位列表
+const deptTreeOptions = ref<DeptTreeNode[]>([]) // 部门树
+const postOptions = ref<PostOption[]>([]) // 岗位列表
 const userOptions = ref<UserApi.UserVO[]>([]) // 用户列表
 const userGroupOptions = ref<UserGroupApi.UserGroupVO[]>([]) // 用户组列表
 
@@ -250,6 +266,18 @@ const userFieldOnFormOptions = computed(() => {
 // 表单内部门字段选项, 必须是必填和部门选择器
 const deptFieldOnFormOptions = computed(() => {
   return formFieldOptions.filter((item) => item.type === 'DeptSelect')
+})
+const singleCandidateParam = computed<CandidateParamItem | undefined>({
+  get: () => userTaskForm.value.candidateParam[0],
+  set: (value) => {
+    userTaskForm.value.candidateParam = value === undefined || value === '' ? [] : [value]
+  }
+})
+const expressionCandidateParam = computed<string>({
+  get: () => String(userTaskForm.value.candidateParam[0] ?? ''),
+  set: (value) => {
+    userTaskForm.value.candidateParam = value ? [value] : []
+  }
 })
 
 const deptLevel = ref(1)
@@ -265,9 +293,12 @@ const deptLevelLabel = computed(() => {
   return label
 })
 
-const otherExtensions = ref()
+const otherExtensions = ref<any[]>([])
 
 const resetTaskForm = () => {
+  if (!bpmnElement.value?.businessObject) {
+    return
+  }
   const businessObject = bpmnElement.value.businessObject
   if (!businessObject) {
     return
@@ -301,10 +332,12 @@ const resetTaskForm = () => {
       userTaskForm.value.candidateStrategy == CandidateStrategy.START_USER_DEPT_LEADER ||
       userTaskForm.value.candidateStrategy == CandidateStrategy.START_USER_MULTI_LEVEL_DEPT_LEADER
     ) {
-      userTaskForm.value.candidateParam = +candidateParamStr
+      userTaskForm.value.candidateParam = []
       deptLevel.value = +candidateParamStr
     } else if (userTaskForm.value.candidateStrategy == CandidateStrategy.FORM_DEPT_LEADER) {
       userTaskForm.value.candidateParam = candidateParamStr.split('|')[0]
+        ? [candidateParamStr.split('|')[0]]
+        : []
       deptLevel.value = +candidateParamStr.split('|')[1]
     } else {
       userTaskForm.value.candidateParam = candidateParamStr.split(',').map((item) => {
@@ -366,10 +399,7 @@ const changeCandidateStrategy = () => {
 
 /** 选中某个 options 时候，更新 bpmn 图  */
 const updateElementTask = () => {
-  let candidateParam =
-    userTaskForm.value.candidateParam instanceof Array
-      ? userTaskForm.value.candidateParam.join(',')
-      : userTaskForm.value.candidateParam
+  let candidateParam = userTaskForm.value.candidateParam.join(',')
 
   // 特殊处理多级部门情况
   if (
@@ -422,16 +452,16 @@ const updateSkipExpression = () => {
 }
 
 // 打开监听器弹窗
-const processExpressionDialogRef = ref()
+const processExpressionDialogRef = ref<InstanceType<typeof ProcessExpressionDialog>>()
 const openProcessExpressionDialog = async () => {
-  processExpressionDialogRef.value.open()
+  processExpressionDialogRef.value?.open('')
 }
 const selectProcessExpression = (expression: ProcessExpressionVO) => {
   userTaskForm.value.candidateParam = [expression.expression]
   updateElementTask()
 }
 
-const handleFormUserChange = (e) => {
+const handleFormUserChange = (e: CandidateParamItem | undefined) => {
   if (e === 'PROCESS_START_USER_ID') {
     userTaskForm.value.candidateParam = []
     userTaskForm.value.candidateStrategy = CandidateStrategy.START_USER
@@ -457,7 +487,9 @@ onMounted(async () => {
   const deptOptions = await DeptApi.getSimpleDeptList()
   deptTreeOptions.value = handleTree(deptOptions, 'id')
   // 获得岗位列表
-  postOptions.value = await PostApi.getSimplePostList()
+  postOptions.value = (await PostApi.getSimplePostList()).filter(
+    (item): item is PostOption => item.id !== undefined
+  )
   // 获得用户列表
   userOptions.value = await UserApi.getSimpleUserList()
   // 获得用户组列表

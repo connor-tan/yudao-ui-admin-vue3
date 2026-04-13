@@ -72,6 +72,9 @@ import type { BrandVO } from '@/api/mall/product/brand'
 import type { PublicationProductVO } from '@/api/mall/product/publicationProduct'
 
 defineOptions({ name: 'PublicationBasicInfoForm' })
+type PublicationBasicInfoFormData = PublicationProductVO & {
+  sliderPicUrls: string[]
+}
 
 const props = defineProps({
   propFormData: {
@@ -85,7 +88,7 @@ const message = useMessage()
 const formRef = ref()
 const categoryList = ref<CategoryVO[]>([])
 const brandList = ref<BrandVO[]>([])
-const formData = reactive<PublicationProductVO>({
+const formData = reactive<PublicationBasicInfoFormData>({
   name: '',
   categoryId: undefined,
   keyword: '',

@@ -24,10 +24,17 @@ const message = useMessage() // 消息弹窗
 
 const dialogVisible = ref(false) // 弹窗的是否展示
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
-const formData = ref({
+type FormData = {
+  id?: number
+  auditReason?: string
+}
+
+const createFormData = (): FormData => ({
   id: undefined,
   auditReason: undefined
 })
+
+const formData = ref<FormData>(createFormData())
 const formRules = reactive({
   auditReason: [{ required: true, message: '驳回原因不能为空', trigger: 'blur' }]
 })
@@ -64,10 +71,7 @@ const submitForm = async () => {
 
 /** 重置表单 */
 const resetForm = () => {
-  formData.value = {
-    id: undefined,
-    auditReason: undefined
-  }
+  formData.value = createFormData()
   formRef.value?.resetFields()
 }
 </script>

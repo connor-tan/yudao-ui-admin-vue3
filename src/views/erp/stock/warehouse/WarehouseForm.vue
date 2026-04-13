@@ -65,6 +65,7 @@
   </Dialog>
 </template>
 <script setup lang="ts">
+import type { FormInstance } from 'element-plus'
 import { getIntDictOptions, DICT_TYPE } from '@/utils/dict'
 import { WarehouseApi, WarehouseVO } from '@/api/erp/stock/warehouse'
 import { CommonStatusEnum } from '@/utils/constants'
@@ -79,7 +80,11 @@ const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
-const formData = ref({
+type WarehouseFormData = Partial<WarehouseVO> & {
+  status: number
+}
+
+const createFormData = (): WarehouseFormData => ({
   id: undefined,
   name: undefined,
   address: undefined,
@@ -88,14 +93,15 @@ const formData = ref({
   principal: undefined,
   warehousePrice: undefined,
   truckagePrice: undefined,
-  status: undefined
+  status: CommonStatusEnum.ENABLE
 })
+const formData = ref<WarehouseFormData>(createFormData())
 const formRules = reactive({
   name: [{ required: true, message: '仓库名称不能为空', trigger: 'blur' }],
   sort: [{ required: true, message: '排序不能为空', trigger: 'blur' }],
   status: [{ required: true, message: '开启状态不能为空', trigger: 'blur' }]
 })
-const formRef = ref() // 表单 Ref
+const formRef = ref<FormInstance>() // 表单 Ref
 
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {
@@ -119,7 +125,7 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  await formRef.value.validate()
+  await formRef.value?.validate()
   // 提交请求
   formLoading.value = true
   try {
@@ -141,17 +147,7 @@ const submitForm = async () => {
 
 /** 重置表单 */
 const resetForm = () => {
-  formData.value = {
-    id: undefined,
-    name: undefined,
-    address: undefined,
-    sort: undefined,
-    remark: undefined,
-    principal: undefined,
-    warehousePrice: undefined,
-    truckagePrice: undefined,
-    status: CommonStatusEnum.ENABLE
-  }
+  formData.value = createFormData()
   formRef.value?.resetFields()
 }
 </script>

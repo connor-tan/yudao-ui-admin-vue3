@@ -1,14 +1,16 @@
 <template>
   <Dialog v-model="dialogVisible" :title="dialogTitle" width="640px">
     <el-form ref="formRef" v-loading="formLoading" :model="formData" :rules="formRules" label-width="100px">
-      <el-form-item label="模板编码" prop="code">
-        <el-input v-model="formData.code" :disabled="!!formData.builtIn" placeholder="请输入模板编码" />
-      </el-form-item>
       <el-form-item label="模板名称" prop="name">
         <el-input v-model="formData.name" placeholder="请输入模板名称" />
       </el-form-item>
       <el-form-item label="目标周期" prop="targetPeriod">
-        <el-select v-model="formData.targetPeriod" :disabled="!!formData.builtIn" class="!w-240px" placeholder="请选择目标周期">
+        <el-select
+          v-model="formData.targetPeriod"
+          :disabled="!!formData.builtIn"
+          class="!w-240px"
+          placeholder="请选择目标周期"
+        >
           <el-option
             v-for="item in SUBSCRIPTION_TARGET_PERIOD_OPTIONS"
             :key="item.value"
@@ -21,6 +23,17 @@
         <el-radio-group v-model="formData.gradeCalcRule" :disabled="!!formData.builtIn">
           <el-radio
             v-for="item in SUBSCRIPTION_GRADE_CALC_RULE_OPTIONS"
+            :key="item.value"
+            :value="item.value"
+          >
+            {{ item.label }}
+          </el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="解析模式" prop="gradeResolveMode">
+        <el-radio-group v-model="formData.gradeResolveMode" :disabled="!!formData.builtIn">
+          <el-radio
+            v-for="item in SUBSCRIPTION_GRADE_RESOLVE_MODE_OPTIONS"
             :key="item.value"
             :value="item.value"
           >
@@ -61,6 +74,7 @@ import { CommonStatusEnum } from '@/utils/constants'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import {
   SUBSCRIPTION_GRADE_CALC_RULE_OPTIONS,
+  SUBSCRIPTION_GRADE_RESOLVE_MODE_OPTIONS,
   SUBSCRIPTION_TARGET_PERIOD_OPTIONS
 } from '@/utils/subscription'
 import { SubscriptionWindowTemplateApi, type SubscriptionWindowTemplate } from '@/api/subscription/windowTemplate'
@@ -77,10 +91,10 @@ const formType = ref<'create' | 'update'>('create')
 const formRef = ref()
 const formData = ref<SubscriptionWindowTemplate>({
   id: undefined,
-  code: '',
   name: '',
   targetPeriod: 'FULL_YEAR',
   gradeCalcRule: 'CURRENT_GRADE',
+  gradeResolveMode: 'CURRENT_CHAIN',
   description: '',
   status: CommonStatusEnum.ENABLE,
   sort: 0,
@@ -89,10 +103,10 @@ const formData = ref<SubscriptionWindowTemplate>({
 })
 
 const formRules = reactive({
-  code: [required],
   name: [required],
   targetPeriod: [required],
   gradeCalcRule: [required],
+  gradeResolveMode: [required],
   status: [required],
   sort: [required]
 })
@@ -100,10 +114,10 @@ const formRules = reactive({
 const resetForm = () => {
   formData.value = {
     id: undefined,
-    code: '',
     name: '',
     targetPeriod: 'FULL_YEAR',
     gradeCalcRule: 'CURRENT_GRADE',
+    gradeResolveMode: 'CURRENT_CHAIN',
     description: '',
     status: CommonStatusEnum.ENABLE,
     sort: 0,

@@ -62,7 +62,7 @@
   <!-- 关联商机选择弹框 -->
   <BusinessListModal
     ref="businessModalRef"
-    :customer-id="props.customerId"
+    :customer-id="props.customerId!"
     @success="createContactBusinessList"
   />
 </template>
@@ -86,12 +86,17 @@ const props = defineProps<{
 
 const loading = ref(true) // 列表的加载中
 const total = ref(0) // 列表的总页数
-const list = ref([]) // 列表的数据
-const queryParams = reactive({
+const list = ref<BusinessApi.BusinessVO[]>([]) // 列表的数据
+const queryParams = reactive<{
+  pageNo: number
+  pageSize: number
+  customerId: number | undefined
+  contactId: number | undefined
+}>({
   pageNo: 1,
   pageSize: 10,
-  customerId: undefined as unknown, // 允许 undefined + number
-  contactId: undefined as unknown // 允许 undefined + number
+  customerId: undefined,
+  contactId: undefined
 })
 
 /** 查询列表 */
@@ -131,7 +136,7 @@ const handleQuery = () => {
 /** 添加操作 */
 const formRef = ref()
 const openForm = () => {
-  formRef.value.open('create', null, props.customerId, props.contactId)
+  formRef.value.open('create', undefined, props.customerId, props.contactId)
 }
 
 /** 打开联系人详情 */
@@ -151,7 +156,9 @@ const createContactBusinessList = async (businessIds: number[]) => {
     businessIds: businessIds
   } as ContactApi.ContactBusinessReqVO
   businessRef.value.getSelectionRows().forEach((row: BusinessApi.BusinessVO) => {
-    data.businessIds.push(row.id)
+    if (row.id != null) {
+      data.businessIds.push(row.id)
+    }
   })
   await ContactApi.createContactBusinessList(data)
   // 刷新列表
@@ -164,7 +171,10 @@ const businessRef = ref()
 const deleteContactBusinessList = async () => {
   const data = {
     contactId: props.bizId,
-    businessIds: businessRef.value.getSelectionRows().map((row: BusinessApi.BusinessVO) => row.id)
+    businessIds: businessRef.value
+      .getSelectionRows()
+      .map((row: BusinessApi.BusinessVO) => row.id)
+      .filter((id): id is number => id != null)
   } as ContactApi.ContactBusinessReqVO
   if (data.businessIds.length === 0) {
     return message.error('未选择商机')

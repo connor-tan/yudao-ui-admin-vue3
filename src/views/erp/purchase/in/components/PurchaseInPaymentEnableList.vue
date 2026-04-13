@@ -125,11 +125,21 @@ import { PurchaseInApi, PurchaseInVO } from '@/api/erp/purchase/in'
 
 defineOptions({ name: 'PurchaseInPaymentEnableList' })
 
+interface QueryParams {
+  pageNo: number
+  pageSize: number
+  no?: string
+  productId?: number
+  inTime: string[]
+  paymentEnable: boolean
+  supplierId?: number
+}
+
 const list = ref<PurchaseInVO[]>([]) // 列表的数据
 const total = ref(0) // 列表的总页数
 const loading = ref(false) // 列表的加载中
 const dialogVisible = ref(false) // 弹窗的是否展示
-const queryParams = reactive({
+const queryParams = reactive<QueryParams>({
   pageNo: 1,
   pageSize: 10,
   no: undefined,

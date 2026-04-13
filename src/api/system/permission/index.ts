@@ -17,7 +17,7 @@ export interface PermissionAssignRoleDataScopeReqVO {
 }
 
 // 查询角色拥有的菜单权限
-export const getRoleMenuList = async (roleId: number) => {
+export const getRoleMenuList = async (roleId: number): Promise<number[]> => {
   return await request.get({ url: '/system/permission/list-role-menus?roleId=' + roleId })
 }
 
@@ -32,7 +32,7 @@ export const assignRoleDataScope = async (data: PermissionAssignRoleDataScopeReq
 }
 
 // 查询用户拥有的角色数组
-export const getUserRoleList = async (userId: number) => {
+export const getUserRoleList = async (userId: number): Promise<number[]> => {
   return await request.get({ url: '/system/permission/list-user-roles?userId=' + userId })
 }
 
