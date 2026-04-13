@@ -13,6 +13,11 @@ export interface DictDataVO {
   createTime: string
 }
 
+export type DictDataSaveReqVO = Omit<DictDataVO, 'id' | 'sort' | 'createTime'> & {
+  id?: number
+  sort?: number
+}
+
 // 查询字典数据（精简)列表
 export const getSimpleDictDataList = () => {
   return request.get({ url: '/system/dict-data/simple-list' })
@@ -24,7 +29,7 @@ export const getDictDataPage = (params: PageParam) => {
 }
 
 // 查询字典数据详情
-export const getDictData = (id: number) => {
+export const getDictData = (id: number): Promise<DictDataVO> => {
   return request.get({ url: '/system/dict-data/get?id=' + id })
 }
 
@@ -34,12 +39,12 @@ export const getDictDataByType = (dictType: string) => {
 }
 
 // 新增字典数据
-export const createDictData = (data: DictDataVO) => {
+export const createDictData = (data: DictDataSaveReqVO) => {
   return request.post({ url: '/system/dict-data/create', data })
 }
 
 // 修改字典数据
-export const updateDictData = (data: DictDataVO) => {
+export const updateDictData = (data: DictDataSaveReqVO) => {
   return request.put({ url: '/system/dict-data/update', data })
 }
 

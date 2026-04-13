@@ -35,6 +35,12 @@ let isRefreshToken = false
 // 请求白名单，无须 token 的接口
 const whiteList: string[] = ['/login', '/refresh-token']
 
+type RequestHeaders = NonNullable<InternalAxiosRequestConfig['headers']> & {
+  isToken?: boolean
+  isEncrypt?: boolean
+  isEncrypted?: boolean
+}
+
 // 创建axios实例
 const service: AxiosInstance = axios.create({
   baseURL: base_url, // api 的 base_url
@@ -49,35 +55,37 @@ const service: AxiosInstance = axios.create({
 // request拦截器
 service.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    const headers = (config.headers ?? {}) as RequestHeaders
+    config.headers = headers
     // 是否需要设置 token
-    let isToken = (config!.headers || {}).isToken === false
+    let isToken = headers.isToken === false
     whiteList.some((v) => {
       if (config.url && config.url.indexOf(v) > -1) {
         return (isToken = false)
       }
     })
     if (getAccessToken() && !isToken) {
-      config.headers.Authorization = 'Bearer ' + getAccessToken() // 让每个请求携带自定义token
+      headers.Authorization = 'Bearer ' + getAccessToken() // 让每个请求携带自定义token
     }
     // 设置租户
     if (tenantEnable && tenantEnable === 'true') {
       const tenantId = getTenantId()
-      if (tenantId) config.headers['tenant-id'] = tenantId
+      if (tenantId) headers['tenant-id'] = tenantId
       // 只有登录时，才设置 visit-tenant-id 访问租户
       const visitTenantId = getVisitTenantId()
-      if (config.headers.Authorization && visitTenantId) {
-        config.headers['visit-tenant-id'] = visitTenantId
+      if (headers.Authorization && visitTenantId) {
+        headers['visit-tenant-id'] = visitTenantId
       }
     }
     const method = config.method?.toUpperCase()
     // 防止 GET 请求缓存
     if (method === 'GET') {
-      config.headers['Cache-Control'] = 'no-cache'
-      config.headers['Pragma'] = 'no-cache'
+      headers['Cache-Control'] = 'no-cache'
+      headers['Pragma'] = 'no-cache'
     }
     // 自定义参数序列化函数
     else if (method === 'POST') {
-      const contentType = config.headers['Content-Type'] || config.headers['content-type']
+      const contentType = headers['Content-Type'] || headers['content-type']
       if (contentType === 'application/x-www-form-urlencoded') {
         if (config.data && typeof config.data !== 'string') {
           config.data = qs.stringify(config.data)
@@ -85,13 +93,13 @@ service.interceptors.request.use(
       }
     }
     // 是否 API 加密
-    if ((config!.headers || {}).isEncrypt && !(config!.headers || {}).isEncrypted) {
+    if (headers.isEncrypt && !headers.isEncrypted) {
       try {
         // 加密请求数据
         if (config.data) {
           config.data = ApiEncrypt.encryptRequest(config.data)
           // 设置加密标识头
-          config.headers[ApiEncrypt.getEncryptHeader()] = 'true'
+          headers[ApiEncrypt.getEncryptHeader()] = 'true'
         }
       } catch (error) {
         console.error('请求数据加密失败:', error)
@@ -164,13 +172,15 @@ service.interceptors.response.use(
           const refreshTokenRes = await refreshToken()
           // 2.1 刷新成功，则回放队列的请求 + 当前请求
           setToken((await refreshTokenRes).data.data)
-          config.headers!.Authorization = 'Bearer ' + getAccessToken()
+          const headers = (config.headers ?? {}) as RequestHeaders
+          config.headers = headers
+          headers.Authorization = 'Bearer ' + getAccessToken()
           requestList.forEach((cb: any) => {
             cb()
           })
           requestList = []
-          if ((config!.headers || {}).isEncrypt){
-            (config!.headers || {}).isEncrypted = true
+          if (headers.isEncrypt) {
+            headers.isEncrypted = true
           }
           return service(config)
         } catch (e) {
@@ -189,7 +199,9 @@ service.interceptors.response.use(
         // 添加到队列，等待刷新获取到新的令牌
         return new Promise((resolve) => {
           requestList.push(() => {
-            config.headers!.Authorization = 'Bearer ' + getAccessToken() // 让每个请求携带自定义token 请根据实际情况自行修改
+            const headers = (config.headers ?? {}) as RequestHeaders
+            config.headers = headers
+            headers.Authorization = 'Bearer ' + getAccessToken() // 让每个请求携带自定义token 请根据实际情况自行修改
             resolve(service(config))
           })
         })

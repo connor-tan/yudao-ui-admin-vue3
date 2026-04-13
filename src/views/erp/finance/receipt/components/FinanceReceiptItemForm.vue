@@ -68,40 +68,45 @@
   <SaleReturnRefundEnableList ref="saleReturnRefundEnableListRef" @success="handleAddSaleReturn" />
 </template>
 <script setup lang="ts">
-import { ProductVO } from '@/api/erp/product/product'
+import type { FormInstance } from 'element-plus'
 import { erpPriceInputFormatter, getSumValue } from '@/utils'
 import SaleOutReceiptEnableList from '@/views/erp/sale/out/components/SaleOutReceiptEnableList.vue'
 import SaleReturnRefundEnableList from '@/views/erp/sale/return/components/SaleReturnRefundEnableList.vue'
 import { SaleOutVO } from '@/api/erp/sale/out'
 import { ErpBizType } from '@/utils/constants'
 import { SaleReturnVO } from '@/api/erp/sale/return'
+import type { FinanceReceiptItemVO } from '@/api/erp/finance/receipt'
 
 const props = defineProps<{
-  items: undefined
-  customerId: undefined
-  disabled: false
+  items: FinanceReceiptItemVO[]
+  customerId?: number
+  disabled: boolean
 }>()
 const message = useMessage()
 
+type SummaryMethodProps<T> = {
+  columns: Array<{ property?: keyof T | string }>
+  data: T[]
+}
+
 const formLoading = ref(false) // 表单的加载中
-const formData = ref([])
+const formData = ref<FinanceReceiptItemVO[]>([])
 const formRules = reactive({
   receiptPrice: [{ required: true, message: '本次收款不能为空', trigger: 'blur' }]
 })
-const formRef = ref([]) // 表单 Ref
-const productList = ref<ProductVO[]>([]) // 产品列表
+const formRef = ref<FormInstance>() // 表单 Ref
 
 /** 初始化设置出库项 */
 watch(
   () => props.items,
-  async (val) => {
-    formData.value = val
+  (val) => {
+    formData.value = val ?? []
   },
   { immediate: true }
 )
 
 /** 合计 */
-const getSummaries = (param: SummaryMethodProps) => {
+const getSummaries = (param: SummaryMethodProps<FinanceReceiptItemVO>) => {
   const { columns, data } = param
   const sums: string[] = []
   columns.forEach((column, index: number) => {
@@ -109,8 +114,12 @@ const getSummaries = (param: SummaryMethodProps) => {
       sums[index] = '合计'
       return
     }
-    if (['totalPrice', 'receiptedPrice', 'receiptPrice'].includes(column.property)) {
-      const sum = getSumValue(data.map((item) => Number(item[column.property])))
+    const property = column.property
+    if (
+      property &&
+      ['totalPrice', 'receiptedPrice', 'receiptPrice'].includes(String(property))
+    ) {
+      const sum = getSumValue(data.map((item) => Number(item[property as keyof FinanceReceiptItemVO])))
       sums[index] = erpPriceInputFormatter(sum)
     } else {
       sums[index] = ''
@@ -120,45 +129,47 @@ const getSummaries = (param: SummaryMethodProps) => {
 }
 
 /** 新增【销售出库】按钮操作 */
-const saleOutReceiptEnableListRef = ref()
+const saleOutReceiptEnableListRef = ref<InstanceType<typeof SaleOutReceiptEnableList>>()
 const handleOpenSaleOut = () => {
   if (!props.customerId) {
     message.error('请选择客户')
     return
   }
-  saleOutReceiptEnableListRef.value.open(props.customerId)
+  saleOutReceiptEnableListRef.value?.open(props.customerId)
 }
 const handleAddSaleOut = (rows: SaleOutVO[]) => {
   rows.forEach((row) => {
+    const receiptedPrice = row.receiptPrice ?? 0
     formData.value.push({
       bizId: row.id,
       bizType: ErpBizType.SALE_OUT,
       bizNo: row.no,
       totalPrice: row.totalPrice,
-      receiptedPrice: row.receiptPrice,
-      receiptPrice: row.totalPrice - row.receiptPrice
+      receiptedPrice,
+      receiptPrice: row.totalPrice - receiptedPrice
     })
   })
 }
 
 /** 新增【销售退货】按钮操作 */
-const saleReturnRefundEnableListRef = ref()
+const saleReturnRefundEnableListRef = ref<InstanceType<typeof SaleReturnRefundEnableList>>()
 const handleOpenSaleReturn = () => {
   if (!props.customerId) {
     message.error('请选择客户')
     return
   }
-  saleReturnRefundEnableListRef.value.open(props.customerId)
+  saleReturnRefundEnableListRef.value?.open(props.customerId)
 }
 const handleAddSaleReturn = (rows: SaleReturnVO[]) => {
   rows.forEach((row) => {
+    const refundPrice = row.refundPrice ?? 0
     formData.value.push({
       bizId: row.id,
       bizType: ErpBizType.SALE_RETURN,
       bizNo: row.no,
       totalPrice: -row.totalPrice,
-      receiptedPrice: -row.refundPrice,
-      receiptPrice: -row.totalPrice + row.refundPrice
+      receiptedPrice: -refundPrice,
+      receiptPrice: -row.totalPrice + refundPrice
     })
   })
 }
@@ -170,7 +181,7 @@ const handleDelete = (index: number) => {
 
 /** 表单校验 */
 const validate = () => {
-  return formRef.value.validate()
+  return formRef.value?.validate()
 }
 defineExpose({ validate })
 </script>

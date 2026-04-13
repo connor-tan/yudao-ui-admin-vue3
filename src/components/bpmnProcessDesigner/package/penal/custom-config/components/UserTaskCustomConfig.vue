@@ -220,37 +220,60 @@ const props = defineProps({
   id: String,
   type: String
 })
-const prefix = inject('prefix')
+const prefix = inject('prefix', 'flowable')
+
+type ExtensionValue<T> = {
+  value: T
+}
+
+type ReturnTaskOption = {
+  id: string
+  name: string
+}
+
+type ButtonSettingElement = ButtonSetting & {
+  $type?: string
+}
+
+type FieldPermissionElement = {
+  $type?: string
+  field: string
+  title: string
+  permission: string
+}
 
 // 审批人与提交人为同一人时
-const assignStartUserHandlerTypeEl = ref()
-const assignStartUserHandlerType = ref()
+const assignStartUserHandlerTypeEl = ref<ExtensionValue<number>>()
+const assignStartUserHandlerType = ref<number>()
 
 // 审批人拒绝时
-const rejectHandlerTypeEl = ref()
-const rejectHandlerType = ref()
-const returnNodeIdEl = ref()
-const returnNodeId = ref()
-const returnTaskList = ref([])
+const rejectHandlerTypeEl = ref<ExtensionValue<number>>()
+const rejectHandlerType = ref<number>()
+const returnNodeIdEl = ref<ExtensionValue<string>>()
+const returnNodeId = ref<string>()
+const returnTaskList = ref<ReturnTaskOption[]>([])
 
 // 审批人为空时
-const assignEmptyHandlerTypeEl = ref()
-const assignEmptyHandlerType = ref()
-const assignEmptyUserIdsEl = ref()
-const assignEmptyUserIds = ref()
+const assignEmptyHandlerTypeEl = ref<ExtensionValue<number>>()
+const assignEmptyHandlerType = ref<number>()
+const assignEmptyUserIdsEl = ref<ExtensionValue<string>>()
+const assignEmptyUserIds = ref<Array<number | string>>([])
 
 // 操作按钮
-const buttonsSettingEl = ref()
+const buttonsSettingEl = ref<ButtonSettingElement[]>([])
 const { btnDisplayNameEdit, changeBtnDisplayName } = useButtonsSetting()
 const btnDisplayNameBlurEvent = (index: number) => {
   btnDisplayNameEdit.value[index] = false
   const buttonItem = buttonsSettingEl.value[index]
+  if (!buttonItem) {
+    return
+  }
   buttonItem.displayName = buttonItem.displayName || OPERATION_BUTTON_NAME.get(buttonItem.id)!
   updateElementExtensions()
 }
 
 // 字段权限
-const fieldsPermissionEl = ref([])
+const fieldsPermissionEl = ref<FieldPermissionElement[]>([])
 const { formType, fieldsPermissionConfig, getNodeConfigFormFields } = useFormFieldsPermission(
   FieldPermissionType.READ
 )
@@ -264,85 +287,91 @@ const signEnable = ref({ value: false })
 // 审批意见
 const reasonRequire = ref({ value: false })
 
-const elExtensionElements = ref()
-const otherExtensions = ref()
-const bpmnElement = ref()
+const elExtensionElements = ref<{ values?: any[] }>()
+const otherExtensions = ref<any[]>([])
+const bpmnElement = ref<any>()
 const bpmnInstances = () => (window as any)?.bpmnInstances
 
 const resetCustomConfigList = () => {
-  bpmnElement.value = bpmnInstances().bpmnElement
+  const instances = bpmnInstances()
+  if (!instances?.bpmnElement) {
+    return
+  }
+  bpmnElement.value = instances.bpmnElement
 
   // 获取可回退的列表
   returnTaskList.value = findAllPredecessorsExcludingStart(
     bpmnElement.value.id,
-    bpmnInstances().modeler
+    instances.modeler
   )
   // 获取元素扩展属性 或者 创建扩展属性
   elExtensionElements.value =
     bpmnElement.value.businessObject?.extensionElements ??
-    bpmnInstances().moddle.create('bpmn:ExtensionElements', { values: [] })
+    instances.moddle.create('bpmn:ExtensionElements', { values: [] })
+  const extensionValues = elExtensionElements.value?.values || []
 
   // 审批类型
   approveType.value =
-    elExtensionElements.value.values?.filter((ex) => ex.$type === `${prefix}:ApproveType`)?.[0] ||
-    bpmnInstances().moddle.create(`${prefix}:ApproveType`, { value: ApproveType.USER })
+    extensionValues.filter((ex) => ex.$type === `${prefix}:ApproveType`)?.[0] ||
+    instances.moddle.create(`${prefix}:ApproveType`, { value: ApproveType.USER })
 
   // 审批人与提交人为同一人时
   assignStartUserHandlerTypeEl.value =
-    elExtensionElements.value.values?.filter(
+    extensionValues.filter(
       (ex) => ex.$type === `${prefix}:AssignStartUserHandlerType`
-    )?.[0] || bpmnInstances().moddle.create(`${prefix}:AssignStartUserHandlerType`, { value: 1 })
-  assignStartUserHandlerType.value = assignStartUserHandlerTypeEl.value.value
+    )?.[0] || instances.moddle.create(`${prefix}:AssignStartUserHandlerType`, { value: 1 })
+  assignStartUserHandlerType.value = assignStartUserHandlerTypeEl.value?.value
 
   // 审批人拒绝时
   rejectHandlerTypeEl.value =
-    elExtensionElements.value.values?.filter(
+    extensionValues.filter(
       (ex) => ex.$type === `${prefix}:RejectHandlerType`
-    )?.[0] || bpmnInstances().moddle.create(`${prefix}:RejectHandlerType`, { value: 1 })
-  rejectHandlerType.value = rejectHandlerTypeEl.value.value
+    )?.[0] || instances.moddle.create(`${prefix}:RejectHandlerType`, { value: 1 })
+  rejectHandlerType.value = rejectHandlerTypeEl.value?.value
   returnNodeIdEl.value =
-    elExtensionElements.value.values?.filter(
+    extensionValues.filter(
       (ex) => ex.$type === `${prefix}:RejectReturnTaskId`
-    )?.[0] || bpmnInstances().moddle.create(`${prefix}:RejectReturnTaskId`, { value: '' })
-  returnNodeId.value = returnNodeIdEl.value.value
+    )?.[0] || instances.moddle.create(`${prefix}:RejectReturnTaskId`, { value: '' })
+  returnNodeId.value = returnNodeIdEl.value?.value
 
   // 审批人为空时
   assignEmptyHandlerTypeEl.value =
-    elExtensionElements.value.values?.filter(
+    extensionValues.filter(
       (ex) => ex.$type === `${prefix}:AssignEmptyHandlerType`
-    )?.[0] || bpmnInstances().moddle.create(`${prefix}:AssignEmptyHandlerType`, { value: 1 })
-  assignEmptyHandlerType.value = assignEmptyHandlerTypeEl.value.value
+    )?.[0] || instances.moddle.create(`${prefix}:AssignEmptyHandlerType`, { value: 1 })
+  assignEmptyHandlerType.value = assignEmptyHandlerTypeEl.value?.value
   assignEmptyUserIdsEl.value =
-    elExtensionElements.value.values?.filter(
+    extensionValues.filter(
       (ex) => ex.$type === `${prefix}:AssignEmptyUserIds`
-    )?.[0] || bpmnInstances().moddle.create(`${prefix}:AssignEmptyUserIds`, { value: '' })
-  assignEmptyUserIds.value = assignEmptyUserIdsEl.value.value?.split(',').map((item) => {
-    // 如果数字超出了最大安全整数范围，则将其作为字符串处理
-    let num = Number(item)
-    return num > Number.MAX_SAFE_INTEGER || num < -Number.MAX_SAFE_INTEGER ? item : num
-  })
+    )?.[0] || instances.moddle.create(`${prefix}:AssignEmptyUserIds`, { value: '' })
+  assignEmptyUserIds.value =
+    assignEmptyUserIdsEl.value?.value
+      ?.split(',')
+      .filter(Boolean)
+      .map((item) => {
+        // 如果数字超出了最大安全整数范围，则将其作为字符串处理
+        const num = Number(item)
+        return num > Number.MAX_SAFE_INTEGER || num < -Number.MAX_SAFE_INTEGER ? item : num
+      }) || []
 
   // 操作按钮
-  buttonsSettingEl.value = elExtensionElements.value.values?.filter(
-    (ex) => ex.$type === `${prefix}:ButtonsSetting`
-  )
+  buttonsSettingEl.value =
+    extensionValues.filter((ex) => ex.$type === `${prefix}:ButtonsSetting`) || []
   if (buttonsSettingEl.value.length === 0) {
     DEFAULT_BUTTON_SETTING.forEach((item) => {
       buttonsSettingEl.value.push(
-        bpmnInstances().moddle.create(`${prefix}:ButtonsSetting`, {
+        instances.moddle.create(`${prefix}:ButtonsSetting`, {
           'flowable:id': item.id,
           'flowable:displayName': item.displayName,
           'flowable:enable': item.enable
-        })
+        }) as ButtonSettingElement
       )
     })
   }
 
   // 字段权限
   if (formType.value === BpmModelFormType.NORMAL) {
-    const fieldsPermissionList = elExtensionElements.value.values?.filter(
-      (ex) => ex.$type === `${prefix}:FieldsPermission`
-    )
+    const fieldsPermissionList = extensionValues.filter((ex) => ex.$type === `${prefix}:FieldsPermission`)
     fieldsPermissionEl.value = []
     getNodeConfigFormFields()
     fieldsPermissionConfig.value = fieldsPermissionConfig.value
@@ -350,24 +379,24 @@ const resetCustomConfigList = () => {
       element.permission =
         fieldsPermissionList?.find((obj) => obj.field === element.field)?.permission ?? '1'
       fieldsPermissionEl.value.push(
-        bpmnInstances().moddle.create(`${prefix}:FieldsPermission`, element)
+        instances.moddle.create(`${prefix}:FieldsPermission`, element) as FieldPermissionElement
       )
     })
   }
 
   // 是否需要签名
   signEnable.value =
-    elExtensionElements.value.values?.filter((ex) => ex.$type === `${prefix}:SignEnable`)?.[0] ||
-    bpmnInstances().moddle.create(`${prefix}:SignEnable`, { value: false })
+    extensionValues.filter((ex) => ex.$type === `${prefix}:SignEnable`)?.[0] ||
+    instances.moddle.create(`${prefix}:SignEnable`, { value: false })
 
   // 审批意见
   reasonRequire.value =
-    elExtensionElements.value.values?.filter((ex) => ex.$type === `${prefix}:ReasonRequire`)?.[0] ||
-    bpmnInstances().moddle.create(`${prefix}:ReasonRequire`, { value: false })
+    extensionValues.filter((ex) => ex.$type === `${prefix}:ReasonRequire`)?.[0] ||
+    instances.moddle.create(`${prefix}:ReasonRequire`, { value: false })
 
   // 保留剩余扩展元素，便于后面更新该元素对应属性
   otherExtensions.value =
-    elExtensionElements.value.values?.filter(
+    extensionValues.filter(
       (ex) =>
         ex.$type !== `${prefix}:AssignStartUserHandlerType` &&
         ex.$type !== `${prefix}:RejectHandlerType` &&
@@ -386,40 +415,61 @@ const resetCustomConfigList = () => {
 }
 
 const updateAssignStartUserHandlerType = () => {
-  assignStartUserHandlerTypeEl.value.value = assignStartUserHandlerType.value
+  if (!assignStartUserHandlerTypeEl.value) {
+    return
+  }
+  assignStartUserHandlerTypeEl.value.value =
+    assignStartUserHandlerType.value ?? assignStartUserHandlerTypeEl.value.value
 
   updateElementExtensions()
 }
 
 const updateRejectHandlerType = () => {
-  rejectHandlerTypeEl.value.value = rejectHandlerType.value
+  if (!rejectHandlerTypeEl.value || !returnNodeIdEl.value) {
+    return
+  }
+  rejectHandlerTypeEl.value.value = rejectHandlerType.value ?? rejectHandlerTypeEl.value.value
 
-  returnNodeId.value = returnTaskList.value[0].id
+  returnNodeId.value = returnTaskList.value[0]?.id || ''
   returnNodeIdEl.value.value = returnNodeId.value
 
   updateElementExtensions()
 }
 
 const updateReturnNodeId = () => {
-  returnNodeIdEl.value.value = returnNodeId.value
+  if (!returnNodeIdEl.value) {
+    return
+  }
+  returnNodeIdEl.value.value = returnNodeId.value || ''
 
   updateElementExtensions()
 }
 
 const updateAssignEmptyHandlerType = () => {
-  assignEmptyHandlerTypeEl.value.value = assignEmptyHandlerType.value
+  if (!assignEmptyHandlerTypeEl.value) {
+    return
+  }
+  assignEmptyHandlerTypeEl.value.value =
+    assignEmptyHandlerType.value ?? assignEmptyHandlerTypeEl.value.value
 
   updateElementExtensions()
 }
 
 const updateAssignEmptyUserIds = () => {
+  if (!assignEmptyUserIdsEl.value) {
+    return
+  }
   assignEmptyUserIdsEl.value.value = assignEmptyUserIds.value.toString()
 
   updateElementExtensions()
 }
 
 const updateElementExtensions = () => {
-  const extensions = bpmnInstances().moddle.create('bpmn:ExtensionElements', {
+  const instances = bpmnInstances()
+  if (!instances?.moddle || !instances?.modeling || !bpmnElement.value) {
+    return
+  }
+  const extensions = instances.moddle.create('bpmn:ExtensionElements', {
     values: [
       ...otherExtensions.value,
       assignStartUserHandlerTypeEl.value,
@@ -432,9 +482,9 @@ const updateElementExtensions = () => {
       ...fieldsPermissionEl.value,
       signEnable.value,
       reasonRequire.value
-    ]
+    ].filter(Boolean)
   })
-  bpmnInstances().modeling.updateProperties(toRaw(bpmnElement.value), {
+  instances.modeling.updateProperties(toRaw(bpmnElement.value), {
     extensionElements: extensions
   })
 }
@@ -451,18 +501,18 @@ watch(
   { immediate: true }
 )
 
-function findAllPredecessorsExcludingStart(elementId, modeler) {
+function findAllPredecessorsExcludingStart(elementId: string, modeler: any): ReturnTaskOption[] {
   const elementRegistry = modeler.get('elementRegistry')
   const allConnections = elementRegistry.filter((element) => element.type === 'bpmn:SequenceFlow')
-  const predecessors = new Set() // 使用 Set 来避免重复节点
-  const visited = new Set() // 用于记录已访问的节点
+  const predecessors = new Map<string, ReturnTaskOption>()
+  const visited = new Set<any>() // 用于记录已访问的节点
 
   // 检查是否是开始事件节点
-  function isStartEvent(element) {
+  function isStartEvent(element: any) {
     return element.type === 'bpmn:StartEvent'
   }
 
-  function findPredecessorsRecursively(element) {
+  function findPredecessorsRecursively(element: any) {
     // 如果该节点已经访问过，直接返回，避免循环
     if (visited.has(element)) {
       return
@@ -479,7 +529,10 @@ function findAllPredecessorsExcludingStart(elementId, modeler) {
 
       // 只添加不是开始事件的前置节点
       if (!isStartEvent(source)) {
-        predecessors.add(source.businessObject)
+        predecessors.set(source.businessObject.id, {
+          id: source.businessObject.id,
+          name: source.businessObject.name || source.businessObject.id
+        })
         // 递归查找前置节点
         findPredecessorsRecursively(source)
       }
@@ -491,11 +544,11 @@ function findAllPredecessorsExcludingStart(elementId, modeler) {
     findPredecessorsRecursively(targetElement)
   }
 
-  return Array.from(predecessors) // 返回前置节点数组
+  return Array.from(predecessors.values()) // 返回前置节点数组
 }
 
 function useButtonsSetting() {
-  const buttonsSetting = ref<ButtonSetting[]>()
+  const buttonsSetting = ref<ButtonSetting[]>([])
   // 操作按钮显示名称可编辑
   const btnDisplayNameEdit = ref<boolean[]>([])
   const changeBtnDisplayName = (index: number) => {

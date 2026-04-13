@@ -173,7 +173,7 @@
         <el-button
           type="danger"
           plain
-          @click="handleDelete(selectionList.map((item) => item.id))"
+          @click="handleDelete(getSelectionIds())"
           v-hasPermi="['erp:sale-out:delete']"
           :disabled="selectionList.length === 0"
         >
@@ -256,7 +256,7 @@
           <el-button
             link
             type="primary"
-            @click="handleUpdateStatus(scope.row.id, 20)"
+            @click="handleRowStatusChange(scope.row, 20)"
             v-hasPermi="['erp:sale-out:update-status']"
             v-if="scope.row.status === 10"
           >
@@ -265,7 +265,7 @@
           <el-button
             link
             type="danger"
-            @click="handleUpdateStatus(scope.row.id, 10)"
+            @click="handleRowStatusChange(scope.row, 10)"
             v-hasPermi="['erp:sale-out:update-status']"
             v-else
           >
@@ -274,7 +274,7 @@
           <el-button
             link
             type="danger"
-            @click="handleDelete([scope.row.id])"
+            @click="handleRowDelete(scope.row)"
             v-hasPermi="['erp:sale-out:delete']"
           >
             删除
@@ -316,13 +316,29 @@ import { AccountApi, AccountVO } from '@/api/erp/finance/account'
 /** ERP 销售出库列表 */
 defineOptions({ name: 'ErpSaleOut' })
 
+interface QueryParams {
+  pageNo: number
+  pageSize: number
+  no?: string
+  customerId?: number
+  productId?: number
+  warehouseId?: number
+  outTime: string[]
+  orderNo?: string
+  receiptStatus?: string
+  accountId?: number
+  status?: number | string
+  remark?: string
+  creator?: number
+}
+
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
 
 const loading = ref(true) // 列表的加载中
 const list = ref<SaleOutVO[]>([]) // 列表的数据
 const total = ref(0) // 列表的总页数
-const queryParams = reactive({
+const queryParams = reactive<QueryParams>({
   pageNo: 1,
   pageSize: 10,
   no: undefined,
@@ -370,10 +386,13 @@ const resetQuery = () => {
 }
 
 /** 添加/修改操作 */
-const formRef = ref()
+const formRef = ref<InstanceType<typeof SaleOutForm>>()
 const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
+  formRef.value?.open(type, id)
 }
+
+const getSelectionIds = () =>
+  selectionList.value.map((item) => item.id).filter((id): id is number => id != null)
 
 /** 删除按钮操作 */
 const handleDelete = async (ids: number[]) => {
@@ -385,8 +404,15 @@ const handleDelete = async (ids: number[]) => {
     message.success(t('common.delSuccess'))
     // 刷新列表
     await getList()
-    selectionList.value = selectionList.value.filter((item) => !ids.includes(item.id))
+    selectionList.value = selectionList.value.filter((item) => item.id == null || !ids.includes(item.id))
   } catch {}
+}
+
+const handleRowDelete = (row: SaleOutVO) => {
+  if (row.id == null) {
+    return
+  }
+  handleDelete([row.id])
 }
 
 /** 审批/反审批操作 */
@@ -415,6 +441,13 @@ const handleExport = async () => {
   } finally {
     exportLoading.value = false
   }
+}
+
+const handleRowStatusChange = (row: SaleOutVO, status: number) => {
+  if (row.id == null) {
+    return
+  }
+  handleUpdateStatus(row.id, status)
 }
 
 /** 选中操作 */

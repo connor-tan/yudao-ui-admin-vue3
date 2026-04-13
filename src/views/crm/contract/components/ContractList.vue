@@ -73,11 +73,17 @@ const props = defineProps<{
 
 const loading = ref(true) // 列表的加载中
 const total = ref(0) // 列表的总页数
-const list = ref([]) // 列表的数据
-const queryParams = reactive({
+const list = ref<ContractApi.ContractVO[]>([]) // 列表的数据
+const queryParams = reactive<{
+  pageNo: number
+  pageSize: number
+  customerId?: number
+  businessId?: number
+}>({
   pageNo: 1,
   pageSize: 10,
-  customerId: undefined as unknown // 允许 undefined + number
+  customerId: undefined,
+  businessId: undefined
 })
 
 /** 查询列表 */
@@ -86,6 +92,7 @@ const getList = async () => {
   try {
     // 置空参数
     queryParams.customerId = undefined
+    queryParams.businessId = undefined
     // 执行查询
     let data = { list: [], total: 0 }
     switch (props.bizType) {

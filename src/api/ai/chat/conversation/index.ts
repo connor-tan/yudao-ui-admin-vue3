@@ -21,25 +21,32 @@ export interface ChatConversationVO {
   modelMaxContexts?: string // 模型的上下文的最大 Message 数量
 }
 
+export type ChatConversationSaveReqVO = Partial<
+  Pick<
+    ChatConversationVO,
+    'id' | 'title' | 'pinned' | 'roleId' | 'modelId' | 'model' | 'temperature' | 'maxTokens' | 'maxContexts' | 'systemMessage'
+  >
+>
+
 // AI 聊天对话 API
 export const ChatConversationApi = {
   // 获得【我的】聊天对话
-  getChatConversationMy: async (id: number) => {
+  getChatConversationMy: async (id: number): Promise<ChatConversationVO> => {
     return await request.get({ url: `/ai/chat/conversation/get-my?id=${id}` })
   },
 
   // 新增【我的】聊天对话
-  createChatConversationMy: async (data?: ChatConversationVO) => {
+  createChatConversationMy: async (data?: ChatConversationSaveReqVO) => {
     return await request.post({ url: `/ai/chat/conversation/create-my`, data })
   },
 
   // 更新【我的】聊天对话
-  updateChatConversationMy: async (data: ChatConversationVO) => {
+  updateChatConversationMy: async (data: ChatConversationSaveReqVO) => {
     return await request.put({ url: `/ai/chat/conversation/update-my`, data })
   },
 
   // 删除【我的】聊天对话
-  deleteChatConversationMy: async (id: string) => {
+  deleteChatConversationMy: async (id: number | string) => {
     return await request.delete({ url: `/ai/chat/conversation/delete-my?id=${id}` })
   },
 
@@ -49,7 +56,7 @@ export const ChatConversationApi = {
   },
 
   // 获得【我的】聊天对话列表
-  getChatConversationMyList: async () => {
+  getChatConversationMyList: async (): Promise<ChatConversationVO[]> => {
     return await request.get({ url: `/ai/chat/conversation/my-list` })
   },
 

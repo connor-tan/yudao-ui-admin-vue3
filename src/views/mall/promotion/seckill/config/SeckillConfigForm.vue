@@ -47,7 +47,7 @@
 </template>
 <script setup lang="ts">
 import { getIntDictOptions, DICT_TYPE } from '@/utils/dict'
-import { SeckillConfigApi, SeckillConfigVO } from '@/api/mall/promotion/seckill/seckillConfig.ts'
+import { SeckillConfigApi, SeckillConfigVO } from '@/api/mall/promotion/seckill/seckillConfig'
 import { CommonStatusEnum } from '@/utils/constants'
 
 /** 秒杀时段 表单 */
@@ -60,14 +60,25 @@ const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
-const formData = ref({
+type SeckillConfigFormData = {
+  id?: number
+  name?: string
+  startTime?: string
+  endTime?: string
+  sliderPicUrls: string[]
+  status: number
+}
+
+const createFormData = (): SeckillConfigFormData => ({
   id: undefined,
   name: undefined,
   startTime: undefined,
   endTime: undefined,
-  sliderPicUrls: undefined,
-  status: undefined
+  sliderPicUrls: [],
+  status: CommonStatusEnum.ENABLE
 })
+
+const formData = ref<SeckillConfigFormData>(createFormData())
 const formRules = reactive({
   name: [{ required: true, message: '秒杀时段名称不能为空', trigger: 'blur' }],
   startTime: [{ required: true, message: '开始时间点不能为空', trigger: 'blur' }],
@@ -120,14 +131,7 @@ const submitForm = async () => {
 
 /** 重置表单 */
 const resetForm = () => {
-  formData.value = {
-    id: undefined,
-    name: undefined,
-    startTime: undefined,
-    endTime: undefined,
-    sliderPicUrls: [],
-    status: CommonStatusEnum.ENABLE
-  }
+  formData.value = createFormData()
   formRef.value?.resetFields()
 }
 </script>

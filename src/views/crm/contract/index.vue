@@ -277,8 +277,16 @@ const { t } = useI18n() // 国际化
 
 const loading = ref(true) // 列表的加载中
 const total = ref(0) // 列表的总页数
-const list = ref([]) // 列表的数据
-const queryParams = reactive({
+const list = ref<ContractApi.ContractVO[]>([]) // 列表的数据
+const queryParams = reactive<{
+  pageNo: number
+  pageSize: number
+  sceneType: string
+  name: string | null
+  customerId: number | null
+  orderDate: string[]
+  no: string | null
+}>({
   pageNo: 1,
   pageSize: 10,
   sceneType: '1', // 默认和 activeName 相等
@@ -294,7 +302,7 @@ const customerList = ref<CustomerApi.CustomerVO[]>([]) // 客户列表
 
 /** tab 切换 */
 const handleTabClick = (tab: TabsPaneContext) => {
-  queryParams.sceneType = tab.paneName
+  queryParams.sceneType = String(tab.paneName ?? activeName.value)
   handleQuery()
 }
 

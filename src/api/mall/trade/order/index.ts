@@ -76,6 +76,11 @@ export interface OrderLogRespVO {
   userType?: number
 }
 
+export interface OrderExpressTrackRespVO {
+  time?: string
+  content?: string
+}
+
 export interface OrderItemRespVO {
   // ========== 订单项基本信息 ==========
   id?: number | null // 编号
@@ -86,6 +91,7 @@ export interface OrderItemRespVO {
   spuName?: string //商品 SPU 名称
   skuId?: number | null // 商品 SKU 编号
   picUrl?: string //商品图片
+  price?: number | null // 商品单价
   count?: number | null //购买数量
   // ========== 价格 + 支付基本信息 ==========
   originalPrice?: number | null //商品原价（总）
@@ -132,12 +138,14 @@ export const getOrderSummary = async (params: any) => {
 
 // 查询交易订单详情
 export const getOrder = async (id: number | null) => {
-  return await request.get({ url: `/trade/order/get-detail?id=` + id })
+  return await request.get<OrderVO>({ url: `/trade/order/get-detail?id=` + id })
 }
 
 // 查询交易订单物流详情
 export const getExpressTrackList = async (id: number | null) => {
-  return await request.get({ url: `/trade/order/get-express-track-list?id=` + id })
+  return await request.get<OrderExpressTrackRespVO[]>({
+    url: `/trade/order/get-express-track-list?id=` + id
+  })
 }
 
 export interface DeliveryVO {

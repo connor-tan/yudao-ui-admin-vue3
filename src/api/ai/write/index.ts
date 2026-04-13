@@ -76,7 +76,7 @@ export const WriteApi = {
   },
   // 获取写作列表
   getWritePage: (params: AiWritePageReqVO) => {
-    return request.get<PageResult<AiWriteRespVo[]>>({ url: `/ai/write/page`, params })
+    return request.get<PageResult<AiWriteRespVo>>({ url: `/ai/write/page`, params })
   },
   // 删除写作
   deleteWrite(id: number) {

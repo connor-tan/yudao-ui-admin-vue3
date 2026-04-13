@@ -68,7 +68,7 @@ const controlForm = ref({
   labelEditing: false,
   labelVisible: false,
   prefix: 'flowable',
-  headerButtonSize: 'mini',
+  headerButtonSize: 'small',
   additionalModel: [CustomContentPadProvider, CustomPaletteProvider]
 })
 const model = ref<ModelApi.ModelVO>() // 流程模型的信息

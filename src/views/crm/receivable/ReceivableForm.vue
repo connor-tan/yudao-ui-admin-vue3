@@ -84,7 +84,7 @@
               <el-option
                 v-for="data in receivablePlanList"
                 :key="data.id"
-                :disabled="data.receivableId"
+                :disabled="!!data.receivableId"
                 :label="'第 ' + data.period + ' 期'"
                 :value="data.id!"
               />
@@ -206,8 +206,10 @@ const open = async (
   if (receivablePlan) {
     formData.value.customerId = receivablePlan.customerId
     await handleCustomerChange(receivablePlan.customerId)
-    formData.value.contractId = receivablePlan.contractId
-    await handleContractChange(receivablePlan.contractId)
+    if (receivablePlan.contractId != null) {
+      formData.value.contractId = receivablePlan.contractId
+      await handleContractChange(receivablePlan.contractId)
+    }
     if (receivablePlan.id) {
       formData.value.planId = receivablePlan.id
       formData.value.price = receivablePlan.price
@@ -221,7 +223,7 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  if (!formRef) return
+  if (!formRef.value) return
   const valid = await formRef.value.validate()
   if (!valid) return
   // 提交请求

@@ -46,7 +46,7 @@
       <template #label>
         <el-row align="middle"><Icon icon="ep:reading" /> 图文</el-row>
       </template>
-      <TabNews v-model="reply" :news-type="newsType" />
+      <TabNews v-model="reply" :news-type="props.newsType" />
     </el-tab-pane>
 
     <!-- 类型 6：音乐 -->

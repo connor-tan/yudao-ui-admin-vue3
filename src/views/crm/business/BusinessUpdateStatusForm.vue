@@ -13,13 +13,13 @@
             v-for="item in statusList"
             :key="item.id"
             :label="item.name + '(赢单率：' + item.percent + '%)'"
-            :value="item.id"
+            :value="item.id!"
           />
           <el-option
             v-for="item in BusinessStatusApi.DEFAULT_STATUSES"
             :key="item.endStatus"
             :label="item.name + '(赢单率：' + item.percent + '%)'"
-            :value="-item.endStatus"
+            :value="-(item.endStatus || 0)"
           />
         </el-select>
       </el-form-item>
@@ -34,12 +34,18 @@
 import * as BusinessApi from '@/api/crm/business'
 import * as BusinessStatusApi from '@/api/crm/business/status'
 
-const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
+
+type BusinessUpdateStatusFormData = {
+  id?: number
+  statusId?: number
+  endStatus?: number
+  status?: number
+}
 
 const dialogVisible = ref(false) // 弹窗的是否展示
 const formLoading = ref(false) // 表单的加载中
-const formData = ref({
+const formData = ref<BusinessUpdateStatusFormData>({
   id: undefined,
   statusId: undefined,
   endStatus: undefined,
@@ -49,7 +55,7 @@ const formRules = reactive({
   status: [{ required: true, message: '商机阶段不能为空', trigger: 'blur' }]
 })
 const formRef = ref() // 表单 Ref
-const statusList = ref([]) // 商机状态列表
+const statusList = ref<Awaited<ReturnType<typeof BusinessStatusApi.getBusinessStatusSimpleList>>>([]) // 商机状态列表
 
 /** 打开弹窗 */
 const open = async (business: BusinessApi.BusinessVO) => {
@@ -64,7 +70,10 @@ const open = async (business: BusinessApi.BusinessVO) => {
   // 加载状态列表
   formLoading.value = true
   try {
-    statusList.value = await BusinessStatusApi.getBusinessStatusSimpleList(business.statusTypeId)
+    statusList.value =
+      business.statusTypeId != null
+        ? await BusinessStatusApi.getBusinessStatusSimpleList(business.statusTypeId)
+        : []
   } finally {
     formLoading.value = false
   }
@@ -75,16 +84,17 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  if (!formRef) return
+  if (!formRef.value) return
   const valid = await formRef.value.validate()
   if (!valid) return
   // 提交请求
   formLoading.value = true
   try {
+    const status = formData.value.status ?? 0
     await BusinessApi.updateBusinessStatus({
       id: formData.value.id,
-      statusId: formData.value.status > 0 ? formData.value.status : undefined,
-      endStatus: formData.value.status < 0 ? -formData.value.status : undefined
+      statusId: status > 0 ? status : undefined,
+      endStatus: status < 0 ? -status : undefined
     })
     message.success('更新商机状态成功')
     dialogVisible.value = false

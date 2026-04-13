@@ -451,7 +451,7 @@ const generateTableData = (propertyList: any[]) => {
   for (const item of buildSkuList) {
     const row = {
       name: '', // SKU 名称，提交时会自动使用 SPU 名称
-      properties: Array.isArray(item) ? item : [item], // 如果只有一个属性的话返回的是一个 property 对象
+      properties: item,
       price: 0,
       marketPrice: 0,
       costPrice: 0,
@@ -493,22 +493,17 @@ const validateData = (propertyList: any[]) => {
 }
 
 /** 构建所有排列组合 */
-const build = (propertyValuesList: Property[][]) => {
+const build = (propertyValuesList: Property[][]): Property[][] => {
   if (propertyValuesList.length === 0) {
     return []
   } else if (propertyValuesList.length === 1) {
-    return propertyValuesList[0]
+    return propertyValuesList[0].map((item) => [item])
   } else {
     const result: Property[][] = []
     const rest = build(propertyValuesList.slice(1))
     for (let i = 0; i < propertyValuesList[0].length; i++) {
       for (let j = 0; j < rest.length; j++) {
-        // 第一次不是数组结构，后面的都是数组结构
-        if (Array.isArray(rest[j])) {
-          result.push([propertyValuesList[0][i], ...rest[j]])
-        } else {
-          result.push([propertyValuesList[0][i], rest[j]])
-        }
+        result.push([propertyValuesList[0][i], ...rest[j]])
       }
     }
     return result

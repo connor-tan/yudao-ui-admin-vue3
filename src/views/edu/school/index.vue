@@ -177,7 +177,7 @@ const { t } = useI18n() // 国际化
 const loading = ref(true) // 列表的加载中
 const list = ref<School[]>([]) // 列表的数据
 const total = ref(0) // 列表的总页数
-const areaList = ref([])
+const areaList = ref<AreaApi.AreaNodeVO[]>([])
 const searchAreaProps = {
   ...defaultProps,
   checkStrictly: true

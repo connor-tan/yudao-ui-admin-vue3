@@ -10,7 +10,7 @@
       <el-descriptions-item label="应用编号">{{ detailData.appId }}</el-descriptions-item>
       <el-descriptions-item label="应用名称">{{ detailData.appName }}</el-descriptions-item>
       <el-descriptions-item label="支付状态">
-        <dict-tag :type="DICT_TYPE.PAY_ORDER_STATUS" :value="detailData.status" size="small" />
+        <dict-tag :type="DICT_TYPE.PAY_ORDER_STATUS" :value="detailData.status ?? 0" size="small" />
       </el-descriptions-item>
       <el-descriptions-item label="支付金额">
         <el-tag type="success" size="small">￥{{ ((detailData.price || 0) / 100.0).toFixed(2) }}</el-tag>
@@ -42,17 +42,17 @@
       <el-descriptions-item label="商品标题">{{ detailData.subject }}</el-descriptions-item>
       <el-descriptions-item label="商品描述">{{ detailData.body }}</el-descriptions-item>
       <el-descriptions-item label="支付渠道">
-        <dict-tag :type="DICT_TYPE.PAY_CHANNEL_CODE" :value="detailData.channelCode" />
+        <dict-tag :type="DICT_TYPE.PAY_CHANNEL_CODE" :value="detailData.channelCode || ''" />
       </el-descriptions-item>
       <el-descriptions-item label="支付 IP">{{ detailData.userIp }}</el-descriptions-item>
       <el-descriptions-item label="渠道单号">
-        <el-tag size="mini" type="success" v-if="detailData.channelOrderNo">
+        <el-tag size="small" type="success" v-if="detailData.channelOrderNo">
           {{ detailData.channelOrderNo }}
         </el-tag>
       </el-descriptions-item>
       <el-descriptions-item label="渠道用户">{{ detailData.channelUserId }}</el-descriptions-item>
       <el-descriptions-item label="退款金额">
-        <el-tag size="mini" type="danger">
+        <el-tag size="small" type="danger">
           ￥{{ ((detailData.refundPrice || 0) / 100.0).toFixed(2) }}
         </el-tag>
       </el-descriptions-item>
@@ -78,7 +78,7 @@ defineOptions({ name: 'PayOrderDetail' })
 
 const dialogVisible = ref(false) // 弹窗的是否展示
 const detailLoading = ref(false) // 表单的加载中
-const detailData = ref({
+const detailData = ref<OrderApi.OrderDetailVO>({
   extension: {}
 })
 

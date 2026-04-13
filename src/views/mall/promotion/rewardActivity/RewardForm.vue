@@ -80,6 +80,14 @@ import { fenToYuan, yuanToFen } from '@/utils'
 
 defineOptions({ name: 'ProductBrandForm' })
 
+type RewardActivityFormData = Omit<
+  RewardActivityApi.RewardActivityVO,
+  'productCategoryIds' | 'productSpuIds'
+> & {
+  productCategoryIds: number | number[]
+  productSpuIds: number[]
+}
+
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
 
@@ -87,11 +95,13 @@ const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
-const formData = ref<RewardActivityApi.RewardActivityVO>({
+const formData = ref<RewardActivityFormData>({
   conditionType: PromotionConditionTypeEnum.PRICE.type,
   productScope: PromotionProductScopeEnum.ALL.scope,
+  productCategoryIds: [],
+  productSpuIds: [],
   rules: []
-} as RewardActivityApi.RewardActivityVO)
+})
 const formRules = reactive({
   name: [{ required: true, message: '活动名称不能为空', trigger: 'blur' }],
   startAndEndTime: [{ required: true, message: '活动时间不能为空', trigger: 'blur' }],
@@ -180,8 +190,10 @@ const resetForm = () => {
   formData.value = {
     conditionType: PromotionConditionTypeEnum.PRICE.type,
     productScope: PromotionProductScopeEnum.ALL.scope,
+    productCategoryIds: [],
+    productSpuIds: [],
     rules: []
-  } as RewardActivityApi.RewardActivityVO
+  }
 }
 
 /** 获得商品范围 */
@@ -189,11 +201,11 @@ const getProductScope = async () => {
   switch (formData.value.productScope) {
     case PromotionProductScopeEnum.SPU.scope:
       // 设置商品编号
-      formData.value.productSpuIds = formData.value.productScopeValues
+      formData.value.productSpuIds = formData.value.productScopeValues || []
       break
     case PromotionProductScopeEnum.CATEGORY.scope:
       await nextTick()
-      let productCategoryIds = formData.value.productScopeValues as any
+      let productCategoryIds: number | number[] = formData.value.productScopeValues || []
       if (Array.isArray(productCategoryIds) && productCategoryIds.length === 1) {
         // 单选时使用数组不能反显
         productCategoryIds = productCategoryIds[0]
@@ -207,7 +219,7 @@ const getProductScope = async () => {
 }
 
 /** 设置商品范围 */
-function setProductScopeValues(data: any) {
+function setProductScopeValues(data: RewardActivityApi.RewardActivityVO) {
   switch (formData.value.productScope) {
     case PromotionProductScopeEnum.SPU.scope:
       data.productScopeValues = formData.value.productSpuIds

@@ -147,13 +147,14 @@ const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
-const formData = ref({
+type ProductFormData = Partial<ProductVO>
+const createDefaultFormData = (): ProductFormData => ({
   id: undefined,
   name: undefined,
   barCode: undefined,
   categoryId: undefined,
   unitId: undefined,
-  status: undefined,
+  status: CommonStatusEnum.ENABLE,
   standard: undefined,
   remark: undefined,
   expiryDay: undefined,
@@ -162,6 +163,7 @@ const formData = ref({
   salePrice: undefined,
   minPrice: undefined
 })
+const formData = ref<ProductFormData>(createDefaultFormData())
 const formRules = reactive({
   name: [{ required: true, message: '产品名称不能为空', trigger: 'blur' }],
   barCode: [{ required: true, message: '产品条码不能为空', trigger: 'blur' }],
@@ -222,21 +224,7 @@ const submitForm = async () => {
 
 /** 重置表单 */
 const resetForm = () => {
-  formData.value = {
-    id: undefined,
-    name: undefined,
-    barCode: undefined,
-    categoryId: undefined,
-    unitId: undefined,
-    status: CommonStatusEnum.ENABLE,
-    standard: undefined,
-    remark: undefined,
-    expiryDay: undefined,
-    weight: undefined,
-    purchasePrice: undefined,
-    salePrice: undefined,
-    minPrice: undefined
-  }
+  formData.value = createDefaultFormData()
   formRef.value?.resetFields()
 }
 </script>

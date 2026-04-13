@@ -6,11 +6,11 @@ import { config } from '@/config/axios/config'
 // 聊天VO
 export interface ChatMessageVO {
   id: number // 编号
-  conversationId: number // 对话编号
+  conversationId: number | null // 对话编号
   type: string // 消息类型
   userId: string // 用户编号
   roleId: string // 角色编号
-  model: number // 模型标志
+  model: string | number // 模型标志
   modelId: number // 模型编号
   content: string // 聊天内容
   reasoningContent?: string // 推理内容
@@ -31,7 +31,7 @@ export interface ChatMessageVO {
     snippet: string // 内容的简短描述
     summary: string // 内容的文本摘要
   }[]
-  createTime: string // 创建时间
+  createTime: string | Date // 创建时间
   roleAvatar: string // 角色头像
   userAvatar: string // 用户头像
 }
@@ -81,7 +81,7 @@ export const ChatMessageApi = {
   },
 
   // 删除消息
-  deleteChatMessage: async (id: string) => {
+  deleteChatMessage: async (id: number | string) => {
     return await request.delete({ url: `/ai/chat/message/delete?id=${id}` })
   },
 

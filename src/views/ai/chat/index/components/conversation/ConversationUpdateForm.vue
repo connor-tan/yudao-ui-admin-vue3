@@ -61,6 +61,7 @@
   </Dialog>
 </template>
 <script setup lang="ts">
+import type { FormInstance, FormRules } from 'element-plus'
 import { ModelApi, ModelVO } from '@/api/ai/model/model'
 import { ChatConversationApi, ChatConversationVO } from '@/api/ai/chat/conversation'
 import { AiModelTypeEnum } from '@/views/ai/utils/constants'
@@ -72,7 +73,16 @@ const message = useMessage() // 消息弹窗
 
 const dialogVisible = ref(false) // 弹窗的是否展示
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
-const formData = ref({
+interface ConversationUpdateFormData {
+  id?: number
+  systemMessage?: string
+  modelId?: number
+  temperature?: number
+  maxTokens?: number
+  maxContexts?: number
+}
+
+const createDefaultFormData = (): ConversationUpdateFormData => ({
   id: undefined,
   systemMessage: undefined,
   modelId: undefined,
@@ -80,14 +90,15 @@ const formData = ref({
   maxTokens: undefined,
   maxContexts: undefined
 })
-const formRules = reactive({
+const formData = ref<ConversationUpdateFormData>(createDefaultFormData())
+const formRules: FormRules<ConversationUpdateFormData> = reactive({
   modelId: [{ required: true, message: '模型不能为空', trigger: 'blur' }],
   status: [{ required: true, message: '状态不能为空', trigger: 'blur' }],
   temperature: [{ required: true, message: '温度参数不能为空', trigger: 'blur' }],
   maxTokens: [{ required: true, message: '回复数 Token 数不能为空', trigger: 'blur' }],
   maxContexts: [{ required: true, message: '上下文数量不能为空', trigger: 'blur' }]
 })
-const formRef = ref() // 表单 Ref
+const formRef = ref<FormInstance>() // 表单 Ref
 const models = ref([] as ModelVO[]) // 聊天模型列表
 
 /** 打开弹窗 */
@@ -99,12 +110,13 @@ const open = async (id: number) => {
     formLoading.value = true
     try {
       const data = await ChatConversationApi.getChatConversationMy(id)
-      formData.value = Object.keys(formData.value).reduce((obj, key) => {
-        if (data.hasOwnProperty(key)) {
-          obj[key] = data[key]
+      const nextFormData = createDefaultFormData()
+      ;(Object.keys(nextFormData) as Array<keyof ConversationUpdateFormData>).forEach((key) => {
+        if (key in data) {
+          nextFormData[key] = data[key] as never
         }
-        return obj
-      }, {})
+      })
+      formData.value = nextFormData
     } finally {
       formLoading.value = false
     }
@@ -118,7 +130,7 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  await formRef.value.validate()
+  await formRef.value?.validate()
   // 提交请求
   formLoading.value = true
   try {
@@ -135,14 +147,7 @@ const submitForm = async () => {
 
 /** 重置表单 */
 const resetForm = () => {
-  formData.value = {
-    id: undefined,
-    systemMessage: undefined,
-    modelId: undefined,
-    temperature: undefined,
-    maxTokens: undefined,
-    maxContexts: undefined
-  }
+  formData.value = createDefaultFormData()
   formRef.value?.resetFields()
 }
 </script>

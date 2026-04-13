@@ -188,7 +188,8 @@ const submitForm = async () => {
       message.error('商品名称不能为空')
       return
     }
-    deepCopyFormData.skus.forEach((item) => {
+    const skuList = deepCopyFormData.skus || []
+    skuList.forEach((item) => {
       item.name = deepCopyFormData.name
       item.price = convertToInteger(item.price)
       item.marketPrice = convertToInteger(item.marketPrice)
@@ -196,6 +197,7 @@ const submitForm = async () => {
       item.firstBrokeragePrice = convertToInteger(item.firstBrokeragePrice)
       item.secondBrokeragePrice = convertToInteger(item.secondBrokeragePrice)
     })
+    deepCopyFormData.skus = skuList
     const newSliderPicUrls: string[] = []
     deepCopyFormData.sliderPicUrls?.forEach((item: any) => {
       typeof item === 'object' ? newSliderPicUrls.push(item.url) : newSliderPicUrls.push(item)

@@ -27,7 +27,7 @@ export const getMyNotifyMessagePage = async (params: PageParam) => {
 }
 
 // 批量标记已读
-export const updateNotifyMessageRead = async (ids) => {
+export const updateNotifyMessageRead = async (ids: number | number[]) => {
   return await request.put({
     url: '/system/notify-message/update-read?' + qs.stringify({ ids: ids }, { indices: false })
   })

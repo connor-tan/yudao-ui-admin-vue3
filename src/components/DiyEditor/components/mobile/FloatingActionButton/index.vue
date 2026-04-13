@@ -49,6 +49,8 @@ const expanded = ref(false)
 const handleToggleFab = () => {
   expanded.value = !expanded.value
 }
+
+const handleActive = (_index: number) => {}
 </script>
 
 <style scoped lang="scss">

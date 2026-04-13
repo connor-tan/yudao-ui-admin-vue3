@@ -6,7 +6,7 @@
       <el-descriptions-item label="商品标题">{{ payOrder.subject }}</el-descriptions-item>
       <el-descriptions-item label="商品内容">{{ payOrder.body }}</el-descriptions-item>
       <el-descriptions-item label="支付金额">
-        ￥{{ (payOrder.price / 100.0).toFixed(2) }}
+        ￥{{ ((payOrder.price || 0) / 100.0).toFixed(2) }}
       </el-descriptions-item>
       <el-descriptions-item label="创建时间">
         {{ formatDate(payOrder.createTime) }}
@@ -142,10 +142,20 @@ const route = useRoute() // 路由
 const { push, currentRoute } = useRouter() // 路由
 const { delView } = useTagsViewStore() // 视图操作
 
-const id = ref(undefined) // 支付单号
+type CashierOrder = {
+  id?: number
+  subject?: string
+  body?: string
+  price?: number
+  createTime?: string
+  expireTime?: string
+  status?: number
+}
+
+const id = ref<number>() // 支付单号
 const returnUrl = ref<string | undefined>(undefined) // 支付完的回调地址
 const loading = ref(false) // 支付信息的 loading
-const payOrder = ref({}) // 支付信息
+const payOrder = ref<CashierOrder>({}) // 支付信息
 const channelsAlipay = [
   {
     name: '支付宝 PC 网站支付',
@@ -390,6 +400,9 @@ const createQueryInterval = () => {
     return
   }
   interval.value = setInterval(async () => {
+    if (id.value == null) {
+      return
+    }
     const data = await PayOrderApi.getOrder(id.value)
     // 已支付
     if (data.status === PayOrderStatusEnum.SUCCESS.status) {
@@ -454,9 +467,13 @@ const goReturnUrl = (payResult) => {
 
 /** 初始化 */
 onMounted(() => {
-  id.value = route.query.id
-  if (route.query.returnUrl) {
-    returnUrl.value = decodeURIComponent(route.query.returnUrl)
+  const queryId = Array.isArray(route.query.id) ? route.query.id[0] : route.query.id
+  id.value = queryId ? Number(queryId) : undefined
+  const queryReturnUrl = Array.isArray(route.query.returnUrl)
+    ? route.query.returnUrl[0]
+    : route.query.returnUrl
+  if (queryReturnUrl) {
+    returnUrl.value = decodeURIComponent(queryReturnUrl)
   }
   getDetail()
 })

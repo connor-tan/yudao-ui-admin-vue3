@@ -11,23 +11,25 @@ export interface MailAccountVO {
   starttlsEnable: boolean
 }
 
+export type MailAccountSaveReqVO = Omit<MailAccountVO, 'id'> & { id?: number }
+
 // 查询邮箱账号列表
 export const getMailAccountPage = async (params: PageParam) => {
   return await request.get({ url: '/system/mail-account/page', params })
 }
 
 // 查询邮箱账号详情
-export const getMailAccount = async (id: number) => {
+export const getMailAccount = async (id: number): Promise<MailAccountVO> => {
   return await request.get({ url: '/system/mail-account/get?id=' + id })
 }
 
 // 新增邮箱账号
-export const createMailAccount = async (data: MailAccountVO) => {
+export const createMailAccount = async (data: MailAccountSaveReqVO) => {
   return await request.post({ url: '/system/mail-account/create', data })
 }
 
 // 修改邮箱账号
-export const updateMailAccount = async (data: MailAccountVO) => {
+export const updateMailAccount = async (data: MailAccountSaveReqVO) => {
   return await request.put({ url: '/system/mail-account/update', data })
 }
 
@@ -42,6 +44,6 @@ export const deleteMailAccountList = async (ids: number[]) => {
 }
 
 // 获得邮箱账号精简列表
-export const getSimpleMailAccountList = async () => {
+export const getSimpleMailAccountList = async (): Promise<MailAccountVO[]> => {
   return request.get({ url: '/system/mail-account/simple-list' })
 }

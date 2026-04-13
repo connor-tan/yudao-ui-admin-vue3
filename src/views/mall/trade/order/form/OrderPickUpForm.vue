@@ -52,12 +52,12 @@ const formRef = ref() // 表单 Ref
 const orderDetails = ref<OrderVO>({})
 
 /** 打开弹窗 */
-const open = async (pickUpVerifyCode: string) => {
+const open = async (pickUpVerifyCode?: string) => {
   resetForm()
-  if(pickUpVerifyCode != null){
-    formData.value.pickUpVerifyCode = pickUpVerifyCode;
+  if (pickUpVerifyCode) {
+    formData.value.pickUpVerifyCode = pickUpVerifyCode
     await getOrderByPickUpVerifyCode()
-  }else{
+  } else {
     dialogVisible.value = true
   }
 }

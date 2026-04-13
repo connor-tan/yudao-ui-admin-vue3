@@ -82,6 +82,9 @@ const { push, currentRoute } = useRouter() // 路由
 const { query } = useRoute() // 查询参数
 
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
+type LeaveSubmitVO = LeaveApi.LeaveVO & {
+  startUserSelectAssignees?: Record<string, number[]>
+}
 const formData = ref({
   type: undefined,
   reason: undefined,
@@ -98,9 +101,9 @@ const formRef = ref() // 表单 Ref
 
 // 审批相关：变量
 const processDefineKey = 'oa_leave' // 流程定义 Key
-const startUserSelectTasks = ref([]) // 发起人需要选择审批人的用户任务列表
-const startUserSelectAssignees = ref({}) // 发起人选择审批人的数据
-const tempStartUserSelectAssignees = ref({}) // 历史发起人选择审批人的数据，用于每次表单变更时，临时保存
+const startUserSelectTasks = ref<ApprovalNodeInfo[]>([]) // 发起人需要选择审批人的用户任务列表
+const startUserSelectAssignees = ref<Record<string, number[]>>({}) // 发起人选择审批人的数据
+const tempStartUserSelectAssignees = ref<Record<string, number[]>>({}) // 历史发起人选择审批人的数据，用于每次表单变更时，临时保存
 const activityNodes = ref<ProcessInstanceApi.ApprovalNodeInfo[]>([]) // 审批节点信息
 const processDefinitionId = ref('')
 
@@ -125,7 +128,7 @@ const submitForm = async () => {
   // 2. 提交请求
   formLoading.value = true
   try {
-    const data = { ...formData.value } as unknown as LeaveApi.LeaveVO
+    const data = { ...formData.value } as unknown as LeaveSubmitVO
     // 审批相关：设置指定审批人
     if (startUserSelectTasks.value?.length > 0) {
       data.startUserSelectAssignees = startUserSelectAssignees.value
@@ -179,8 +182,8 @@ const getApprovalDetail = async () => {
 }
 
 /** 审批相关：选择发起人 */
-const selectUserConfirm = (id: string, userList: any[]) => {
-  startUserSelectAssignees.value[id] = userList?.map((item: any) => item.id)
+const selectUserConfirm = (id: string, userList: Array<{ id: number }>) => {
+  startUserSelectAssignees.value[id] = userList?.map((item) => item.id)
 }
 
 // 计算天数差

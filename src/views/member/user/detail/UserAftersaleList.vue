@@ -198,7 +198,7 @@ const queryParams = ref({
   pageNo: 1,
   pageSize: 10,
   no: null,
-  status: '0',
+  status: '0' as string | undefined,
   orderNo: null,
   spuName: null,
   createTime: [],
@@ -211,7 +211,10 @@ const queryParams = ref({
 const getList = async () => {
   loading.value = true
   try {
-    const data = cloneDeep(queryParams.value)
+    const data = cloneDeep(queryParams.value) as typeof queryParams.value & {
+      status?: string
+      userId?: number | null
+    }
     // 处理掉全部的状态，不传就是全部
     if (data.status === '0') {
       delete data.status

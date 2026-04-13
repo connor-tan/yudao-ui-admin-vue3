@@ -122,15 +122,24 @@ import { dateFormatter2 } from '@/utils/formatTime'
 import { erpPriceInputFormatter, erpPriceTableColumnFormatter } from '@/utils'
 import { ProductApi, ProductVO } from '@/api/erp/product/product'
 import { PurchaseReturnApi, PurchaseReturnVO } from '@/api/erp/purchase/return'
-import { SaleReturnVO } from '@/api/erp/sale/return'
 
-defineOptions({ name: 'PurchaseInPaymentEnableList' })
+defineOptions({ name: 'PurchaseReturnRefundEnableList' })
+
+interface QueryParams {
+  pageNo: number
+  pageSize: number
+  no?: string
+  productId?: number
+  returnTime: string[]
+  refundEnable: boolean
+  supplierId?: number
+}
 
 const list = ref<PurchaseReturnVO[]>([]) // 列表的数据
 const total = ref(0) // 列表的总页数
 const loading = ref(false) // 列表的加载中
 const dialogVisible = ref(false) // 弹窗的是否展示
-const queryParams = reactive({
+const queryParams = reactive<QueryParams>({
   pageNo: 1,
   pageSize: 10,
   no: undefined,
@@ -143,8 +152,8 @@ const queryFormRef = ref() // 搜索的表单
 const productList = ref<ProductVO[]>([]) // 产品列表
 
 /** 选中操作 */
-const selectionList = ref<SaleReturnVO[]>([])
-const handleSelectionChange = (rows: SaleReturnVO[]) => {
+const selectionList = ref<PurchaseReturnVO[]>([])
+const handleSelectionChange = (rows: PurchaseReturnVO[]) => {
   selectionList.value = rows
 }
 
@@ -162,7 +171,7 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 
 /** 提交选择 */
 const emits = defineEmits<{
-  (e: 'success', value: SaleReturnVO[]): void
+  (e: 'success', value: PurchaseReturnVO[]): void
 }>()
 const submitForm = () => {
   try {

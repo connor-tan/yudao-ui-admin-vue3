@@ -19,7 +19,7 @@
         >
           <el-option
             v-for="dict in getBoolDictOptions(DICT_TYPE.INFRA_BOOLEAN_STRING)"
-            :key="dict.value"
+            :key="String(dict.value)"
             :label="dict.label"
             :value="dict.value"
           />
@@ -116,6 +116,7 @@
 </template>
 
 <script lang="ts" setup>
+import type { FormInstance, TableInstance } from 'element-plus'
 import { DICT_TYPE, getBoolDictOptions } from '@/utils/dict'
 import { dateFormatter } from '@/utils/formatTime'
 import * as NotifyMessageApi from '@/api/system/notify/message'
@@ -127,15 +128,15 @@ const message = useMessage() // 消息
 
 const loading = ref(true) // 列表的加载中
 const total = ref(0) // 列表的总页数
-const list = ref([]) // 列表的数据
+const list = ref<NotifyMessageApi.NotifyMessageVO[]>([]) // 列表的数据
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
   readStatus: undefined,
   createTime: []
 })
-const queryFormRef = ref() // 搜索的表单
-const tableRef = ref() // 表格的 Ref
+const queryFormRef = ref<FormInstance>() // 搜索的表单
+const tableRef = ref<TableInstance>() // 表格的 Ref
 const selectedIds = ref<number[]>([]) // 表格的选中 ID 数组
 
 /** 查询列表 */
@@ -158,22 +159,22 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
-  tableRef.value.clearSelection()
+  queryFormRef.value?.resetFields()
+  tableRef.value?.clearSelection()
   handleQuery()
 }
 
 /** 详情操作 */
-const detailRef = ref()
+const detailRef = ref<InstanceType<typeof MyNotifyMessageDetail>>()
 const openDetail = (data: NotifyMessageApi.NotifyMessageVO) => {
   if (!data.readStatus) {
     handleReadOne(data.id)
   }
-  detailRef.value.open(data)
+  detailRef.value?.open(data)
 }
 
 /** 标记一条站内信已读 */
-const handleReadOne = async (id) => {
+const handleReadOne = async (id: number) => {
   await NotifyMessageApi.updateNotifyMessageRead(id)
   await getList()
 }
@@ -182,7 +183,7 @@ const handleReadOne = async (id) => {
 const handleUpdateAll = async () => {
   await NotifyMessageApi.updateAllNotifyMessageRead()
   message.success('全部已读成功！')
-  tableRef.value.clearSelection()
+  tableRef.value?.clearSelection()
   await getList()
 }
 
@@ -193,12 +194,12 @@ const handleUpdateList = async () => {
   }
   await NotifyMessageApi.updateNotifyMessageRead(selectedIds.value)
   message.success('批量已读成功！')
-  tableRef.value.clearSelection()
+  tableRef.value?.clearSelection()
   await getList()
 }
 
 /** 某一行，是否允许选中 */
-const selectable = (row) => {
+const selectable = (row: NotifyMessageApi.NotifyMessageVO) => {
   return !row.readStatus
 }
 

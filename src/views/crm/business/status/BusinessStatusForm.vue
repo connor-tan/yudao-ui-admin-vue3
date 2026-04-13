@@ -28,7 +28,7 @@
         <el-table
           border
           style="width: 100%"
-          :data="formData.statuses.concat(BusinessStatusApi.DEFAULT_STATUSES)"
+          :data="(formData.statuses || []).concat(BusinessStatusApi.DEFAULT_STATUSES)"
         >
           <el-table-column align="center" label="阶段" width="70">
             <template #default="scope">
@@ -72,7 +72,7 @@
                 link
                 type="danger"
                 @click="deleteStatusArea(scope.$index)"
-                :disabled="formData.statuses.length <= 1"
+                :disabled="(formData.statuses?.length || 0) <= 1"
               >
                 删除
               </el-button>
@@ -99,7 +99,7 @@ const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的组：create - 新增；update - 修改
-const formData = ref({
+const formData = ref<BusinessStatusApi.BusinessStatusTypeVO>({
   id: undefined,
   name: '',
   deptIds: [],
@@ -124,8 +124,8 @@ const open = async (type: string, id?: number) => {
     formLoading.value = true
     try {
       formData.value = await BusinessStatusApi.getBusinessStatus(id)
-      treeRef.value.setCheckedKeys(formData.value.deptIds)
-      if (formData.value.statuses.length == 0) {
+      treeRef.value.setCheckedKeys(formData.value.deptIds || [])
+      if ((formData.value.statuses || []).length == 0) {
         addStatus()
       }
     } finally {
@@ -148,7 +148,7 @@ const submitForm = async () => {
   formLoading.value = true
   try {
     const data = formData.value as unknown as BusinessStatusApi.BusinessStatusTypeVO
-    data.deptIds = treeRef.value.getCheckedKeys(false)
+    data.deptIds = treeRef.value.getCheckedKeys(false) as number[]
     if (formType.value === 'create') {
       await BusinessStatusApi.createBusinessStatus(data)
       message.success(t('common.createSuccess'))
@@ -178,8 +178,9 @@ const resetForm = () => {
 }
 
 /** 添加状态 */
-const addStatus = () => {
+const addStatus = (_index?: number) => {
   const data = formData.value
+  data.statuses = data.statuses || []
   data.statuses.push({
     name: '',
     percent: undefined
@@ -189,6 +190,6 @@ const addStatus = () => {
 /** 删除状态 */
 const deleteStatusArea = (index: number) => {
   const data = formData.value
-  data.statuses.splice(index, 1)
+  data.statuses?.splice(index, 1)
 }
 </script>

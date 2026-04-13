@@ -28,7 +28,7 @@
           <Icon class="mr-5px" icon="ep:refresh" />
           重置
         </el-button>
-        <el-button v-hasPermi="['bpm:form:create']" plain type="primary" @click="openForm">
+        <el-button v-hasPermi="['bpm:form:create']" plain type="primary" @click="openForm()">
           <Icon class="mr-5px" icon="ep:plus" />
           新增
         </el-button>
@@ -114,7 +114,7 @@ const { currentRoute, push } = useRouter() // 路由
 
 const loading = ref(true) // 列表的加载中
 const total = ref(0) // 列表的总页数
-const list = ref([]) // 列表的数据
+const list = ref<FormApi.FormVO[]>([]) // 列表的数据
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
@@ -142,21 +142,20 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
+  queryFormRef.value?.resetFields()
   handleQuery()
 }
 
 /** 添加/修改操作 */
-const openForm = (type: string, id?: number) => {
+const openForm = (type = 'create', id?: number | string) => {
   const toRouter: { name: string; query: { type: string; id?: number } } = {
     name: 'BpmFormEditor',
     query: {
       type
     }
   }
-  console.log(typeof id)
   // 表单新建的时候id传的是event需要排除
-  if (typeof id === 'number' || typeof id === 'string') {
+  if (typeof id === 'number') {
     toRouter.query.id = id
   }
   push(toRouter)
@@ -178,7 +177,7 @@ const handleDelete = async (id: number) => {
 /** 详情操作 */
 const detailVisible = ref(false)
 const detailData = ref({
-  rule: [],
+  rule: [] as any[],
   option: {}
 })
 const openDetail = async (rowId: number) => {

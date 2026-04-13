@@ -121,12 +121,27 @@ import * as ConfigApi from '@/api/mall/trade/config'
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
 
+type PickUpStoreFormData = {
+  id?: number
+  name: string
+  phone: string
+  logo: string
+  detailAddress: string
+  introduction: string
+  areaId?: number
+  openingTime?: string
+  closingTime?: string
+  latitude?: number
+  longitude?: number
+  status: number
+}
+
 const dialogVisible = ref(false) // 弹窗的是否展示
 const mapDialogVisible = ref(false) // 地图弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
-const formData = ref({
+const createFormData = (): PickUpStoreFormData => ({
   id: undefined,
   name: '',
   phone: '',
@@ -140,6 +155,7 @@ const formData = ref({
   longitude: undefined,
   status: CommonStatusEnum.ENABLE
 })
+const formData = ref<PickUpStoreFormData>(createFormData())
 const formRules = reactive({
   name: [{ required: true, message: '门店名称不能为空', trigger: 'blur' }],
   logo: [{ required: true, message: '门店 logo 不能为空', trigger: 'blur' }],
@@ -156,7 +172,7 @@ const formRules = reactive({
   status: [{ required: true, message: '开启状态不能为空', trigger: 'blur' }]
 })
 const formRef = ref() // 表单 Ref
-const areaList = ref() // 区域树
+const areaList = ref<AreaApi.AreaNodeVO[]>([]) // 区域树
 const tencentLbsUrl = ref('') // 腾讯位置服务 url
 
 /** 打开弹窗 */
@@ -188,7 +204,7 @@ const submitForm = async () => {
   // 提交请求
   formLoading.value = true
   try {
-    const data = formData.value as DeliveryPickUpStoreApi.DeliveryPickUpStoreVO
+    const data = formData.value as unknown as DeliveryPickUpStoreApi.DeliveryPickUpStoreVO
     if (formType.value === 'create') {
       await DeliveryPickUpStoreApi.createDeliveryPickUpStore(data)
       message.success(t('common.createSuccess'))
@@ -206,25 +222,15 @@ const submitForm = async () => {
 
 /** 重置表单 */
 const resetForm = () => {
-  formData.value = {
-    id: undefined,
-    name: '',
-    phone: '',
-    logo: '',
-    detailAddress: '',
-    introduction: '',
-    areaId: undefined,
-    openingTime: undefined,
-    closingTime: undefined,
-    latitude: undefined,
-    longitude: undefined,
-    status: CommonStatusEnum.ENABLE
-  }
+  formData.value = createFormData()
   formRef.value?.resetFields()
 }
 
 /** 选择经纬度 */
-const selectAddress = function (loc: any): void {
+const selectAddress = function (loc: {
+  latlng?: { lat?: number; lng?: number }
+  module?: string
+}): void {
   if (loc.latlng && loc.latlng.lat) {
     formData.value.latitude = loc.latlng.lat
   }
@@ -244,7 +250,7 @@ const initTencentLbsMap = async () => {
       let loc = event.data
       if (loc && loc.module === 'locationPicker') {
         // 防止其他应用也会向该页面 post 信息，需判断 module 是否为 'locationPicker'
-        window.parent.selectAddress(loc)
+        window.parent.selectAddress?.(loc)
       }
     },
     false

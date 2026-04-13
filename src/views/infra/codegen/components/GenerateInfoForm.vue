@@ -294,6 +294,7 @@
   </el-form>
 </template>
 <script lang="ts" setup>
+import type { FormInstance, FormRules } from 'element-plus'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import { handleTree } from '@/utils/tree'
 import * as CodegenApi from '@/api/infra/codegen'
@@ -302,30 +303,39 @@ import { PropType } from 'vue'
 
 defineOptions({ name: 'InfraCodegenGenerateInfoForm' })
 
-const message = useMessage() // 消息弹窗
-const props = defineProps({
-  table: {
-    type: Object as PropType<Nullable<CodegenApi.CodegenTableVO>>,
-    default: () => null
-  },
-  columns: {
-    type: Array as unknown as PropType<CodegenApi.CodegenColumnVO[]>,
-    default: () => null
-  }
-})
+type GenerateInfoFormData = {
+  templateType: number | null
+  frontType: number | null
+  scene: number | null
+  moduleName: string
+  businessName: string
+  businessPackage?: string
+  className: string
+  classComment: string
+  parentMenuId: number | null
+  genPath: string
+  genType: string
+  dataSourceConfigId?: number
+  masterTableId?: number
+  subJoinColumnId?: number
+  subJoinMany?: boolean
+  treeParentColumnId?: number
+  treeNameColumnId?: number
+}
 
-const formRef = ref()
-const formData = ref({
+const createDefaultFormData = (): GenerateInfoFormData => ({
   templateType: null,
   frontType: null,
   scene: null,
   moduleName: '',
   businessName: '',
+  businessPackage: '',
   className: '',
   classComment: '',
   parentMenuId: null,
   genPath: '',
   genType: '',
+  dataSourceConfigId: undefined,
   masterTableId: undefined,
   subJoinColumnId: undefined,
   subJoinMany: undefined,
@@ -333,7 +343,21 @@ const formData = ref({
   treeNameColumnId: undefined
 })
 
-const rules = reactive({
+const props = defineProps({
+  table: {
+    type: Object as PropType<Nullable<CodegenApi.CodegenTableVO>>,
+    default: () => null
+  },
+  columns: {
+    type: Array as unknown as PropType<CodegenApi.CodegenColumnVO[]>,
+    default: () => []
+  }
+})
+
+const formRef = ref<FormInstance>()
+const formData = ref<GenerateInfoFormData>(createDefaultFormData())
+
+const rules = reactive<FormRules<GenerateInfoFormData>>({
   templateType: [required],
   frontType: [required],
   scene: [required],
@@ -349,8 +373,8 @@ const rules = reactive({
   treeNameColumnId: [required]
 })
 
-const tables = ref([]) // 表定义列表
-const menus = ref<any[]>([])
+const tables = ref<CodegenApi.CodegenTableVO[]>([]) // 表定义列表
+const menus = ref<MenuApi.MenuVO[]>([])
 const menuTreeProps = {
   label: 'name'
 }
@@ -359,10 +383,13 @@ watch(
   () => props.table,
   async (table) => {
     if (!table) return
-    formData.value = table as any
+    formData.value = {
+      ...createDefaultFormData(),
+      ...table
+    }
     // 加载表列表
-    if (table.dataSourceConfigId >= 0) {
-      tables.value = await CodegenApi.getCodegenTableList(formData.value.dataSourceConfigId)
+    if ((table.dataSourceConfigId ?? -1) >= 0) {
+      tables.value = await CodegenApi.getCodegenTableList(table.dataSourceConfigId)
     }
   },
   {
@@ -375,7 +402,7 @@ onMounted(async () => {
   try {
     // 加载菜单
     const resp = await MenuApi.getSimpleMenusList()
-    menus.value = handleTree(resp)
+    menus.value = handleTree(resp) as MenuApi.MenuVO[]
   } catch {}
 })
 

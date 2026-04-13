@@ -116,59 +116,17 @@ const props = defineProps({
   type: String,
   id: String
 })
-const prefix = inject('prefix')
+const prefix = inject('prefix', 'flowable')
 const loopCharacteristics = ref('')
-//默认配置，用来覆盖原始不存在的选项，避免报错
-const defaultLoopInstanceForm = ref({
-  completionCondition: '',
-  loopCardinality: '',
-  extensionElements: [],
-  asyncAfter: false,
-  asyncBefore: false,
-  exclusive: false
-})
 const loopInstanceForm = ref<any>({})
-const bpmnElement = ref(null)
-const multiLoopInstance = ref(null)
+const bpmnElement = ref<any>(null)
+const multiLoopInstance = ref<any>(null)
 const bpmnInstances = () => (window as any)?.bpmnInstances
 
-const getElementLoop = (businessObject) => {
-  if (!businessObject.loopCharacteristics) {
-    loopCharacteristics.value = 'Null'
-    loopInstanceForm.value = {}
-    return
-  }
-  if (businessObject.loopCharacteristics.$type === 'bpmn:StandardLoopCharacteristics') {
-    loopCharacteristics.value = 'StandardLoop'
-    loopInstanceForm.value = {}
-    return
-  }
-  if (businessObject.loopCharacteristics.isSequential) {
-    loopCharacteristics.value = 'SequentialMultiInstance'
-  } else {
-    loopCharacteristics.value = 'ParallelMultiInstance'
-  }
-  // 合并配置
-  loopInstanceForm.value = {
-    ...defaultLoopInstanceForm.value,
-    ...businessObject.loopCharacteristics,
-    completionCondition: businessObject.loopCharacteristics?.completionCondition?.body ?? '',
-    loopCardinality: businessObject.loopCharacteristics?.loopCardinality?.body ?? ''
-  }
-  // 保留当前元素 businessObject 上的 loopCharacteristics 实例
-  multiLoopInstance.value = bpmnInstances().bpmnElement.businessObject.loopCharacteristics
-  // 更新表单
-  if (
-    businessObject.loopCharacteristics.extensionElements &&
-    businessObject.loopCharacteristics.extensionElements.values &&
-    businessObject.loopCharacteristics.extensionElements.values.length
-  ) {
-    loopInstanceForm.value['timeCycle'] =
-      businessObject.loopCharacteristics.extensionElements.values[0].body
-  }
-}
-
 const changeLoopCharacteristicsType = (type) => {
+  if (!bpmnElement.value) {
+    return
+  }
   // this.loopInstanceForm = { ...this.defaultLoopInstanceForm }; // 切换类型取消原表单配置
   // 取消多实例配置
   if (type === 'Null') {
@@ -207,6 +165,9 @@ const changeLoopCharacteristicsType = (type) => {
 
 // 循环基数
 const updateLoopCardinality = (cardinality) => {
+  if (!bpmnElement.value || !multiLoopInstance.value) {
+    return
+  }
   let loopCardinality = null
   if (cardinality && cardinality.length) {
     loopCardinality = bpmnInstances().moddle.create('bpmn:FormalExpression', {
@@ -224,6 +185,9 @@ const updateLoopCardinality = (cardinality) => {
 
 // 完成条件
 const updateLoopCondition = (condition) => {
+  if (!bpmnElement.value || !multiLoopInstance.value) {
+    return
+  }
   let completionCondition = null
   if (condition && condition.length) {
     completionCondition = bpmnInstances().moddle.create('bpmn:FormalExpression', {
@@ -241,6 +205,9 @@ const updateLoopCondition = (condition) => {
 
 // 重试周期
 const updateLoopTimeCycle = (timeCycle) => {
+  if (!bpmnElement.value || !multiLoopInstance.value) {
+    return
+  }
   const extensionElements = bpmnInstances().moddle.create('bpmn:ExtensionElements', {
     values: [
       bpmnInstances().moddle.create(`${prefix}:FailedJobRetryTimeCycle`, {
@@ -259,6 +226,9 @@ const updateLoopTimeCycle = (timeCycle) => {
 
 // 直接更新的基础信息
 const updateLoopBase = () => {
+  if (!bpmnElement.value || !multiLoopInstance.value) {
+    return
+  }
   bpmnInstances().modeling.updateModdleProperties(
     toRaw(bpmnElement.value),
     multiLoopInstance.value,
@@ -271,6 +241,9 @@ const updateLoopBase = () => {
 
 // 各异步状态
 const updateLoopAsync = (key) => {
+  if (!bpmnElement.value || !multiLoopInstance.value) {
+    return
+  }
   const { asyncBefore, asyncAfter } = loopInstanceForm.value
   let asyncAttr = Object.create(null)
   if (!asyncBefore && !asyncAfter) {
@@ -306,9 +279,9 @@ const changeConfig = (config) => {
  */
 const approveMethod = ref()
 const approveRatio = ref(100)
-const otherExtensions = ref()
+const otherExtensions = ref<any[]>([])
 const getElementLoopNew = () => {
-  if (props.type === 'UserTask') {
+  if (props.type === 'UserTask' && bpmnElement.value?.businessObject) {
     const extensionElements =
       bpmnElement.value.businessObject?.extensionElements ??
       bpmnInstances().moddle.create('bpmn:ExtensionElements', { values: [] })
@@ -333,6 +306,9 @@ const onApproveRatioChange = () => {
   updateLoopCharacteristics()
 }
 const updateLoopCharacteristics = () => {
+  if (!bpmnElement.value) {
+    return
+  }
   // 根据ApproveMethod生成multiInstanceLoopCharacteristics节点
   if (approveMethod.value === ApproveMethodType.RANDOM_SELECT_ONE_APPROVE) {
     bpmnInstances().modeling.updateProperties(toRaw(bpmnElement.value), {

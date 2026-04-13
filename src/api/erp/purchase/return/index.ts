@@ -1,15 +1,30 @@
 import request from '@/config/axios'
+import type { PurchaseOrderItemVO } from '@/api/erp/purchase/order'
+
+export interface PurchaseReturnItemVO extends PurchaseOrderItemVO {
+  warehouseId?: number
+}
 
 // ERP 采购退货 VO
 export interface PurchaseReturnVO {
-  id: number // 采购退货编号
-  no: string // 采购退货号
-  customerId: number // 客户编号
-  returnTime: string // 退货时间
-  totalCount: number // 合计数量
+  id?: number // 采购退货编号
+  no?: string // 采购退货号
+  customerId?: number // 保留兼容旧字段
+  supplierId?: number // 供应商编号
+  accountId?: number // 结算账户
+  orderId?: number // 关联订单编号
+  orderNo?: string // 关联订单号
+  returnTime?: string // 退货时间
+  totalCount?: number // 合计数量
   totalPrice: number // 合计金额，单位：元
-  status: number // 状态
-  remark: string // 备注
+  otherPrice: number // 其它费用
+  status?: number // 状态
+  remark?: string // 备注
+  refundPrice?: number // 已退金额
+  discountPercent: number // 优惠率
+  discountPrice: number // 优惠金额
+  fileUrl: string // 附件
+  items: PurchaseReturnItemVO[] // 明细项
 }
 
 // ERP 采购退货 API
@@ -21,7 +36,7 @@ export const PurchaseReturnApi = {
 
   // 查询采购退货详情
   getPurchaseReturn: async (id: number) => {
-    return await request.get({ url: `/erp/purchase-return/get?id=` + id })
+    return await request.get<PurchaseReturnVO>({ url: `/erp/purchase-return/get?id=` + id })
   },
 
   // 新增采购退货

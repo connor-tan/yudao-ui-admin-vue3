@@ -58,9 +58,7 @@ import * as CustomerLimitConfigApi from '@/api/crm/customer/limitConfig'
 import * as DeptApi from '@/api/system/dept'
 import { defaultProps, handleTree } from '@/utils/tree'
 import * as UserApi from '@/api/system/user'
-import { cloneDeep } from 'lodash-es'
 import { LimitConfType } from '@/api/crm/customer/limitConfig'
-import { aw } from '../../../../../dist-prod/assets/index-9eac537b'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -113,7 +111,7 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  if (!formRef) return
+  if (!formRef.value) return
   const valid = await formRef.value.validate()
   if (!valid) return
   // 提交请求

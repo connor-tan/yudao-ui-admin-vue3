@@ -1,26 +1,29 @@
 import request from '@/config/axios'
+import type { Property } from './spu'
 
 export interface CommentVO {
-  id: number
-  userId: number
-  userNickname: string
-  userAvatar: string
-  anonymous: boolean
-  orderId: number
-  orderItemId: number
-  spuId: number
-  spuName: string
-  skuId: number
-  visible: boolean
-  scores: number
-  descriptionScores: number
-  benefitScores: number
-  content: string
-  picUrls: string
-  replyStatus: boolean
-  replyUserId: number
-  replyContent: string
-  replyTime: string
+  id?: number
+  userId?: number
+  userNickname?: string
+  userAvatar?: string
+  anonymous?: boolean
+  orderId?: number
+  orderItemId?: number
+  spuId?: number
+  spuName?: string
+  skuId?: number
+  skuPicUrl?: string
+  skuProperties?: Property[]
+  visible?: boolean
+  scores?: number
+  descriptionScores?: number
+  benefitScores?: number
+  content?: string
+  picUrls?: string[]
+  replyStatus?: boolean
+  replyUserId?: number
+  replyContent?: string
+  replyTime?: string
 }
 
 // 查询商品评论列表

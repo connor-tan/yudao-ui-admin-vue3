@@ -167,6 +167,7 @@
 </template>
 <script lang="ts" setup>
 import { nextTick, onMounted, onUnmounted, watch } from 'vue'
+import type { CSSProperties } from 'vue'
 import { DICT_TYPE } from '@/utils/dict'
 import { DeliveryTypeEnum } from '@/utils/constants'
 import { formatDate } from '@/utils/formatTime'
@@ -184,16 +185,16 @@ const props = defineProps<{
   pickUpStoreList: DeliveryPickUpStoreVO[]
 }>()
 
-const headerStyle = ({ row, columnIndex }: any) => {
+const headerStyle = ({ row, columnIndex }: any): CSSProperties => {
   // 表头第一行第一列占 8
   if (columnIndex === 0) {
     row[columnIndex].colSpan = 8
-  } else {
-    // 其余的不要
-    row[columnIndex].colSpan = 0
-    return {
-      display: 'none'
-    }
+    return {}
+  }
+  // 其余的不要
+  row[columnIndex].colSpan = 0
+  return {
+    display: 'none'
   }
 }
 

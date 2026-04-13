@@ -72,6 +72,9 @@ import { BrandVO } from '@/api/mall/product/brand'
 import { RefreshRight } from '@element-plus/icons-vue'
 
 defineOptions({ name: 'ProductSpuInfoForm' })
+type SpuInfoFormData = Spu & {
+  sliderPicUrls: string[]
+}
 const props = defineProps({
   propFormData: {
     type: Object as PropType<Spu>,
@@ -83,7 +86,7 @@ const props = defineProps({
 const message = useMessage() // 消息弹窗
 
 const formRef = ref() // 表单 Ref
-const formData = reactive<Spu>({
+const formData = reactive<SpuInfoFormData>({
   name: '', // 商品名称
   categoryId: undefined, // 商品分类
   keyword: '', // 关键字

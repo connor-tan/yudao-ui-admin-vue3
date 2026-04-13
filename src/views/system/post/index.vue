@@ -124,6 +124,7 @@
   <PostForm ref="formRef" @success="getList" />
 </template>
 <script lang="ts" setup>
+import type { FormInstance } from 'element-plus'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
@@ -137,7 +138,7 @@ const { t } = useI18n() // 国际化
 
 const loading = ref(true) // 列表的加载中
 const total = ref(0) // 列表的总页数
-const list = ref([]) // 列表的数据
+const list = ref<PostApi.PostVO[]>([]) // 列表的数据
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
@@ -145,7 +146,7 @@ const queryParams = reactive({
   name: '',
   status: undefined
 })
-const queryFormRef = ref() // 搜索的表单
+const queryFormRef = ref<FormInstance>() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
 /** 查询岗位列表 */
@@ -168,14 +169,14 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
+  queryFormRef.value?.resetFields()
   handleQuery()
 }
 
 /** 添加/修改操作 */
-const formRef = ref()
+const formRef = ref<InstanceType<typeof PostForm>>()
 const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
+  formRef.value?.open(type, id)
 }
 
 /** 删除按钮操作 */
@@ -194,7 +195,9 @@ const handleDelete = async (id: number) => {
 /** 批量删除按钮操作 */
 const checkedIds = ref<number[]>([])
 const handleRowCheckboxChange = (rows: PostApi.PostVO[]) => {
-  checkedIds.value = rows.map((row) => row.id)
+  checkedIds.value = rows
+    .map((row) => row.id)
+    .filter((id): id is number => typeof id === 'number')
 }
 
 const handleDeleteBatch = async () => {

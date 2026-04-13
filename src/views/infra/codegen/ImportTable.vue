@@ -12,7 +12,7 @@
             v-for="config in dataSourceConfigList"
             :key="config.id"
             :label="config.name"
-            :value="config.id"
+            :value="config.id ?? 0"
           />
         </el-select>
       </el-form-item>
@@ -107,7 +107,7 @@ const getList = async () => {
 const resetQuery = async () => {
   queryParams.name = undefined
   queryParams.comment = undefined
-  queryParams.dataSourceConfigId = dataSourceConfigList.value[0].id as number
+  queryParams.dataSourceConfigId = dataSourceConfigList.value[0]?.id ?? 0
   await getList()
 }
 
@@ -115,7 +115,7 @@ const resetQuery = async () => {
 const open = async () => {
   // 加载数据源的列表
   dataSourceConfigList.value = await DataSourceConfigApi.getDataSourceConfigList()
-  queryParams.dataSourceConfigId = dataSourceConfigList.value[0].id as number
+  queryParams.dataSourceConfigId = dataSourceConfigList.value[0]?.id ?? 0
   dialogVisible.value = true
   // 加载表的列表
   await getList()

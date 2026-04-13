@@ -140,7 +140,6 @@ import { handleTree } from '@/utils/tree'
 
 import * as ProductCategoryApi from '@/api/mall/product/category'
 import { propTypes } from '@/utils/propTypes'
-import { CHANGE_EVENT } from 'element-plus'
 import * as CombinationActivityApi from '@/api/mall/promotion/combination/combinationActivity'
 import { fenToYuanFormat } from '@/utils/formatter'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
@@ -148,6 +147,12 @@ import { dateFormatter, formatDate } from '@/utils/formatTime'
 import { fenToYuan } from '@/utils'
 
 type CombinationActivityVO = Required<CombinationActivityApi.CombinationActivityVO>
+type CombinationActivityQueryParams = {
+  pageNo: number
+  pageSize: number
+  name: string | null
+  status: number | undefined
+}
 
 /**
  * 活动表格选择对话框
@@ -176,7 +181,7 @@ const loading = ref(false)
 // 弹窗的是否展示
 const dialogVisible = ref(false)
 // 查询参数
-const queryParams = ref({
+const queryParams = ref<CombinationActivityQueryParams>({
   pageNo: 1,
   pageSize: 10,
   name: null,
@@ -236,7 +241,7 @@ const resetQuery = () => {
     pageNo: 1,
     pageSize: 10,
     name: '',
-    createTime: []
+    status: undefined
   }
   getList()
 }
@@ -245,7 +250,7 @@ const resetQuery = () => {
  * 格式化拼团价格
  * @param products
  */
-const formatCombinationPrice = (products) => {
+const formatCombinationPrice = (products: CombinationActivityApi.CombinationProductVO[]) => {
   const combinationPrice = Math.min(...products.map((item) => item.combinationPrice))
   return `￥${fenToYuan(combinationPrice)}`
 }
@@ -260,10 +265,10 @@ const checkedActivitys = ref<CombinationActivityVO[]>([])
 const checkedStatus = ref<Record<string, boolean>>({})
 
 // 选中的活动 activityId
-const selectedActivityId = ref()
+const selectedActivityId = ref<number>()
 /** 单选中时触发 */
 const handleSingleSelected = (combinationActivityVO: CombinationActivityVO) => {
-  emits(CHANGE_EVENT, combinationActivityVO)
+  emits('change', combinationActivityVO)
   // 关闭弹窗
   dialogVisible.value = false
   // 记住上次选择的ID
@@ -274,12 +279,12 @@ const handleSingleSelected = (combinationActivityVO: CombinationActivityVO) => {
 const handleEmitChange = () => {
   // 关闭弹窗
   dialogVisible.value = false
-  emits(CHANGE_EVENT, [...checkedActivitys.value])
+  emits('change', [...checkedActivitys.value])
 }
 
 /** 确认选择时的触发事件 */
 const emits = defineEmits<{
-  change: [CombinationActivityApi: CombinationActivityVO | CombinationActivityVO[] | any]
+  (e: 'change', value: CombinationActivityVO | CombinationActivityVO[]): void
 }>()
 
 /** 全选/全不选 */

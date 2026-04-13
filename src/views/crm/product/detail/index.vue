@@ -24,7 +24,8 @@ defineOptions({ name: 'CrmProductDetail' })
 
 const route = useRoute()
 const message = useMessage()
-const id = route.params.id // 编号
+const rawId = route.params.id
+const id = Number(Array.isArray(rawId) ? rawId[0] : rawId) // 编号
 const loading = ref(true) // 加载中
 const product = ref<ProductApi.ProductVO>({} as ProductApi.ProductVO) // 详情
 
@@ -56,7 +57,7 @@ const getOperateLog = async (productId: number) => {
 const { delView } = useTagsViewStore() // 视图操作
 const { currentRoute } = useRouter() // 路由
 onMounted(async () => {
-  if (!id) {
+  if (!id || Number.isNaN(id)) {
     message.warning('参数错误，产品不能为空！')
     delView(unref(currentRoute))
     return

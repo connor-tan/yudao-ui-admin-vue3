@@ -21,6 +21,7 @@
   </Dialog>
 </template>
 <script lang="ts" setup>
+import type { FormInstance, FormRules } from 'element-plus'
 import * as AreaApi from '@/api/system/area'
 
 defineOptions({ name: 'SystemAreaForm' })
@@ -29,14 +30,21 @@ const message = useMessage() // 消息弹窗
 
 const dialogVisible = ref(false) // 弹窗的是否展示
 const formLoading = ref(false) // 表单的加载中：提交的按钮禁用
-const formData = ref({
+interface AreaFormData {
+  ip: string
+  result: string
+}
+
+const createDefaultFormData = (): AreaFormData => ({
   ip: '',
-  result: undefined
+  result: ''
 })
-const formRules = reactive({
+
+const formData = ref<AreaFormData>(createDefaultFormData())
+const formRules: FormRules<AreaFormData> = reactive({
   ip: [{ required: true, message: 'IP 地址不能为空', trigger: 'blur' }]
 })
-const formRef = ref() // 表单 Ref
+const formRef = ref<FormInstance>() // 表单 Ref
 
 /** 打开弹窗 */
 const open = async () => {
@@ -48,7 +56,7 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 /** 提交表单 */
 const submitForm = async () => {
   // 校验表单
-  if (!formRef) return
+  if (!formRef.value) return
   const valid = await formRef.value.validate()
   if (!valid) return
   // 提交请求
@@ -63,10 +71,7 @@ const submitForm = async () => {
 
 /** 重置表单 */
 const resetForm = () => {
-  formData.value = {
-    ip: '',
-    result: undefined
-  }
+  formData.value = createDefaultFormData()
   formRef.value?.resetFields()
 }
 </script>

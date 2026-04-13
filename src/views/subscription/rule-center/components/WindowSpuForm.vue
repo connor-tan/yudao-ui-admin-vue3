@@ -13,7 +13,7 @@
           placeholder="请选择基础可见年级"
         >
           <el-option
-            v-for="item in gradeList"
+            v-for="item in selectableGradeList"
             :key="item.id"
             :label="buildGradeLabel(item)"
             :value="item.id"
@@ -41,6 +41,10 @@
 </template>
 
 <script setup lang="ts">
+import {
+  getPublicationSpuGradeBySpuId,
+  type PublicationSpuGradeRespVO
+} from '@/api/mall/product/publicationProduct'
 import { SchoolApi, type GradeCatalog } from '@/api/edu/school'
 import { type SubscriptionWindowSpu, SubscriptionWindowSpuApi } from '@/api/subscription/windowSpu'
 
@@ -52,6 +56,7 @@ const formLoading = ref(false)
 const formRef = ref()
 const productName = ref('')
 const gradeList = ref<GradeCatalog[]>([])
+const supportedGradeCatalogIds = ref<number[]>([])
 const formData = ref({
   id: undefined as number | undefined,
   recommendFlag: false,
@@ -69,6 +74,14 @@ const formRules = reactive({
 const buildGradeLabel = (item: GradeCatalog) =>
   item.aliasName ? `${item.gradeName}（${item.aliasName} / ${item.gradeNo}）` : `${item.gradeName}（${item.gradeNo}）`
 
+const selectableGradeList = computed(() => {
+  if (supportedGradeCatalogIds.value.length === 0) {
+    return []
+  }
+  const supportedSet = new Set(supportedGradeCatalogIds.value)
+  return gradeList.value.filter((item) => supportedSet.has(item.id))
+})
+
 const loadGradeList = async () => {
   if (gradeList.value.length > 0) {
     return
@@ -77,15 +90,24 @@ const loadGradeList = async () => {
 }
 
 const open = async (row: SubscriptionWindowSpu) => {
-  await loadGradeList()
-  dialogVisible.value = true
-  productName.value = row.productName
-  formData.value = {
-    id: row.id,
-    recommendFlag: !!row.recommendFlag,
-    sort: row.sort ?? 0,
-    gradeCatalogIds: [...(row.gradeCatalogIds || [])],
-    remark: row.remark
+  formLoading.value = true
+  try {
+    const [, spuGradeResp] = await Promise.all([
+      loadGradeList(),
+      await getPublicationSpuGradeBySpuId(row.productSpuId) as Promise<PublicationSpuGradeRespVO>
+    ])
+    supportedGradeCatalogIds.value = [...(spuGradeResp.gradeCatalogIds || [])]
+    dialogVisible.value = true
+    productName.value = row.productName
+    formData.value = {
+      id: row.id,
+      recommendFlag: row.recommendFlag,
+      sort: row.sort ?? 0,
+      gradeCatalogIds: [...(row.gradeCatalogIds || [])],
+      remark: row.remark
+    }
+  } finally {
+    formLoading.value = false
   }
 }
 defineExpose({ open })

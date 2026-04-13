@@ -117,17 +117,13 @@
         :formatter="dateFormatter"
       />
       <el-table-column label="支付金额" align="center" prop="price" width="100">
-        <template #default="scope"> ￥{{ parseFloat(scope.row.price / 100).toFixed(2) }} </template>
+        <template #default="scope"> ￥{{ (scope.row.price / 100).toFixed(2) }} </template>
       </el-table-column>
       <el-table-column label="退款金额" align="center" prop="refundPrice" width="100">
-        <template #default="scope">
-          ￥{{ parseFloat(scope.row.refundPrice / 100).toFixed(2) }}
-        </template>
+        <template #default="scope"> ￥{{ (scope.row.refundPrice / 100).toFixed(2) }} </template>
       </el-table-column>
       <el-table-column label="手续金额" align="center" prop="channelFeePrice" width="100">
-        <template #default="scope">
-          ￥{{ parseFloat(scope.row.channelFeePrice / 100).toFixed(2) }}
-        </template>
+        <template #default="scope"> ￥{{ (scope.row.channelFeePrice / 100).toFixed(2) }} </template>
       </el-table-column>
       <el-table-column label="订单号" align="left" width="300">
         <template #default="scope">
@@ -190,9 +186,9 @@
 import { DICT_TYPE, getIntDictOptions, getStrDictOptions } from '@/utils/dict'
 import { dateFormatter } from '@/utils/formatTime'
 import * as OrderApi from '@/api/pay/order'
+import * as AppApi from '@/api/pay/app'
 import OrderDetail from './OrderDetail.vue'
 import download from '@/utils/download'
-import { getAppList } from '@/api/pay/app'
 
 defineOptions({ name: 'PayOrder' })
 
@@ -214,7 +210,19 @@ const queryParams = reactive({
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出等待
-const appList = ref([]) // 支付应用列表集合
+const appList = ref<AppApi.AppVO[]>([]) // 支付应用列表集合
+
+const buildQueryParams = (): OrderApi.OrderPageReqVO => ({
+  pageNo: queryParams.pageNo,
+  pageSize: queryParams.pageSize,
+  appId: queryParams.appId ?? undefined,
+  channelCode: queryParams.channelCode ?? undefined,
+  merchantOrderId: queryParams.merchantOrderId ?? undefined,
+  channelOrderNo: queryParams.channelOrderNo ?? undefined,
+  no: queryParams.no ?? undefined,
+  status: queryParams.status ?? undefined,
+  createTime: queryParams.createTime
+})
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -226,7 +234,7 @@ const handleQuery = () => {
 const getList = async () => {
   loading.value = true
   try {
-    const data = await OrderApi.getOrderPage(queryParams)
+    const data = await OrderApi.getOrderPage(buildQueryParams())
     list.value = data.list
     total.value = data.total
   } finally {
@@ -247,7 +255,7 @@ const handleExport = async () => {
     await message.exportConfirm()
     // 发起导出
     exportLoading.value = true
-    const data = await OrderApi.exportOrder(queryParams)
+    const data = await OrderApi.exportOrder(buildQueryParams())
     download.excel(data, '支付订单.xls')
   } catch {
   } finally {
@@ -264,7 +272,7 @@ const openDetail = (id: number) => {
 /** 初始化 **/
 onMounted(async () => {
   await getList()
-  appList.value = await getAppList()
+  appList.value = await AppApi.getAppList()
 })
 </script>
 <style>

@@ -151,6 +151,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import { debounce } from 'lodash-es'
 import { jsonParse } from '@/utils'
 import { useMallKefuStore } from '@/store/modules/mall/kefu'
+import MessageItem from '@/views/mall/promotion/kefu/components/message/MessageItem.vue'
 
 dayjs.extend(relativeTime)
 

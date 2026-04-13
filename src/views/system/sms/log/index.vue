@@ -185,6 +185,7 @@
   <SmsLogDetail ref="detailRef" />
 </template>
 <script lang="ts" setup>
+import type { FormInstance } from 'element-plus'
 import { DICT_TYPE, getIntDictOptions, getDictLabel } from '@/utils/dict'
 import { dateFormatter, formatDate } from '@/utils/formatTime'
 import download from '@/utils/download'
@@ -198,8 +199,8 @@ const message = useMessage() // 消息弹窗
 
 const loading = ref(false) // 列表的加载中
 const total = ref(0) // 列表的总页数
-const list = ref([]) // 列表的数据
-const queryFormRef = ref() // 搜索的表单
+const list = ref<SmsLogApi.SmsLogVO[]>([]) // 列表的数据
+const queryFormRef = ref<FormInstance>() // 搜索的表单
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
@@ -212,7 +213,7 @@ const queryParams = reactive({
   receiveTime: []
 })
 const exportLoading = ref(false) // 导出的加载中
-const channelList = ref([]) // 短信渠道列表
+const channelList = ref<SmsChannelApi.SmsChannelVO[]>([]) // 短信渠道列表
 
 /** 查询列表 */
 const getList = async () => {
@@ -234,7 +235,7 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
+  queryFormRef.value?.resetFields()
   handleQuery()
 }
 
@@ -254,9 +255,9 @@ const handleExport = async () => {
 }
 
 /** 详情操作 */
-const detailRef = ref()
+const detailRef = ref<InstanceType<typeof SmsLogDetail>>()
 const openDetail = (data: SmsLogApi.SmsLogVO) => {
-  detailRef.value.open(data)
+  detailRef.value?.open(data)
 }
 
 /** 初始化 **/

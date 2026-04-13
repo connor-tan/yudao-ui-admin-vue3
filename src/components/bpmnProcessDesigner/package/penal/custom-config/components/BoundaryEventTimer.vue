@@ -84,48 +84,56 @@ const props = defineProps({
   id: String,
   type: String
 })
-const prefix = inject('prefix')
+const prefix = inject('prefix', 'flowable')
 
-const bpmnElement = ref()
+type ExtensionValue<T> = {
+  value: T
+}
+
+const bpmnElement = ref<any>()
 const bpmnInstances = () => (window as any)?.bpmnInstances
 
 const timeoutHandlerEnable = ref(false)
-const boundaryEventType = ref()
-const timeoutHandlerType = ref({
+const boundaryEventType = ref<ExtensionValue<number>>()
+const timeoutHandlerType = ref<ExtensionValue<number | undefined>>({
   value: undefined
 })
-const timeModdle = ref()
+const timeModdle = ref<any>()
 const timeDuration = ref(6)
 const timeUnit = ref(TimeUnitType.HOUR)
 const maxRemindCount = ref(1)
 
-const elExtensionElements = ref()
-const otherExtensions = ref()
-const configExtensions = ref([])
-const eventDefinition = ref()
+const elExtensionElements = ref<{ values?: any[] }>()
+const otherExtensions = ref<any[]>([])
+const configExtensions = ref<any[]>([])
+const eventDefinition = ref<any>()
 
 const resetElement = () => {
-  bpmnElement.value = bpmnInstances().bpmnElement
+  const instances = bpmnInstances()
+  if (!instances?.bpmnElement) {
+    return
+  }
+  bpmnElement.value = instances.bpmnElement
   eventDefinition.value = bpmnElement.value.businessObject.eventDefinitions[0]
 
   // 获取元素扩展属性 或者 创建扩展属性
   elExtensionElements.value =
     bpmnElement.value.businessObject?.extensionElements ??
-    bpmnInstances().moddle.create('bpmn:ExtensionElements', { values: [] })
+    instances.moddle.create('bpmn:ExtensionElements', { values: [] })
+  const extensionValues = elExtensionElements.value?.values || []
+  configExtensions.value = []
 
   // 是否开启自定义用户任务超时处理
-  boundaryEventType.value = elExtensionElements.value.values?.filter(
-    (ex) => ex.$type === `${prefix}:BoundaryEventType`
-  )?.[0]
+  boundaryEventType.value = extensionValues.filter((ex) => ex.$type === `${prefix}:BoundaryEventType`)?.[0]
   if (boundaryEventType.value && boundaryEventType.value.value === 1) {
     timeoutHandlerEnable.value = true
     configExtensions.value.push(boundaryEventType.value)
   }
 
   // 执行动作
-  timeoutHandlerType.value = elExtensionElements.value.values?.filter(
-    (ex) => ex.$type === `${prefix}:TimeoutHandlerType`
-  )?.[0]
+  timeoutHandlerType.value = extensionValues.filter((ex) => ex.$type === `${prefix}:TimeoutHandlerType`)?.[0] || {
+    value: undefined
+  }
   if (timeoutHandlerType.value) {
     configExtensions.value.push(timeoutHandlerType.value)
     if (eventDefinition.value.timeCycle) {
@@ -148,23 +156,27 @@ const resetElement = () => {
 
   // 保留剩余扩展元素，便于后面更新该元素对应属性
   otherExtensions.value =
-    elExtensionElements.value.values?.filter(
+    extensionValues.filter(
       (ex) =>
         ex.$type !== `${prefix}:BoundaryEventType` && ex.$type !== `${prefix}:TimeoutHandlerType`
     ) ?? []
 }
 
 const timeoutHandlerChange = (val) => {
+  const instances = bpmnInstances()
+  if (!instances?.moddle || !eventDefinition.value) {
+    return
+  }
   timeoutHandlerEnable.value = val
   if (val) {
     // 启用自定义用户任务超时处理
     // 边界事件类型 --- 超时
-    boundaryEventType.value = bpmnInstances().moddle.create(`${prefix}:BoundaryEventType`, {
+    boundaryEventType.value = instances.moddle.create(`${prefix}:BoundaryEventType`, {
       value: 1
     })
     configExtensions.value.push(boundaryEventType.value)
     // 超时处理类型
-    timeoutHandlerType.value = bpmnInstances().moddle.create(`${prefix}:TimeoutHandlerType`, {
+    timeoutHandlerType.value = instances.moddle.create(`${prefix}:TimeoutHandlerType`, {
       value: 1
     })
     configExtensions.value.push(timeoutHandlerType.value)
@@ -172,7 +184,7 @@ const timeoutHandlerChange = (val) => {
     timeDuration.value = 6
     timeUnit.value = 2
     maxRemindCount.value = 1
-    timeModdle.value = bpmnInstances().moddle.create(`bpmn:Expression`, {
+    timeModdle.value = instances.moddle.create(`bpmn:Expression`, {
       body: 'PT6H'
     })
     eventDefinition.value.timeDuration = timeModdle.value
@@ -239,10 +251,14 @@ const isoTimeDuration = () => {
 }
 
 const updateElementExtensions = () => {
-  const extensions = bpmnInstances().moddle.create('bpmn:ExtensionElements', {
+  const instances = bpmnInstances()
+  if (!instances?.moddle || !instances?.modeling || !bpmnElement.value) {
+    return
+  }
+  const extensions = instances.moddle.create('bpmn:ExtensionElements', {
     values: [...otherExtensions.value, ...configExtensions.value]
   })
-  bpmnInstances().modeling.updateProperties(toRaw(bpmnElement.value), {
+  instances.modeling.updateProperties(toRaw(bpmnElement.value), {
     extensionElements: extensions
   })
 }

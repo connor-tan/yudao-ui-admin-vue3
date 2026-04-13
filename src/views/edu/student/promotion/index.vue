@@ -670,6 +670,7 @@ import {
   type StudentPromotionYearOption
 } from '@/api/edu/student/promotion'
 import { defaultProps } from '@/utils/tree'
+import type { TagProps } from 'element-plus'
 
 defineOptions({ name: 'StudentPromotionManage' })
 
@@ -1141,7 +1142,7 @@ const getTaskStatusTagType = (status?: number) => {
   if (status === 4) {
     return 'info'
   }
-  return ''
+  return undefined
 }
 
 const getBatchStatusLabel = (status?: number) =>
@@ -1160,7 +1161,7 @@ const getBatchStatusTagType = (status?: number) => {
   if (status === 4) {
     return 'warning'
   }
-  return ''
+  return undefined
 }
 
 const getBatchReasonLabel = (reason?: string) =>
@@ -1169,7 +1170,7 @@ const getBatchReasonLabel = (reason?: string) =>
 const getFlowTypeLabel = (changeType?: string) =>
   PROMOTION_FLOW_TYPE_LABELS[changeType || ''] || changeType || '-'
 
-const getFlowTypeTagType = (changeType?: string) => {
+const getFlowTypeTagType = (changeType?: string): TagProps['type'] => {
   if (changeType === 'PROMOTE') {
     return 'success'
   }
@@ -1185,20 +1186,20 @@ const getFlowTypeTagType = (changeType?: string) => {
   if (changeType === 'TRANSFER') {
     return 'info'
   }
-  return ''
+  return 'info'
 }
 
 const getFlowStatusLabel = (status?: number) =>
   status !== undefined ? PROMOTION_FLOW_STATUS_LABELS[status] || `${status}` : '-'
 
-const getFlowStatusTagType = (status?: number) => {
+const getFlowStatusTagType = (status?: number): TagProps['type'] => {
   if (status === 1) {
     return 'success'
   }
   if (status === 2) {
     return 'warning'
   }
-  return ''
+  return 'info'
 }
 
 const formatYearRange = (yearStart?: number) => {

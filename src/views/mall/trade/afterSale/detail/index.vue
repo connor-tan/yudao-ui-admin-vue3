@@ -4,10 +4,13 @@
     <el-descriptions title="订单信息">
       <el-descriptions-item label="订单号: ">{{ formData.orderNo }}</el-descriptions-item>
       <el-descriptions-item label="配送方式: ">
-        <dict-tag :type="DICT_TYPE.TRADE_DELIVERY_TYPE" :value="formData.order.deliveryType" />
+        <dict-tag
+          :type="DICT_TYPE.TRADE_DELIVERY_TYPE"
+          :value="formData.order.deliveryType ?? ''"
+        />
       </el-descriptions-item>
       <el-descriptions-item label="订单类型: ">
-        <dict-tag :type="DICT_TYPE.TRADE_ORDER_TYPE" :value="formData.order.type" />
+        <dict-tag :type="DICT_TYPE.TRADE_ORDER_TYPE" :value="formData.order.type ?? ''" />
       </el-descriptions-item>
       <el-descriptions-item label="收货人: ">
         {{ formData.order.receiverName }}
@@ -16,7 +19,7 @@
         {{ formData.order.userRemark }}
       </el-descriptions-item>
       <el-descriptions-item label="订单来源: ">
-        <dict-tag :type="DICT_TYPE.TERMINAL" :value="formData.order.terminal" />
+        <dict-tag :type="DICT_TYPE.TERMINAL" :value="formData.order.terminal ?? ''" />
       </el-descriptions-item>
       <el-descriptions-item label="联系电话: ">
         {{ formData.order.receiverMobile }}
@@ -26,7 +29,7 @@
         {{ formData.order.payOrderId }}
       </el-descriptions-item>
       <el-descriptions-item label="付款方式: ">
-        <dict-tag :type="DICT_TYPE.PAY_CHANNEL_CODE" :value="formData.order.payChannelCode" />
+        <dict-tag :type="DICT_TYPE.PAY_CHANNEL_CODE" :value="formData.order.payChannelCode ?? ''" />
       </el-descriptions-item>
       <el-descriptions-item label="买家: ">{{ formData?.user?.nickname }}</el-descriptions-item>
     </el-descriptions>
@@ -38,13 +41,13 @@
         {{ formatDate(formData.auditTime) }}
       </el-descriptions-item>
       <el-descriptions-item label="售后类型: ">
-        <dict-tag :type="DICT_TYPE.TRADE_AFTER_SALE_TYPE" :value="formData.type" />
+        <dict-tag :type="DICT_TYPE.TRADE_AFTER_SALE_TYPE" :value="formData.type ?? ''" />
       </el-descriptions-item>
       <el-descriptions-item label="售后方式: ">
-        <dict-tag :type="DICT_TYPE.TRADE_AFTER_SALE_WAY" :value="formData.way" />
+        <dict-tag :type="DICT_TYPE.TRADE_AFTER_SALE_WAY" :value="formData.way ?? ''" />
       </el-descriptions-item>
       <el-descriptions-item label="退款金额: ">
-        {{ fenToYuan(formData.refundPrice) }}
+        {{ fenToYuan(formData.refundPrice ?? 0) }}
       </el-descriptions-item>
       <el-descriptions-item label="退款原因: ">{{ formData.applyReason }}</el-descriptions-item>
       <el-descriptions-item label="补充描述: ">
@@ -64,7 +67,7 @@
     <!-- 退款状态 -->
     <el-descriptions :column="1" title="退款状态">
       <el-descriptions-item label="退款状态: ">
-        <dict-tag :type="DICT_TYPE.TRADE_AFTER_SALE_STATUS" :value="formData.status" />
+        <dict-tag :type="DICT_TYPE.TRADE_AFTER_SALE_STATUS" :value="formData.status ?? ''" />
       </el-descriptions-item>
       <el-descriptions-item label-class-name="no-colon">
         <el-button v-if="formData.status === 10" type="primary" @click="agree">同意售后</el-button>
@@ -123,7 +126,7 @@
         <el-timeline>
           <el-timeline-item
             v-for="saleLog in formData.logs"
-            :key="saleLog.id"
+            :key="saleLog.id ?? saleLog.createTime ?? ''"
             :timestamp="formatDate(saleLog.createTime)"
             placement="top"
           >
@@ -132,10 +135,10 @@
             </div>
             <template #dot>
               <span
-                :style="{ backgroundColor: getUserTypeColor(saleLog.userType) }"
+                :style="{ backgroundColor: getUserTypeColor(saleLog.userType ?? 0) }"
                 class="dot-node-style"
               >
-                {{ getDictLabel(DICT_TYPE.USER_TYPE, saleLog.userType)[0] || '系' }}
+                {{ getDictLabel(DICT_TYPE.USER_TYPE, saleLog.userType ?? 0)[0] || '系' }}
               </span>
             </template>
           </el-timeline-item>
@@ -163,11 +166,13 @@ const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
 const { params } = useRoute() // 查询参数
 const { push, currentRoute } = useRouter() // 路由
-const formData = ref({
+const createFormData = (): AfterSaleApi.TradeAfterSaleDetailVO => ({
   order: {},
-  logs: []
+  logs: [],
+  applyPicUrls: []
 })
-const updateAuditReasonFormRef = ref() // 拒绝售后表单 Ref
+const formData = ref<AfterSaleApi.TradeAfterSaleDetailVO>(createFormData())
+const updateAuditReasonFormRef = ref<InstanceType<typeof UpdateAuditReasonForm>>() // 拒绝售后表单 Ref
 
 /** 获得 userType 颜色 */
 const getUserTypeColor = (type: number) => {
@@ -187,24 +192,31 @@ const getUserTypeColor = (type: number) => {
 
 /** 获得详情 */
 const getDetail = async () => {
-  const id = params.id as unknown as number
+  const id = Number(params.id)
   if (id) {
     const res = await AfterSaleApi.getAfterSale(id)
     // 没有表单信息则关闭页面返回
     if (res == null) {
       message.notifyError('售后订单不存在')
       close()
+      return
     }
     formData.value = res
   }
 }
 
+const getCurrentId = () => formData.value.id
+
 /** 同意售后 */
 const agree = async () => {
+  const id = getCurrentId()
+  if (id == null) {
+    return
+  }
   try {
     // 二次确认
     await message.confirm('是否同意售后？')
-    await AfterSaleApi.agree(formData.value.id)
+    await AfterSaleApi.agree(id)
     // 提示成功
     message.success(t('common.success'))
     await getDetail()
@@ -218,10 +230,14 @@ const disagree = async () => {
 
 /** 确认收货 */
 const receive = async () => {
+  const id = getCurrentId()
+  if (id == null) {
+    return
+  }
   try {
     // 二次确认
     await message.confirm('是否确认收货？')
-    await AfterSaleApi.receive(formData.value.id)
+    await AfterSaleApi.receive(id)
     // 提示成功
     message.success(t('common.success'))
     await getDetail()
@@ -230,10 +246,14 @@ const receive = async () => {
 
 /** 拒绝收货 */
 const refuse = async () => {
+  const id = getCurrentId()
+  if (id == null) {
+    return
+  }
   try {
     // 二次确认
     await message.confirm('是否拒绝收货？')
-    await AfterSaleApi.refuse(formData.value.id)
+    await AfterSaleApi.refuse(id)
     // 提示成功
     message.success(t('common.success'))
     await getDetail()
@@ -242,10 +262,14 @@ const refuse = async () => {
 
 /** 确认退款 */
 const refund = async () => {
+  const id = getCurrentId()
+  if (id == null) {
+    return
+  }
   try {
     // 二次确认
     await message.confirm('是否确认退款？')
-    await AfterSaleApi.refund(formData.value.id)
+    await AfterSaleApi.refund(id)
     // 提示成功
     message.success(t('common.success'))
     await getDetail()
@@ -253,11 +277,13 @@ const refund = async () => {
 }
 
 /** 图片预览 */
-const imagePreview = (args) => {
-  const urlList = []
+const imagePreview = (args: AfterSaleApi.TradeAfterSalePicVO[] | string) => {
+  const urlList: string[] = []
   if (isArray(args)) {
     args.forEach((item) => {
-      urlList.push(item.url)
+      if (item.url) {
+        urlList.push(item.url)
+      }
     })
   } else {
     urlList.push(args)

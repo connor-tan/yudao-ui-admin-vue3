@@ -43,7 +43,7 @@
             </div>
           </template>
           <Condition
-            :ref="($event) => (conditionRef[index] = $event)"
+            :ref="($event) => setConditionRef(index, $event)"
             v-model="routerGroups[index]"
           />
         </el-card>
@@ -64,6 +64,7 @@
 </template>
 <script setup lang="ts">
 import { Plus } from '@element-plus/icons-vue'
+import type { ComponentPublicInstance } from 'vue'
 import { SimpleFlowNode, NodeType, ConditionType, RouterSetting } from '../consts'
 import { useWatchNode, useDrawer, useNodeName } from '../node'
 import Condition from './components/Condition.vue'
@@ -87,7 +88,11 @@ const currentNode = useWatchNode(props)
 const { nodeName, showInput, clickIcon, blurEvent } = useNodeName(NodeType.ROUTER_BRANCH_NODE)
 const routerGroups = ref<RouterSetting[]>([])
 const nodeOptions = ref<any>([])
-const conditionRef = ref([])
+type ConditionExpose = { validate: () => Promise<boolean> }
+const conditionRef = ref<Array<ConditionExpose | null>>([])
+const setConditionRef = (index: number, el: Element | ComponentPublicInstance | null) => {
+  conditionRef.value[index] = el as ConditionExpose | null
+}
 
 /** 保存配置 */
 const saveConfig = async () => {

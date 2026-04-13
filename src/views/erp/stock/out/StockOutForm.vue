@@ -77,7 +77,8 @@
   </Dialog>
 </template>
 <script setup lang="ts">
-import { StockOutApi, StockOutVO } from '@/api/erp/stock/out'
+import type { FormInstance } from 'element-plus'
+import { StockOutApi, type StockOutItemVO, StockOutVO } from '@/api/erp/stock/out'
 import StockOutItemForm from './components/StockOutItemForm.vue'
 import { CustomerApi, CustomerVO } from '@/api/erp/sale/customer'
 
@@ -91,7 +92,12 @@ const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改；detail - 详情
-const formData = ref({
+type StockOutFormData = Partial<StockOutVO> & {
+  fileUrl: string
+  items: StockOutItemVO[]
+}
+
+const createFormData = (): StockOutFormData => ({
   id: undefined,
   customerId: undefined,
   outTime: undefined,
@@ -99,16 +105,17 @@ const formData = ref({
   fileUrl: '',
   items: []
 })
+const formData = ref<StockOutFormData>(createFormData())
 const formRules = reactive({
   outTime: [{ required: true, message: '出库时间不能为空', trigger: 'blur' }]
 })
 const disabled = computed(() => formType.value === 'detail')
-const formRef = ref() // 表单 Ref
+const formRef = ref<FormInstance>() // 表单 Ref
 const customerList = ref<CustomerVO[]>([]) // 客户列表
 
 /** 子表的表单 */
 const subTabsName = ref('item')
-const itemFormRef = ref()
+const itemFormRef = ref<InstanceType<typeof StockOutItemForm>>()
 
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {
@@ -134,8 +141,8 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  await formRef.value.validate()
-  await itemFormRef.value.validate()
+  await formRef.value?.validate()
+  await itemFormRef.value?.validate()
   // 提交请求
   formLoading.value = true
   try {
@@ -157,14 +164,7 @@ const submitForm = async () => {
 
 /** 重置表单 */
 const resetForm = () => {
-  formData.value = {
-    id: undefined,
-    customerId: undefined,
-    outTime: undefined,
-    remark: undefined,
-    fileUrl: undefined,
-    items: []
-  }
+  formData.value = createFormData()
   formRef.value?.resetFields()
 }
 </script>

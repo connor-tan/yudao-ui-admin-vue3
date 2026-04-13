@@ -17,20 +17,10 @@
 
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue'
-import { getEnabledAreaTree } from '@/api/system/area'
+import { getEnabledAreaTree, type AreaNodeVO } from '@/api/system/area'
 import { AreaLevelEnum } from '@/utils/constants'
 
 defineOptions({ name: 'AreaSelect' })
-
-interface AreaVO {
-  id: number
-  name: string
-  code: string
-  parentId?: number
-  sort?: number
-  status?: number
-  children?: AreaVO[]
-}
 
 interface Props {
   modelValue?: number[] | string[]
@@ -65,8 +55,8 @@ const cascaderProps = {
   emitPath: true // 返回完整路径
 } // Element Plus Cascader 的 props 配置
 
-const areaTree = ref<AreaVO[]>([]) // 地区树形数据
-const selectedValue = ref<number[] | undefined>() // 当前选中值
+const areaTree = ref<AreaNodeVO[]>([]) // 地区树形数据
+const selectedValue = ref<number[] | string[] | undefined>() // 当前选中值
 const loading = ref(false) // 加载状态
 
 /** 加载地区树形数据 */
@@ -85,7 +75,7 @@ async function loadAreaTree(): Promise<void> {
 }
 
 /** 根据层级过滤树形数据 */
-function filterTreeByLevel(tree: AreaVO[], maxLevel: number): AreaVO[] {
+function filterTreeByLevel(tree: AreaNodeVO[], maxLevel: number): AreaNodeVO[] {
   if (maxLevel <= 0) {
     return []
   }

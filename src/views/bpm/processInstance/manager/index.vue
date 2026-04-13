@@ -167,9 +167,8 @@ import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import { dateFormatter, formatPast2 } from '@/utils/formatTime'
 import { ElMessageBox } from 'element-plus'
 import * as ProcessInstanceApi from '@/api/bpm/processInstance'
-import { CategoryApi } from '@/api/bpm/category'
+import { CategoryApi, CategoryVO } from '@/api/bpm/category'
 import * as UserApi from '@/api/system/user'
-import { cancelProcessInstanceByAdmin } from '@/api/bpm/processInstance'
 
 // 它和【我的流程】的差异是，该菜单可以看全部的流程实例
 defineOptions({ name: 'BpmProcessInstanceManager' })
@@ -180,7 +179,7 @@ const { t } = useI18n() // 国际化
 
 const loading = ref(true) // 列表的加载中
 const total = ref(0) // 列表的总页数
-const list = ref([]) // 列表的数据
+const list = ref<ProcessInstanceApi.ProcessInstanceVO[]>([]) // 列表的数据
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
@@ -192,8 +191,8 @@ const queryParams = reactive({
   createTime: []
 })
 const queryFormRef = ref() // 搜索的表单
-const categoryList = ref([]) // 流程分类列表
-const userList = ref<any[]>([]) // 用户列表
+const categoryList = ref<CategoryVO[]>([]) // 流程分类列表
+const userList = ref<UserApi.UserVO[]>([]) // 用户列表
 
 /** 查询列表 */
 const getList = async () => {
@@ -215,12 +214,12 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
+  queryFormRef.value?.resetFields()
   handleQuery()
 }
 
 /** 查看详情 */
-const handleDetail = (row) => {
+const handleDetail = (row: ProcessInstanceApi.ProcessInstanceVO) => {
   router.push({
     name: 'BpmProcessInstanceDetail',
     query: {
@@ -230,7 +229,7 @@ const handleDetail = (row) => {
 }
 
 /** 取消按钮操作 */
-const handleCancel = async (row) => {
+const handleCancel = async (row: ProcessInstanceApi.ProcessInstanceVO) => {
   // 二次确认
   const { value } = await ElMessageBox.prompt('请输入取消原因', '取消流程', {
     confirmButtonText: t('common.ok'),

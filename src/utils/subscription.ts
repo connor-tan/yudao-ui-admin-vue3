@@ -14,6 +14,11 @@ export const SUBSCRIPTION_GRADE_CALC_RULE_OPTIONS = [
   { label: '升学后年级', value: 'PROMOTED_GRADE' }
 ]
 
+export const SUBSCRIPTION_GRADE_RESOLVE_MODE_OPTIONS = [
+  { label: '当前班级链路', value: 'CURRENT_CHAIN' },
+  { label: '未来班级优先', value: 'TARGET_CLASS_FIRST' }
+]
+
 export const SUBSCRIPTION_RULE_EFFECT_TYPE_OPTIONS = [
   { label: '允许', value: 'INCLUDE' },
   { label: '排除', value: 'EXCLUDE' }
@@ -39,11 +44,24 @@ export const getSubscriptionGradeCalcRuleLabel = (value?: string | null) =>
       ? '当前学籍年级'
       : '-'
 
+export const getSubscriptionGradeResolveModeLabel = (value?: string | null) =>
+  value === 'TARGET_CLASS_FIRST'
+    ? '未来班级优先'
+    : value === 'CURRENT_CHAIN'
+      ? '当前班级链路'
+      : '-'
+
 export const getSubscriptionRuleEffectTypeLabel = (value?: string | null) =>
   SUBSCRIPTION_RULE_EFFECT_TYPE_OPTIONS.find((item) => item.value === value)?.label || '-'
 
 export const getSubscriptionRuleScopeTypeLabel = (value?: string | null) =>
   SUBSCRIPTION_RULE_SCOPE_TYPE_OPTIONS.find((item) => item.value === value)?.label || '-'
 
-export const buildSubscriptionTargetYearKey = (yearStart?: number, yearEnd?: number) =>
-  yearStart != null && yearEnd != null ? `${yearStart}-${yearEnd}` : undefined
+export function buildSubscriptionTargetYearKey(yearStart: number, yearEnd: number): string
+export function buildSubscriptionTargetYearKey(
+  yearStart?: number,
+  yearEnd?: number
+): string | undefined
+export function buildSubscriptionTargetYearKey(yearStart?: number, yearEnd?: number) {
+  return yearStart != null && yearEnd != null ? `${yearStart}-${yearEnd}` : undefined
+}

@@ -16,19 +16,17 @@
 </template>
 
 <script lang="ts" setup>
+import { createDefaultSong, type MusicSongVO } from '../types'
 
 defineOptions({ name: 'Index' })
 
-defineProps({
-  songInfo: {
-    type: Object,
-    default: () => ({})
-  }
-})
+defineProps<{
+  songInfo: MusicSongVO
+}>()
 
 const emits = defineEmits(['play'])
 
-const currentSong = inject('currentSong', {})
+const currentSong = inject('currentSong', ref<MusicSongVO>(createDefaultSong()))
 
 function playSong () {
   emits('play')

@@ -29,6 +29,28 @@ export interface RefundVO {
   createTime: string
 }
 
+export interface RefundDetailVO {
+  appId?: number
+  appName?: string
+  channelCode?: string
+  channelErrorCode?: string
+  channelErrorMsg?: string
+  channelNotifyData?: string
+  channelOrderNo?: string
+  channelRefundNo?: string
+  createTime?: string
+  merchantOrderId?: string
+  merchantRefundId?: string
+  notifyUrl?: string
+  payPrice?: number
+  reason?: string
+  refundPrice?: number
+  status?: number
+  successTime?: string
+  updateTime?: string
+  userIp?: string
+}
+
 export interface RefundPageReqVO extends PageParam {
   merchantId?: number
   appId?: number
@@ -92,7 +114,7 @@ export const getRefundPage = (params: RefundPageReqVO) => {
 
 // 查询详情退款订单
 export const getRefund = (id: number) => {
-  return request.get({ url: '/pay/refund/get?id=' + id })
+  return request.get<RefundDetailVO>({ url: '/pay/refund/get?id=' + id })
 }
 
 // 新增退款订单

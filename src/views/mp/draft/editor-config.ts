@@ -1,9 +1,11 @@
-import { IEditorConfig } from '@wangeditor-next/editor'
+import type { IEditorConfig } from '@wangeditor-next/editor'
+import type { UppyFile } from '@uppy/core'
 import { getAccessToken, getTenantId } from '@/utils/auth'
 
 const message = useMessage()
 
 type InsertFnType = (url: string, alt: string, href: string) => void
+type UploadFilesType = Record<string, UppyFile<{}, {}>>
 
 export const createEditorConfig = (
   server: string,
@@ -29,11 +31,11 @@ export const createEditorConfig = (
         metaWithUrl: true,
 
         // 自定义增加 http  header
-        headers: {
-          Accept: '*',
+        headers: new Headers({
+          Accept: '*/*',
           Authorization: 'Bearer ' + getAccessToken(),
-          'tenant-id': getTenantId()
-        },
+          'tenant-id': getTenantId() || ''
+        }),
 
         // 跨域是否传递 cookie ，默认为 false
         withCredentials: true,
@@ -45,23 +47,23 @@ export const createEditorConfig = (
         fieldName: 'file',
 
         // 上传之前触发
-        onBeforeUpload(file: File) {
-          console.log(file)
-          return file
+        onBeforeUpload(files: UploadFilesType) {
+          console.log(files)
+          return files
         },
         // 上传进度的回调函数
         onProgress(progress: number) {
           // progress 是 0-100 的数字
           console.log('progress', progress)
         },
-        onSuccess(file: File, res: any) {
+        onSuccess(file: UppyFile<{}, {}>, res: any) {
           console.log('onSuccess', file, res)
         },
-        onFailed(file: File, res: any) {
+        onFailed(file: UppyFile<{}, {}>, res: any) {
           message.alertError(res.message)
           console.log('onFailed', file, res)
         },
-        onError(file: File, err: any, res: any) {
+        onError(file: UppyFile<{}, {}>, err: any, res: any) {
           message.alertError(err.message)
           console.error('onError', file, err, res)
         },

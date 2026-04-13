@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { PropType } from 'vue'
+import type { ButtonProps } from 'element-plus'
 import { propTypes } from '@/utils/propTypes'
 
 defineOptions({ name: 'XButton' })
@@ -10,7 +11,7 @@ const props = defineProps({
   preIcon: propTypes.string.def(''),
   postIcon: propTypes.string.def(''),
   title: propTypes.string.def(''),
-  type: propTypes.oneOf(['', 'primary', 'success', 'warning', 'danger', 'info']).def(''),
+  type: { type: String as PropType<ButtonProps['type']>, default: '' },
   link: propTypes.bool.def(false),
   circle: propTypes.bool.def(false),
   round: propTypes.bool.def(false),

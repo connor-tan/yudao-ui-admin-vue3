@@ -1,17 +1,32 @@
 import request from '@/config/axios'
+import type { PurchaseOrderItemVO } from '@/api/erp/purchase/order'
+
+export interface PurchaseInItemVO extends PurchaseOrderItemVO {
+  warehouseId?: number
+}
 
 // ERP 采购入库 VO
 export interface PurchaseInVO {
-  id: number // 入库工单编号
-  no: string // 采购入库号
-  customerId: number // 客户编号
-  inTime: string // 入库时间
-  totalCount: number // 合计数量
+  id?: number // 入库工单编号
+  no?: string // 采购入库号
+  customerId?: number // 保留兼容旧字段
+  supplierId?: number // 供应商编号
+  accountId?: number // 结算账户
+  orderId?: number // 关联订单编号
+  orderNo?: string // 关联订单号
+  inTime?: string // 入库时间
+  totalCount?: number // 合计数量
   totalPrice: number // 合计金额，单位：元
-  status: number // 状态
-  remark: string // 备注
-  outCount: number // 采购出库数量
-  returnCount: number // 采购退货数量
+  otherPrice: number // 其它费用
+  status?: number // 状态
+  remark?: string // 备注
+  inCount?: number // 采购入库数量
+  returnCount?: number // 采购退货数量
+  paymentPrice?: number // 已付金额
+  discountPercent: number // 优惠率
+  discountPrice: number // 优惠金额
+  fileUrl: string // 附件
+  items: PurchaseInItemVO[] // 明细项
 }
 
 // ERP 采购入库 API
@@ -23,7 +38,7 @@ export const PurchaseInApi = {
 
   // 查询采购入库详情
   getPurchaseIn: async (id: number) => {
-    return await request.get({ url: `/erp/purchase-in/get?id=` + id })
+    return await request.get<PurchaseInVO>({ url: `/erp/purchase-in/get?id=` + id })
   },
 
   // 新增采购入库

@@ -193,14 +193,14 @@ const handleGenerateImage = async () => {
     const imageSize = MidjourneySizeList.find(
       (item) => selectSize.value === item.key
     ) as ImageSizeVO
-    const req = {
+    const req: ImageMidjourneyImagineReqVO = {
       prompt: prompt.value,
       modelId: matchedModel.id,
       width: imageSize.width,
       height: imageSize.height,
       version: selectVersion.value,
       referImageUrl: referImageUrl.value
-    } as ImageMidjourneyImagineReqVO
+    }
     await ImageApi.midjourneyImagine(req)
   } finally {
     // 回调
@@ -233,4 +233,3 @@ const settingValues = async (detail: ImageVO) => {
 /** 暴露组件方法 */
 defineExpose({ settingValues })
 </script>
-

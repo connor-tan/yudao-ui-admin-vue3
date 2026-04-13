@@ -118,10 +118,6 @@ const props = defineProps({
 })
 const readonly = inject<Boolean>('readonly') // 是否只读
 const tasks = inject<Ref<any[]>>('tasks', ref([]))
-// 定义事件，更新父组件。
-const emits = defineEmits<{
-  'update:modelValue': [node: SimpleFlowNode | undefined]
-}>()
 // 监控节点变化
 const currentNode = useWatchNode(props)
 // 节点名称编辑

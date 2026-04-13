@@ -59,7 +59,6 @@
   <ContentWrap>
     <el-table v-loading="loading" :data="list" :show-overflow-tooltip="true" :stripe="true">
       <el-table-column label="编号" prop="id" width="90" />
-      <el-table-column label="编码" prop="code" min-width="150" />
       <el-table-column label="模板名称" prop="name" min-width="150" />
       <el-table-column label="目标周期" min-width="100">
         <template #default="{ row }">
@@ -69,6 +68,11 @@
       <el-table-column label="年级判定" min-width="120">
         <template #default="{ row }">
           {{ getSubscriptionGradeCalcRuleLabel(row.gradeCalcRule) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="解析模式" min-width="120">
+        <template #default="{ row }">
+          {{ getSubscriptionGradeResolveModeLabel(row.gradeResolveMode) }}
         </template>
       </el-table-column>
       <el-table-column label="模板说明" prop="description" min-width="220" show-overflow-tooltip />
@@ -130,6 +134,7 @@ import { dateFormatter } from '@/utils/formatTime'
 import { checkPermi } from '@/utils/permission'
 import {
   getSubscriptionGradeCalcRuleLabel,
+  getSubscriptionGradeResolveModeLabel,
   getSubscriptionTargetPeriodLabel,
   SUBSCRIPTION_TARGET_PERIOD_OPTIONS
 } from '@/utils/subscription'

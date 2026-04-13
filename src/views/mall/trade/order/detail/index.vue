@@ -165,7 +165,7 @@
         <el-descriptions-item v-if="formData.logisticsId" label="运单号: ">
           {{ formData.logisticsNo }}
         </el-descriptions-item>
-        <el-descriptions-item v-if="formatDate.deliveryTime" label="发货时间: ">
+        <el-descriptions-item v-if="formData.deliveryTime" label="发货时间: ">
           {{ formatDate(formData.deliveryTime) }}
         </el-descriptions-item>
         <el-descriptions-item v-for="item in 2" :key="item" label-class-name="no-colon" />
@@ -258,35 +258,41 @@ const getUserTypeColor = (type: number) => {
 }
 
 // 订单详情
-const formData = ref<TradeOrderApi.OrderVO>({
+const createFormData = (): TradeOrderApi.OrderVO => ({
+  items: [],
   logs: []
 })
+const formData = ref<TradeOrderApi.OrderVO>(createFormData())
 
 /** 各种操作 */
-const updateRemarkForm = ref() // 订单备注表单 Ref
+const updateRemarkForm = ref<InstanceType<typeof OrderUpdateRemarkForm>>() // 订单备注表单 Ref
 const remark = () => {
   updateRemarkForm.value?.open(formData.value)
 }
-const deliveryFormRef = ref() // 发货表单 Ref
+const deliveryFormRef = ref<InstanceType<typeof OrderDeliveryForm>>() // 发货表单 Ref
 const delivery = () => {
   deliveryFormRef.value?.open(formData.value)
 }
-const updateAddressFormRef = ref() // 收货地址表单 Ref
+const updateAddressFormRef = ref<InstanceType<typeof OrderUpdateAddressForm>>() // 收货地址表单 Ref
 const updateAddress = () => {
   updateAddressFormRef.value?.open(formData.value)
 }
-const updatePriceFormRef = ref() // 订单调价表单 Ref
+const updatePriceFormRef = ref<InstanceType<typeof OrderUpdatePriceForm>>() // 订单调价表单 Ref
 const updatePrice = () => {
   updatePriceFormRef.value?.open(formData.value)
 }
 
 /** 核销 */
 const handlePickUp = async () => {
+  const id = formData.value.id
+  if (id == null) {
+    return
+  }
   try {
     // 二次确认
     await message.confirm('确认核销订单吗？')
     // 提交
-    await TradeOrderApi.pickUpOrder(formData.value.id!)
+    await TradeOrderApi.pickUpOrder(id)
     message.success('核销成功')
     // 刷新列表
     await getDetail()
@@ -302,11 +308,12 @@ const props = defineProps({
 const id = (params.id || props.id) as unknown as number
 const getDetail = async () => {
   if (id) {
-    const res = (await TradeOrderApi.getOrder(id)) as TradeOrderApi.OrderVO
+    const res = await TradeOrderApi.getOrder(id)
     // 没有表单信息则关闭页面返回
     if (!res) {
       message.error('交易订单不存在')
       close()
+      return
     }
     formData.value = res
   }
@@ -326,9 +333,9 @@ const clipboardSuccess = () => {
 }
 
 /** 初始化 **/
-const deliveryExpressList = ref([]) // 物流公司
-const expressTrackList = ref([]) // 物流详情
-const pickUpStore = ref({}) // 自提门店
+const deliveryExpressList = ref<DeliveryExpressApi.DeliveryExpressVO[]>([]) // 物流公司
+const expressTrackList = ref<TradeOrderApi.OrderExpressTrackRespVO[]>([]) // 物流详情
+const pickUpStore = ref<DeliveryPickUpStoreApi.DeliveryPickUpStoreVO>() // 自提门店
 onMounted(async () => {
   await getDetail()
   // 如果配送方式为快递，则查询物流公司

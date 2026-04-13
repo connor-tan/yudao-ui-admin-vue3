@@ -32,6 +32,7 @@
 </template>
 
 <script setup lang="ts">
+import type { FormRules } from 'element-plus'
 import { useVModel } from '@vueuse/core'
 import BasicInfoSection from './sections/BasicInfoSection.vue'
 import TriggerSection from './sections/TriggerSection.vue'
@@ -214,7 +215,7 @@ const validateActions = (_rule: any, value: any, callback: any) => {
   callback()
 }
 
-const formRules = reactive({
+const formRules: FormRules = reactive({
   name: [
     { required: true, message: '场景名称不能为空', trigger: 'blur' },
     { type: 'string', min: 1, max: 50, message: '场景名称长度应在1-50个字符之间', trigger: 'blur' }

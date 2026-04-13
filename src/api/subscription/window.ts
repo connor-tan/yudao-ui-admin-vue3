@@ -3,8 +3,8 @@ import request from '@/config/axios'
 export interface SubscriptionWindow {
   id?: number
   name?: string
-  startTime?: string | number
-  endTime?: string | number
+  startTime?: string
+  endTime?: string
   targetYearStart?: number
   targetYearEnd?: number
   targetYearName?: string
@@ -12,6 +12,7 @@ export interface SubscriptionWindow {
   templateNameSnapshot?: string
   targetPeriod?: string
   gradeCalcRule?: string
+  gradeResolveMode?: string
   templateLocked?: boolean
   status?: number
   remark?: string
@@ -28,6 +29,7 @@ export interface SubscriptionWindowSimple {
   templateNameSnapshot?: string
   targetPeriod?: string
   gradeCalcRule?: string
+  gradeResolveMode?: string
   status?: number
 }
 

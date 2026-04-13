@@ -50,7 +50,7 @@ const formData = ref({
   receiverAreaId: null, //收件人地区编号
   receiverDetailAddress: '' //收件人详细地址
 })
-const areaList = ref([]) // 地区列表
+const areaList = ref<AreaApi.AreaNodeVO[]>([]) // 地区列表
 const formRef = ref() // 表单 Ref
 
 /** 打开弹窗 */

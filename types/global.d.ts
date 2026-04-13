@@ -40,6 +40,33 @@ declare global {
     data: T extends any ? T : T & any
   }
 
+  interface Window {
+    _hmt: any[]
+    bpmnInstances?: Recordable | null
+    selectAddress?: (loc: { latlng?: { lat?: number; lng?: number }; module?: string }) => void
+  }
+
+  interface SerialPortOpenOptions {
+    baudRate: number
+    dataBits?: number
+    stopBits?: number
+  }
+
+  interface SerialPort {
+    open(options: SerialPortOpenOptions): Promise<void>
+    close(): Promise<void>
+    readable: ReadableStream<Uint8Array> | null
+  }
+
+  interface Serial {
+    requestPort(): Promise<SerialPort>
+    getPorts(): Promise<SerialPort[]>
+  }
+
+  interface Navigator {
+    serial?: Serial
+  }
+
   interface PageParam {
     pageSize?: number
     pageNo?: number
@@ -52,7 +79,7 @@ declare global {
   }
   // 分页数据公共返回
   interface PageResult<T> {
-    list: T // 数据
+    list: T[] // 数据
     total: number // 总量
   }
 }

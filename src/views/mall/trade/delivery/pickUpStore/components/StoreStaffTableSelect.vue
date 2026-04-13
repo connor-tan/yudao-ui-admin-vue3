@@ -144,7 +144,7 @@ const isCheckAll = ref(false)
 // 全选框是否处于中间状态：不是全部选中 && 任意一个选中
 const isIndeterminate = ref(false)
 // 选中的活动
-const checkedUsers = ref([])
+const checkedUsers = ref<UserApi.UserVO[]>([])
 // 选中状态：key为用户ID，value为是否选中
 const checkedStatus = ref<Record<string, boolean>>({})
 
@@ -152,8 +152,18 @@ const dialogTitle = '选择店员'
 const dialogVisible = ref(false)
 const loading = ref(true) // 列表的加载中
 const total = ref(0) // 列表的总页数
-const list = ref([]) // 列表的数
-const queryParams = reactive({
+const list = ref<UserApi.UserVO[]>([]) // 列表的数
+interface QueryParams {
+  pageNo: number
+  pageSize: number
+  username?: string
+  mobile?: string
+  status?: number
+  deptId?: number
+  createTime: string[]
+}
+
+const queryParams = reactive<QueryParams>({
   pageNo: 1,
   pageSize: 10,
   username: undefined,
@@ -189,7 +199,7 @@ const resetQuery = () => {
 }
 
 /** 处理部门被点击 */
-const handleDeptNodeClick = async (row) => {
+const handleDeptNodeClick = async (row: { id: number }) => {
   queryParams.deptId = row.id
   await getList()
 }
@@ -220,9 +230,13 @@ const handleCheckAll = (checked: boolean) => {
  * @param combinationActivity 活动
  * @param isCalcCheckAll 是否计算全选
  */
-const handleCheckOne = (checked: boolean, combinationActivity, isCalcCheckAll: boolean) => {
+const handleCheckOne = (
+  checked: boolean,
+  combinationActivity: UserApi.UserVO,
+  isCalcCheckAll: boolean
+) => {
   if (checked) {
-    checkedUsers.value.push(combinationActivity as never)
+    checkedUsers.value.push(combinationActivity)
     checkedStatus.value[combinationActivity.id] = true
   } else {
     const index = findCheckedIndex(combinationActivity)
@@ -240,7 +254,8 @@ const handleCheckOne = (checked: boolean, combinationActivity, isCalcCheckAll: b
 }
 
 // 查找活动在已选中活动列表中的索引
-const findCheckedIndex = (user) => checkedUsers.value.findIndex((item) => item.id === user.id)
+const findCheckedIndex = (user: UserApi.UserVO) =>
+  checkedUsers.value.findIndex((item) => item.id === user.id)
 
 // 计算全选框状态
 const calculateIsCheckAll = () => {

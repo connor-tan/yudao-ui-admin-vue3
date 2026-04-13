@@ -41,15 +41,14 @@ import { fenToYuan } from '@/utils'
 defineOptions({ name: 'SkuTableSelect' })
 
 const props = defineProps({
-  spuId: propTypes.number.def(null)
+  spuId: propTypes.number.def(undefined)
 })
 
-const message = useMessage() // 消息弹窗
-const list = ref<any[]>([]) // 列表的数据
+const list = ref<ProductSpuApi.Sku[]>([]) // 列表的数据
 const loading = ref(false) // 列表的加载中
 const dialogVisible = ref(false) // 弹窗的是否展示
 
-const selectedSkuId = ref() // 选中的商品 spuId
+const selectedSkuId = ref<number>() // 选中的商品 spuId
 
 /** 选中时触发 */
 const handleSelected = (row: ProductSpuApi.Sku) => {

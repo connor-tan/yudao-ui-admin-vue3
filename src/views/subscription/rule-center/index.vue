@@ -153,16 +153,19 @@
   <WindowForm ref="formRef" @success="handleFormSuccess" />
 
   <ContentWrap>
-    <el-tabs v-model="activeTab">
-      <el-tab-pane label="窗口刊物" name="publications">
-        <WindowSpuPanel v-if="currentWindowId" :window-id="currentWindowId" />
-        <el-empty v-else description="请选择一个订刊窗口" />
+    <el-tabs v-if="currentWindowId" v-model="activeTab">
+      <el-tab-pane label="窗口刊物" name="windowSpu">
+        <WindowSpuPanel :window-id="currentWindowId" />
       </el-tab-pane>
-      <el-tab-pane label="规则预览" name="preview">
-        <PreviewPanel v-if="currentWindowId" :window-id="currentWindowId" />
-        <el-empty v-else description="请选择一个订刊窗口" />
+      <el-tab-pane
+        v-hasPermi="['subscription:preview:query']"
+        label="规则预览"
+        name="preview"
+      >
+        <PreviewPanel :window-id="currentWindowId" />
       </el-tab-pane>
     </el-tabs>
+    <el-empty v-else description="请选择一个订刊窗口" />
   </ContentWrap>
 </template>
 
@@ -181,8 +184,8 @@ import {
 } from '@/api/subscription/support'
 import { SubscriptionWindowApi, type SubscriptionWindow } from '@/api/subscription/window'
 import WindowForm from './components/WindowForm.vue'
-import WindowSpuPanel from './components/WindowSpuPanel.vue'
 import PreviewPanel from './components/PreviewPanel.vue'
+import WindowSpuPanel from './components/WindowSpuPanel.vue'
 
 defineOptions({ name: 'SubscriptionRuleCenter' })
 
@@ -193,10 +196,10 @@ const loading = ref(false)
 const total = ref(0)
 const list = ref<SubscriptionWindow[]>([])
 const windowYearList = ref<SubscriptionSupportWindowYearSimple[]>([])
+const activeTab = ref('windowSpu')
 const queryFormRef = ref()
 const tableRef = ref()
 const currentWindowId = ref<number>()
-const activeTab = ref<'publications' | 'preview'>('publications')
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,

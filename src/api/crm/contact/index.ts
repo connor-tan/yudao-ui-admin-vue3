@@ -83,7 +83,7 @@ export const exportContact = async (params) => {
 }
 
 // 获得 CRM 联系人列表（精简）
-export const getSimpleContactList = async () => {
+export const getSimpleContactList = async (): Promise<ContactVO[]> => {
   return await request.get({ url: `/crm/contact/simple-all-list` })
 }
 
