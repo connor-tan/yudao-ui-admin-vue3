@@ -80,6 +80,17 @@
                   <div class="flex items-center gap-8px">
                     <div class="truncate text-16px font-600">{{ publication.productName }}</div>
                     <el-tag v-if="publication.recommendFlag" type="success">推荐</el-tag>
+                    <el-tag v-if="publication.visibilityReasonDesc" type="info">
+                      {{ publication.visibilityReasonDesc }}
+                    </el-tag>
+                    <el-tag v-if="publication.gradeApplicabilityOverride" type="warning">
+                      例外年级
+                    </el-tag>
+                  </div>
+                  <div v-if="publication.matchedRule?.id" class="mt-6px text-12px text-gray-500">
+                    命中特殊规则：{{ getSubscriptionRuleEffectTypeLabel(publication.matchedRule.effectType) }} /
+                    {{ getSubscriptionRuleScopeTypeLabel(publication.matchedRule.scopeType) }} /
+                    #{{ publication.matchedRule.id }}
                   </div>
                   <div class="mt-8px text-13px text-gray-500">
                     {{ publication.publicationTitleName || '-' }} / {{ publication.categoryName || '-' }}
@@ -96,6 +107,11 @@
                       </template>
                     </el-table-column>
                     <el-table-column label="ISBN" min-width="160" prop="isbn" />
+                    <el-table-column align="center" label="适用周期" min-width="110">
+                      <template #default="{ row }">
+                        {{ getSubscriptionTargetPeriodLabel(row.targetPeriod) }}
+                      </template>
+                    </el-table-column>
                     <el-table-column align="center" label="价格" min-width="90">
                       <template #default="{ row }">¥ {{ fenToYuan(row.price || 0) }}</template>
                     </el-table-column>
@@ -106,6 +122,57 @@
               </div>
             </el-card>
           </div>
+          <el-divider v-if="previewData.diagnostics?.length" />
+          <el-table
+            v-if="previewData.diagnostics?.length"
+            :data="previewData.diagnostics"
+            :show-overflow-tooltip="true"
+            :stripe="true"
+          >
+            <el-table-column label="刊物" min-width="220" prop="productName" />
+            <el-table-column align="center" label="最终结果" min-width="90">
+              <template #default="{ row }">
+                <el-tag :type="row.visible ? 'success' : 'info'">
+                  {{ row.visible ? '可见' : '不可见' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="原因" min-width="220" prop="reasonDesc" />
+            <el-table-column align="center" label="可售SKU/总数" min-width="110">
+              <template #default="{ row }">
+                {{ row.enabledSkuCount || 0 }}/{{ row.totalSkuCount || 0 }}
+              </template>
+            </el-table-column>
+            <el-table-column align="center" label="窗口周期" min-width="110">
+              <template #default="{ row }">
+                {{ getSubscriptionTargetPeriodLabel(row.windowTargetPeriod) }}
+              </template>
+            </el-table-column>
+            <el-table-column align="center" label="周期不匹配SKU" min-width="130">
+              <template #default="{ row }">
+                <el-tag v-if="row.enabledPeriodMismatchedSkuCount" type="warning">
+                  {{ row.enabledPeriodMismatchedSkuCount }}
+                </el-tag>
+                <span v-else>-</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="特殊规则" min-width="180">
+              <template #default="{ row }">
+                <span v-if="row.matchedRule?.id">
+                  {{ getSubscriptionRuleEffectTypeLabel(row.matchedRule.effectType) }} /
+                  {{ getSubscriptionRuleScopeTypeLabel(row.matchedRule.scopeType) }} /
+                  #{{ row.matchedRule.id }}
+                </span>
+                <span v-else>-</span>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" label="适用年级例外" min-width="130">
+              <template #default="{ row }">
+                <el-tag v-if="row.gradeApplicabilityOverride" type="warning">是</el-tag>
+                <span v-else>-</span>
+              </template>
+            </el-table-column>
+          </el-table>
         </template>
       </template>
     </ContentWrap>
@@ -120,6 +187,11 @@ import {
   type SubscriptionSupportStudentSimple
 } from '@/api/subscription/support'
 import { SubscriptionPreviewApi, type SubscriptionRulePreviewRespVO } from '@/api/subscription/preview'
+import {
+  getSubscriptionRuleEffectTypeLabel,
+  getSubscriptionRuleScopeTypeLabel,
+  getSubscriptionTargetPeriodLabel
+} from '@/utils/subscription'
 
 defineOptions({ name: 'SubscriptionPreviewPanel' })
 

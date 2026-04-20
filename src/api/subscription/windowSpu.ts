@@ -21,6 +21,8 @@ export interface SubscriptionWindowSpu {
   remark?: string
   gradeCatalogIds: number[]
   gradeNames?: string
+  applicableGradeCatalogIds?: number[]
+  applicableGradeNames?: string
   enabledSkuCount?: number
   totalSkuCount?: number
   createTime?: string
@@ -46,8 +48,10 @@ export interface SubscriptionWindowSpuAvailable {
 
 export interface SubscriptionWindowSpuBatchCreateReqVO {
   windowId: number
-  baseGradeCatalogIds: number[]
-  productSpuIds: number[]
+  items: Array<{
+    gradeCatalogId: number
+    productSpuId: number
+  }>
 }
 
 export interface SubscriptionWindowSpuBatchCreateRespVO {

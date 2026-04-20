@@ -12,12 +12,13 @@ const props = defineProps({
   title: propTypes.string.def('Dialog'),
   fullscreen: propTypes.bool.def(true),
   width: propTypes.oneOfType([String, Number]).def('40%'),
+  closeOnClickModal: propTypes.bool.def(true),
   scroll: propTypes.bool.def(false), // 是否开启滚动条。如果是的话，按照 maxHeight 设置最大高度
   maxHeight: propTypes.oneOfType([String, Number]).def('400px')
 })
 
 const getBindValue = computed(() => {
-  const delArr: string[] = ['fullscreen', 'title', 'maxHeight', 'appendToBody']
+  const delArr: string[] = ['fullscreen', 'title', 'maxHeight', 'appendToBody', 'closeOnClickModal']
   const attrs = useAttrs()
   const obj = { ...attrs, ...props }
   for (const key in obj) {
@@ -73,7 +74,7 @@ function closedHandler() {
 <template>
   <ElDialog
     v-bind="getBindValue"
-    :close-on-click-modal="true"
+    :close-on-click-modal="closeOnClickModal"
     :fullscreen="isFullscreen"
     :width="width"
     destroy-on-close

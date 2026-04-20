@@ -66,6 +66,10 @@ import { cloneDeep } from 'lodash-es'
 import { isEmpty } from '@/utils/is'
 import { useTagsViewStore } from '@/store/modules/tagsView'
 import { convertToInteger, floatToFixed2, formatToFraction } from '@/utils'
+import {
+  normalizePublicationTargetPeriod,
+  PUBLICATION_TARGET_PERIOD_FULL_YEAR
+} from '@/utils/publication'
 import * as PublicationProductApi from '@/api/mall/product/publicationProduct'
 import BasicInfoForm from './BasicInfoForm.vue'
 import PublicationInfoForm from './PublicationInfoForm.vue'
@@ -91,7 +95,26 @@ const skuRef = ref()
 const deliveryRef = ref()
 const descriptionRef = ref()
 const otherRef = ref()
-const formData = ref<PublicationProductApi.PublicationProductVO>({
+const createDefaultSku = (): PublicationProductApi.PublicationProductSkuVO => ({
+  name: '',
+  price: 0,
+  marketPrice: 0,
+  costPrice: 0,
+  barCode: '',
+  picUrl: '',
+  stock: 0,
+  weight: 0,
+  volume: 0,
+  firstBrokeragePrice: 0,
+  secondBrokeragePrice: 0,
+  volumeLabel: '',
+  editionLabel: '',
+  targetPeriod: PUBLICATION_TARGET_PERIOD_FULL_YEAR,
+  isbn: '',
+  remark: ''
+})
+
+const createDefaultFormData = (): PublicationProductApi.PublicationProductVO => ({
   domainType: 'PUBLICATION',
   name: '',
   keyword: '',
@@ -115,6 +138,7 @@ const formData = ref<PublicationProductApi.PublicationProductVO>({
   publicationTypeId: undefined,
   publicationTypeCode: '',
   publicationTypeName: '',
+  publicationTypeIdentifierRule: '',
   publisherId: undefined,
   publisherName: '',
   issueCycle: '',
@@ -123,26 +147,35 @@ const formData = ref<PublicationProductApi.PublicationProductVO>({
   postDistributionCode: '',
   applicableGradeCatalogIds: [],
   applicableGradeNames: [],
-  skus: [
-    {
-      name: '',
-      price: 0,
-      marketPrice: 0,
-      costPrice: 0,
-      barCode: '',
-      picUrl: '',
-      stock: 0,
-      weight: 0,
-      volume: 0,
-      firstBrokeragePrice: 0,
-      secondBrokeragePrice: 0,
-      volumeLabel: '',
-      editionLabel: '',
-      isbn: '',
-      remark: ''
-    }
-  ]
+  skus: [createDefaultSku()]
 })
+
+const normalizePublicationProductFormData = (
+  data: PublicationProductApi.PublicationProductVO
+): PublicationProductApi.PublicationProductVO => {
+  const normalized = {
+    ...createDefaultFormData(),
+    ...data
+  }
+  normalized.sliderPicUrls = Array.isArray(data.sliderPicUrls) ? data.sliderPicUrls : []
+  normalized.deliveryTypes = Array.isArray(data.deliveryTypes) ? data.deliveryTypes : []
+  normalized.applicableGradeCatalogIds = Array.isArray(data.applicableGradeCatalogIds)
+    ? data.applicableGradeCatalogIds
+    : []
+  normalized.applicableGradeNames = Array.isArray(data.applicableGradeNames)
+    ? data.applicableGradeNames
+    : []
+  normalized.skus = Array.isArray(data.skus) && data.skus.length
+    ? data.skus.map((item) => ({
+        ...createDefaultSku(),
+        ...item,
+        targetPeriod: normalizePublicationTargetPeriod(item.targetPeriod)
+      }))
+    : [createDefaultSku()]
+  return normalized
+}
+
+const formData = ref<PublicationProductApi.PublicationProductVO>(createDefaultFormData())
 
 const getDetail = async () => {
   if (name === 'ProductPublicationDetail') {
@@ -152,7 +185,9 @@ const getDetail = async () => {
   if (!id) return
   formLoading.value = true
   try {
-    const res = (await PublicationProductApi.getPublicationProduct(id)) as PublicationProductApi.PublicationProductVO
+    const res = normalizePublicationProductFormData(
+      (await PublicationProductApi.getPublicationProduct(id)) as PublicationProductApi.PublicationProductVO
+    )
     res.skus?.forEach((item) => {
       if (isDetail.value) {
         item.price = floatToFixed2(item.price)

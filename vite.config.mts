@@ -1,8 +1,8 @@
-import {resolve} from 'path'
-import type {ConfigEnv, UserConfig} from 'vite'
-import {loadEnv} from 'vite'
-import {createVitePlugins} from './build/vite'
-import {exclude, include} from "./build/vite/optimize"
+import { resolve } from 'path'
+import type { ConfigEnv, UserConfig } from 'vite'
+import { loadEnv } from 'vite'
+import { createVitePlugins } from './build/vite'
+import { exclude, include } from './build/vite/optimize'
 // 当前执行node命令时文件夹的地址(工作目录)
 const root = process.cwd()
 

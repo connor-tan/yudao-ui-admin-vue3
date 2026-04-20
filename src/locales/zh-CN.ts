@@ -200,8 +200,9 @@ export default {
   },
   workplace: {
     welcome: '你好',
-    happyDay: '祝你开心每一天!',
+    happyDay: '你应该今天、明天、后天，以及永远开心!',
     toady: '今日晴',
+    currentTime: '当前时间',
     notice: '通知公告',
     project: '项目数',
     access: '项目访问',

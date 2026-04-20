@@ -1,9 +1,9 @@
 import { resolve } from 'path'
+import { createRequire } from 'module'
 import Vue from '@vitejs/plugin-vue'
 import VueJsx from '@vitejs/plugin-vue-jsx'
 import progress from 'vite-plugin-progress'
 import EslintPlugin from 'vite-plugin-eslint'
-import PurgeIcons from 'vite-plugin-purge-icons'
 import { ViteEjsPlugin } from 'vite-plugin-ejs'
 // @ts-ignore
 import ElementPlus from 'unplugin-element-plus/vite'
@@ -15,6 +15,9 @@ import topLevelAwait from 'vite-plugin-top-level-await'
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons-ng'
 import UnoCSS from 'unocss/vite'
+
+const require = createRequire(import.meta.url)
+const PurgeIcons = require('vite-plugin-purge-icons').default
 
 export function createVitePlugins() {
   const root = process.cwd()
@@ -29,7 +32,14 @@ export function createVitePlugins() {
     VueJsx(),
     UnoCSS(),
     progress(),
-    PurgeIcons(),
+    PurgeIcons({
+      content: [
+        'index.html',
+        'src/**/*.{vue,js,ts,tsx}',
+        'types/**/*.{ts,d.ts}'
+      ],
+      iconSource: 'local'
+    }),
     ElementPlus({}),
     AutoImport({
       include: [

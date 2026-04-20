@@ -28,6 +28,21 @@
           class="!w-240px"
         />
       </el-form-item>
+      <el-form-item label="办学学段" prop="stageCode">
+        <el-select
+          v-model="queryParams.stageCode"
+          clearable
+          placeholder="请选择办学学段"
+          class="!w-160px"
+        >
+          <el-option
+            v-for="dict in getStrDictOptions(DICT_TYPE.EDU_STAGE)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item label="学校地址" prop="schoolAddress">
         <el-input
           v-model="queryParams.schoolAddress"
@@ -94,6 +109,17 @@
       <el-table-column type="selection" width="55" />
       <!--      <el-table-column label="学校ID" align="center" prop="id" />-->
       <el-table-column label="学校名称" align="center" prop="schoolName" />
+      <el-table-column label="办学学段" align="center" min-width="140px">
+        <template #default="scope">
+          <dict-tag
+            v-for="stage in scope.row.stageCodes || []"
+            :key="stage"
+            :type="DICT_TYPE.EDU_STAGE"
+            :value="stage"
+            class="mr-4px"
+          />
+        </template>
+      </el-table-column>
       <el-table-column label="所在地区" align="center" min-width="100px">
         <template #default="scope">
           {{ getAreaLastName(scope.row.areaName) }}
@@ -144,7 +170,7 @@
   <ContentWrap>
     <el-tabs model-value="schoolGrade">
       <el-tab-pane label="年级定义" name="schoolGrade">
-        <SchoolGradeList :school-id="currentRow.id" />
+        <SchoolGradeList :school-id="currentRow.id" :school-stage-codes="currentRow.stageCodes" />
       </el-tab-pane>
       <el-tab-pane label="学年" name="schoolYear">
         <SchoolYearList :school-id="currentRow.id" />
@@ -163,6 +189,7 @@ import download from '@/utils/download'
 import * as AreaApi from '@/api/system/area'
 import { SchoolApi, School } from '@/api/edu/school'
 import { defaultProps } from '@/utils/tree'
+import { DICT_TYPE, getStrDictOptions } from '@/utils/dict'
 import SchoolForm from './SchoolForm.vue'
 import SchoolGradeList from './components/SchoolGradeList.vue'
 import SchoolYearList from './components/SchoolYearList.vue'
@@ -187,6 +214,7 @@ const queryParams = reactive({
   pageSize: 10,
   schoolName: undefined as string | undefined,
   areaId: undefined as number | undefined,
+  stageCode: undefined as string | undefined,
   schoolAddress: undefined as string | undefined,
   code: undefined as string | undefined
 })
@@ -211,6 +239,9 @@ const getList = async () => {
     const data = await SchoolApi.getSchoolPage(queryParams)
     list.value = data.list
     total.value = data.total
+    if (currentRow.value.id) {
+      currentRow.value = list.value.find((item) => item.id === currentRow.value.id) || {}
+    }
   } finally {
     loading.value = false
   }

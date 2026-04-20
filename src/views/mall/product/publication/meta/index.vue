@@ -71,6 +71,11 @@
       <el-table-column label="编号" prop="id" width="90" />
       <el-table-column label="编码" prop="code" min-width="140" />
       <el-table-column label="名称" prop="name" min-width="140" />
+      <el-table-column label="标识规则" min-width="190">
+        <template #default="{ row }">
+          {{ PublicationTypeApi.formatPublicationTypeIdentifierRule(row.identifierRule) }}
+        </template>
+      </el-table-column>
       <el-table-column label="排序" prop="sort" width="90" />
       <el-table-column align="center" label="状态" prop="status" width="90">
         <template #default="{ row }">

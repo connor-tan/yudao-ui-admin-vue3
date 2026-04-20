@@ -7,6 +7,13 @@
     width="1000px"
   >
     <ContentWrap>
+      <el-alert
+        :closable="false"
+        class="mb-12px"
+        show-icon
+        title="当前窗口只售卖与目标周期匹配的 SKU；新增或补齐的匹配 SKU 默认启用，周期不匹配的 SKU 不进入 app 可见结果。"
+        type="info"
+      />
       <el-table v-loading="loading" :data="list" :show-overflow-tooltip="true" :stripe="true">
         <el-table-column label="SKU" min-width="220">
           <template #default="{ row }">
@@ -14,6 +21,16 @@
               {{ [row.volumeLabel, row.editionLabel].filter(Boolean).join(' / ') || `SKU#${row.productSkuId}` }}
             </div>
             <div v-if="row.isbn" class="mt-1 text-12px text-gray-500">ISBN：{{ row.isbn }}</div>
+            <div v-if="row.disabledReason" class="mt-1 text-12px text-[var(--el-color-danger)]">
+              {{ row.disabledReason }}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="适用周期" min-width="140">
+          <template #default="{ row }">
+            <el-tag :type="row.targetPeriodMatched === false ? 'danger' : 'success'">
+              {{ getSubscriptionTargetPeriodLabel(row.productSkuTargetPeriod) }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column align="center" label="价格" min-width="90">
@@ -24,6 +41,7 @@
           <template #default="{ row }">
             <el-switch
               v-model="row.status"
+              :disabled="row.targetPeriodMatched === false && row.status !== 0"
               :active-value="0"
               :inactive-value="1"
               active-text="启用"
@@ -58,6 +76,7 @@
 
 <script setup lang="ts">
 import { fenToYuan } from '@/utils'
+import { getSubscriptionTargetPeriodLabel } from '@/utils/subscription'
 import { SubscriptionWindowSkuApi, type SubscriptionWindowSku } from '@/api/subscription/windowSku'
 
 defineOptions({ name: 'SubscriptionWindowSkuForm' })

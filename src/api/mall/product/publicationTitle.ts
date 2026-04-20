@@ -15,6 +15,7 @@ export interface PublicationTitleVO {
   createTime?: string
   typeName?: string
   typeCode?: string
+  typeIdentifierRule?: string
   publisherName?: string
 }
 
@@ -25,6 +26,7 @@ export interface PublicationTitleSimpleVO {
   typeId: number
   typeName?: string
   typeCode?: string
+  typeIdentifierRule?: string
   publisherId: number
   publisherName?: string
   issueCycle?: string

@@ -12,6 +12,10 @@ export interface SubscriptionWindowSku {
   stock?: number
   volumeLabel?: string
   editionLabel?: string
+  productSkuTargetPeriod?: string
+  windowTargetPeriod?: string
+  targetPeriodMatched?: boolean
+  disabledReason?: string
   isbn?: string
 }
 

@@ -10,7 +10,7 @@
       <el-form-item label="年级阶段" prop="stage">
         <el-select v-model="formData.stage" placeholder="请选择年级阶段" @change="handleStageChange">
           <el-option
-            v-for="dict in getStrDictOptions(DICT_TYPE.EDU_STAGE)"
+            v-for="dict in schoolStageOptions"
             :key="dict.value"
             :label="dict.label"
             :value="dict.value"
@@ -53,6 +53,7 @@ const dialogTitle = ref('')
 const formLoading = ref(false)
 const formType = ref('')
 const gradeCatalogList = ref<GradeCatalog[]>([])
+const allowedStageCodes = ref<string[]>([])
 const formData = ref<SchoolGrade & { stage?: string }>({
   id: undefined,
   schoolId: undefined,
@@ -67,7 +68,14 @@ const formRules = reactive({
 const formRef = ref()
 
 const filteredGradeCatalogList = computed(() =>
-  gradeCatalogList.value.filter((item) => item.stage === formData.value.stage)
+  gradeCatalogList.value.filter(
+    (item) => allowedStageCodes.value.includes(item.stage) && item.stage === formData.value.stage
+  )
+)
+const schoolStageOptions = computed(() =>
+  getStrDictOptions(DICT_TYPE.EDU_STAGE).filter(
+    (dict) => allowedStageCodes.value.includes(dict.value) || dict.value === formData.value.stage
+  )
 )
 
 const loadGradeCatalogList = async () => {
@@ -84,12 +92,16 @@ const handleStageChange = () => {
   }
 }
 
-const open = async (type: string, id?: number, schoolId?: number) => {
+const open = async (type: string, id?: number, schoolId?: number, schoolStageCodes: string[] = []) => {
   dialogVisible.value = true
   dialogTitle.value = t(`action.${type}`)
   formType.value = type
   resetForm()
+  allowedStageCodes.value = schoolStageCodes
   formData.value.schoolId = schoolId
+  if (type === 'create' && schoolStageCodes.length === 1) {
+    formData.value.stage = schoolStageCodes[0]
+  }
   formLoading.value = true
   try {
     await loadGradeCatalogList()

@@ -36,7 +36,16 @@
             {{ row.gradeAliasName ? `${row.gradeName}（${row.gradeAliasName}）` : row.gradeName || '-' }}
           </template>
         </el-table-column>
-        <el-table-column align="center" label="排序" min-width="80" prop="sort" />
+        <el-table-column label="适用年级例外" min-width="190">
+          <template #default="{ row }">
+            <el-tag v-if="row.gradeApplicabilityOverride" type="warning">突破商品适用年级</el-tag>
+            <span v-else>-</span>
+            <div v-if="row.warningReason" class="mt-4px text-12px text-orange-500">
+              {{ row.warningReason }}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="管理排序" min-width="90" prop="sort" />
         <el-table-column label="备注" min-width="180" prop="remark" />
         <el-table-column align="center" label="操作" width="140">
           <template #default="{ row }">
@@ -75,6 +84,14 @@
       width="620px"
     >
       <el-form ref="formRef" v-loading="formLoading" :model="formData" :rules="formRules" label-width="100px">
+        <el-alert
+          v-if="currentRuleWarning"
+          :closable="false"
+          class="mb-12px"
+          show-icon
+          :title="currentRuleWarning"
+          type="warning"
+        />
         <el-form-item label="规则效果" prop="effectType">
           <el-radio-group v-model="formData.effectType">
             <el-radio
@@ -116,8 +133,11 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="排序" prop="sort">
+        <el-form-item label="管理排序" prop="sort">
           <el-input-number v-model="formData.sort" :min="0" class="!w-full" />
+          <div class="mt-4px text-12px text-gray-500">
+            排序只影响管理展示，实际判定固定为“排除 > 允许 > 基础可见年级”。
+          </div>
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="formData.remark" :rows="3" type="textarea" placeholder="请输入备注" />
@@ -154,6 +174,7 @@ const formLoading = ref(false)
 const total = ref(0)
 const windowSpuId = ref<number>()
 const productName = ref('')
+const applicableGradeCatalogIds = ref<number[]>([])
 const schoolList = ref<SchoolSimple[]>([])
 const gradeList = ref<GradeCatalog[]>([])
 const list = ref<SubscriptionWindowSpuRule[]>([])
@@ -181,6 +202,22 @@ const requiresSchool = computed(() =>
 const requiresGrade = computed(() =>
   formData.value.scopeType === 'GRADE' || formData.value.scopeType === 'SCHOOL_GRADE'
 )
+const currentRuleWarning = computed(() => {
+  if (formData.value.effectType !== 'INCLUDE') {
+    return ''
+  }
+  if (formData.value.scopeType === 'ALL' || formData.value.scopeType === 'SCHOOL') {
+    return '允许规则未限定年级，可能让商品适用年级外学生可见；该配置属于运营例外。'
+  }
+  if (
+    requiresGrade.value &&
+    formData.value.gradeCatalogId &&
+    !applicableGradeCatalogIds.value.includes(formData.value.gradeCatalogId)
+  ) {
+    return '当前允许规则选择了商品适用年级外的年级，保存后会作为例外规则生效。'
+  }
+  return ''
+})
 
 const formRules = reactive({
   effectType: [{ required: true, message: '规则效果不能为空', trigger: 'change' }],
@@ -260,11 +297,16 @@ const getList = async () => {
   }
 }
 
-const open = async (selectedWindowSpuId: number, selectedProductName: string) => {
+const open = async (
+  selectedWindowSpuId: number,
+  selectedProductName: string,
+  selectedApplicableGradeCatalogIds: number[] = []
+) => {
   await loadOptions()
   dialogVisible.value = true
   windowSpuId.value = selectedWindowSpuId
   productName.value = selectedProductName
+  applicableGradeCatalogIds.value = selectedApplicableGradeCatalogIds
   queryParams.windowSpuId = selectedWindowSpuId
   queryParams.pageNo = 1
   await getList()
@@ -293,6 +335,9 @@ const submitRuleForm = async () => {
   await formRef.value.validate()
   formLoading.value = true
   try {
+    if (currentRuleWarning.value) {
+      await message.confirm(`${currentRuleWarning.value}\n确认保存该特殊允许规则？`)
+    }
     if (ruleDialogType.value === 'create') {
       await SubscriptionWindowSpuRuleApi.create(formData.value)
       message.success('新增成功')

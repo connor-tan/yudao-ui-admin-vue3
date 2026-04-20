@@ -200,6 +200,7 @@ export default {
     welcome: 'Hello',
     happyDay: 'Wish you happy every day!',
     toady: `It's sunny today`,
+    currentTime: 'Current time',
     notice: 'Announcement',
     project: 'Project',
     access: 'Project access',

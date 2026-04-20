@@ -52,6 +52,7 @@ export interface SchoolYearSimple {
 export interface SchoolSimple {
   id: number
   schoolName: string
+  stageCodes?: string[]
 }
 
 /** 班级信息 */
@@ -91,6 +92,9 @@ export interface School {
   areaName?: string
   schoolAddress?: string
   code?: string
+  stageCode?: string
+  stageCodes?: string[]
+  stageNames?: string
   createTime?: string
 }
 

@@ -34,7 +34,7 @@
       />
     </el-form-item>
     <el-form-item v-if="formData.specType" label="商品属性">
-      <el-button class="mb-10px mr-15px" @click="attributesAddFormRef.open">添加属性</el-button>
+      <el-button class="mb-10px mr-15px" @click="openAttributeAddForm">添加属性</el-button>
       <ProductAttributes
         :is-detail="isDetail"
         :property-list="propertyList"
@@ -164,6 +164,10 @@ const changeSubCommissionType = () => {
     item.firstBrokeragePrice = 0
     item.secondBrokeragePrice = 0
   }
+}
+
+const openAttributeAddForm = () => {
+  attributesAddFormRef.value?.open?.()
 }
 
 /** 选择规格 */

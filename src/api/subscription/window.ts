@@ -33,6 +33,12 @@ export interface SubscriptionWindowSimple {
   status?: number
 }
 
+export interface SubscriptionWindowEnablePrecheckRespVO {
+  pass: boolean
+  blockers: string[]
+  warnings: string[]
+}
+
 export const SubscriptionWindowApi = {
   getWindowPage: async (params: any) => {
     return await request.get({ url: '/subscription/window/page', params })
@@ -54,7 +60,11 @@ export const SubscriptionWindowApi = {
     return await request.put({ url: '/subscription/window/update', data })
   },
 
-  updateWindowStatus: async (data: { id: number; status: number }) => {
+  precheckEnableWindow: async (id: number) => {
+    return await request.get({ url: '/subscription/window/precheck-enable', params: { id } })
+  },
+
+  updateWindowStatus: async (data: { id: number; status: number; confirmWarnings?: boolean }) => {
     return await request.put({ url: '/subscription/window/update-status', data })
   }
 }

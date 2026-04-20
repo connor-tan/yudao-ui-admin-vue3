@@ -90,6 +90,7 @@ const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
 const props = defineProps<{
   schoolId?: number // 学校ID（主表的关联字段）
+  schoolStageCodes?: string[]
 }>()
 const loading = ref(false) // 列表的加载中
 const list = ref<SchoolGrade[]>([]) // 列表的数据
@@ -139,7 +140,11 @@ const openForm = (type: string, id?: number) => {
     message.error('请选择一个学校信息')
     return
   }
-  formRef.value.open(type, id, props.schoolId)
+  if (!props.schoolStageCodes?.length) {
+    message.error('请先编辑学校并维护办学学段')
+    return
+  }
+  formRef.value.open(type, id, props.schoolId, props.schoolStageCodes)
 }
 
 /** 删除按钮操作 */

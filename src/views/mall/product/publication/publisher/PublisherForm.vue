@@ -1,9 +1,6 @@
 <template>
   <Dialog v-model="dialogVisible" :title="dialogTitle">
     <el-form ref="formRef" v-loading="formLoading" :model="formData" :rules="formRules" label-width="100px">
-      <el-form-item label="出版社编码" prop="code">
-        <el-input v-model="formData.code" placeholder="请输入出版社编码" />
-      </el-form-item>
       <el-form-item label="出版社名称" prop="name">
         <el-input v-model="formData.name" placeholder="请输入出版社名称" />
       </el-form-item>
@@ -46,16 +43,14 @@ const dialogTitle = ref('')
 const formLoading = ref(false)
 const formType = ref<'create' | 'update'>('create')
 const formRef = ref()
-const formData = ref<PublicationPublisherApi.PublicationPublisherVO>({
+const formData = ref<PublicationPublisherApi.PublicationPublisherSaveReqVO>({
   id: undefined,
-  code: '',
   name: '',
   sort: 0,
   status: CommonStatusEnum.ENABLE,
   remark: ''
 })
 const formRules = reactive({
-  code: [required],
   name: [required],
   sort: [required],
   status: [required]
@@ -64,7 +59,6 @@ const formRules = reactive({
 const resetForm = () => {
   formData.value = {
     id: undefined,
-    code: '',
     name: '',
     sort: 0,
     status: CommonStatusEnum.ENABLE,
@@ -81,7 +75,14 @@ const open = async (type: 'create' | 'update', id?: number) => {
   if (!id) return
   formLoading.value = true
   try {
-    formData.value = await PublicationPublisherApi.getPublicationPublisher(id)
+    const publisher = await PublicationPublisherApi.getPublicationPublisher(id)
+    formData.value = {
+      id: publisher.id,
+      name: publisher.name,
+      sort: publisher.sort,
+      status: publisher.status,
+      remark: publisher.remark
+    }
   } finally {
     formLoading.value = false
   }

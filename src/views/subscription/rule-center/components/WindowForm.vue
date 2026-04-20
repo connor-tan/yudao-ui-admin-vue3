@@ -150,7 +150,7 @@ const formData = ref<SubscriptionWindowFormData>({
   gradeCalcRule: '',
   gradeResolveMode: '',
   templateLocked: false,
-  status: 0,
+  status: 1,
   remark: ''
 })
 
@@ -286,7 +286,7 @@ const resetForm = () => {
     gradeCalcRule: '',
     gradeResolveMode: '',
     templateLocked: false,
-    status: 0,
+    status: 1,
     remark: ''
   }
   targetYearKey.value = undefined

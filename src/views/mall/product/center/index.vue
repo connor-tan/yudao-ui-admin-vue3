@@ -1,4 +1,5 @@
 <template>
+  <el-alert title="重要提示，按年级进行SPU分类。例如：一年级的语文书和二年级的语文书，属于两种不同的商品。" type="success" />
   <ContentWrap>
     <el-tabs v-model="activeDomainTab">
       <el-tab-pane label="刊物商品" name="PUBLICATION" />

@@ -12,6 +12,8 @@ export interface SubscriptionWindowSpuRule {
   gradeAliasName?: string
   sort: number
   remark?: string
+  gradeApplicabilityOverride?: boolean
+  warningReason?: string
   createTime?: string
 }
 

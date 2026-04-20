@@ -2,7 +2,7 @@ import request from '@/config/axios'
 
 export interface PublicationPublisherVO {
   id?: number
-  code: string
+  code?: string
   name: string
   sort: number
   status: number
@@ -10,9 +10,11 @@ export interface PublicationPublisherVO {
   createTime?: string
 }
 
+export type PublicationPublisherSaveReqVO = Omit<PublicationPublisherVO, 'code' | 'createTime'>
+
 export interface PublicationPublisherSimpleVO {
   id: number
-  code: string
+  code?: string
   name: string
 }
 
@@ -24,11 +26,11 @@ export const getPublicationPublisher = (id: number) => {
   return request.get({ url: '/product/publication-publisher/get', params: { id } })
 }
 
-export const createPublicationPublisher = (data: PublicationPublisherVO) => {
+export const createPublicationPublisher = (data: PublicationPublisherSaveReqVO) => {
   return request.post({ url: '/product/publication-publisher/create', data })
 }
 
-export const updatePublicationPublisher = (data: PublicationPublisherVO) => {
+export const updatePublicationPublisher = (data: PublicationPublisherSaveReqVO) => {
   return request.put({ url: '/product/publication-publisher/update', data })
 }
 

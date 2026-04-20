@@ -31,6 +31,7 @@ export interface PublicationProductSkuVO {
   secondBrokeragePrice?: number | string
   volumeLabel?: string
   editionLabel?: string
+  targetPeriod?: string
   isbn?: string
   remark?: string
 }
@@ -65,6 +66,7 @@ export interface PublicationProductVO {
   publicationTypeId?: number
   publicationTypeCode?: string
   publicationTypeName?: string
+  publicationTypeIdentifierRule?: string
   publisherId?: number
   publisherName?: string
   issueCycle?: string

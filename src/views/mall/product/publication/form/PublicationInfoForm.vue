@@ -51,6 +51,14 @@
     <el-form-item label="邮发代号">
       <el-input v-model="formData.postDistributionCode" class="w-80!" disabled />
     </el-form-item>
+    <el-alert
+      v-if="titleIdentifierMissing"
+      class="mb-18px"
+      :closable="false"
+      show-icon
+      title="当前刊物主档缺少 ISSN、CN 刊号或邮发代号，请先完善主档信息"
+      type="warning"
+    />
   </el-form>
 </template>
 
@@ -61,6 +69,7 @@ import { copyValueToTarget } from '@/utils'
 import { propTypes } from '@/utils/propTypes'
 import * as PublicationProductApi from '@/api/mall/product/publicationProduct'
 import * as PublicationTitleApi from '@/api/mall/product/publicationTitle'
+import * as PublicationTypeApi from '@/api/mall/product/publicationType'
 
 defineOptions({ name: 'PublicationInfoForm' })
 
@@ -82,6 +91,7 @@ const formData = reactive<PublicationProductApi.PublicationProductVO>({
   publicationTypeId: undefined,
   publicationTypeCode: '',
   publicationTypeName: '',
+  publicationTypeIdentifierRule: '',
   publisherId: undefined,
   publisherName: '',
   issueCycle: '',
@@ -93,6 +103,14 @@ const formData = reactive<PublicationProductApi.PublicationProductVO>({
 const rules = reactive({
   publicationTitleId: [required],
   applicableGradeCatalogIds: [required]
+})
+const titleIdentifierMissing = computed(() => {
+  return (
+    PublicationTypeApi.requiresTitleIdentifier(formData.publicationTypeIdentifierRule) &&
+    !formData.issn &&
+    !formData.cnCode &&
+    !formData.postDistributionCode
+  )
 })
 
 watch(
@@ -113,6 +131,7 @@ const syncTitleFields = (title?: PublicationTitleApi.PublicationTitleVO | null) 
   formData.publicationTypeId = title?.typeId
   formData.publicationTypeCode = title?.typeCode || ''
   formData.publicationTypeName = title?.typeName || ''
+  formData.publicationTypeIdentifierRule = title?.typeIdentifierRule || ''
   formData.publisherId = title?.publisherId
   formData.publisherName = title?.publisherName || ''
   formData.issueCycle = title?.issueCycle || ''
@@ -143,12 +162,16 @@ const validate = async () => {
   if (!formRef.value) return
   try {
     await formRef.value.validate()
+    if (titleIdentifierMissing.value) {
+      throw new Error('当前刊物主档缺少 ISSN、CN 刊号或邮发代号')
+    }
     Object.assign(props.propFormData, {
       publicationTitleId: formData.publicationTitleId,
       publicationTitleName: formData.publicationTitleName,
       publicationTypeId: formData.publicationTypeId,
       publicationTypeCode: formData.publicationTypeCode,
       publicationTypeName: formData.publicationTypeName,
+      publicationTypeIdentifierRule: formData.publicationTypeIdentifierRule,
       publisherId: formData.publisherId,
       publisherName: formData.publisherName,
       issueCycle: formData.issueCycle,

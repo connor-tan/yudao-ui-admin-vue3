@@ -2,6 +2,7 @@
   <div>
     <SkuForm
       ref="skuFormRef"
+      :key="skuFormKey"
       v-model:activeName="innerActiveName"
       :is-detail="isDetail"
       :prop-form-data="formData"
@@ -26,6 +27,18 @@
                 <el-input v-model="row.editionLabel" placeholder="如：基础版、进阶版" />
               </template>
             </el-table-column>
+            <el-table-column align="center" label="适用周期" min-width="140">
+              <template #default="{ row }">
+                <el-select v-model="row.targetPeriod" placeholder="请选择周期">
+                  <el-option
+                    v-for="item in targetPeriodOptions"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </template>
+            </el-table-column>
             <el-table-column align="center" label="ISBN" min-width="180">
               <template #default="{ row }">
                 <el-input v-model="row.isbn" placeholder="请输入 ISBN" />
@@ -46,9 +59,14 @@
 <script lang="ts" setup>
 import { PropType } from 'vue'
 import { copyValueToTarget } from '@/utils'
+import {
+  normalizePublicationTargetPeriod,
+  PUBLICATION_TARGET_PERIOD_OPTIONS
+} from '@/utils/publication'
 import { propTypes } from '@/utils/propTypes'
 import type { PublicationProductVO } from '@/api/mall/product/publicationProduct'
 import type { Property } from '@/api/mall/product/spu'
+import * as PublicationTypeApi from '@/api/mall/product/publicationType'
 import SkuForm from '@/views/mall/product/spu/form/SkuForm.vue'
 
 defineOptions({ name: 'PublicationSkuForm' })
@@ -66,11 +84,19 @@ const message = useMessage()
 const skuFormRef = ref()
 const extraFormRef = ref()
 const innerActiveName = ref(props.activeName)
+const skuFormKey = ref(0)
 const formData = reactive<PublicationProductVO>({
   specType: false,
   subCommissionType: false,
   skus: []
 })
+const targetPeriodOptions = PUBLICATION_TARGET_PERIOD_OPTIONS
+
+function normalizeSkuTargetPeriod() {
+  formData.skus?.forEach((item) => {
+    item.targetPeriod = normalizePublicationTargetPeriod(item.targetPeriod)
+  })
+}
 
 watch(
   () => props.activeName,
@@ -84,6 +110,8 @@ watch(
   (data) => {
     if (!data) return
     copyValueToTarget(formData, data)
+    normalizeSkuTargetPeriod()
+    skuFormKey.value += 1
   },
   { immediate: true }
 )
@@ -98,9 +126,10 @@ const formatProperties = (properties?: Property[]) => {
 const emit = defineEmits(['update:activeName'])
 const validate = async () => {
   try {
+    normalizeSkuTargetPeriod()
     await skuFormRef.value?.validate()
     if (
-      String(props.propFormData.publicationTypeCode || '').toUpperCase() === 'BOOK' &&
+      PublicationTypeApi.requiresSkuIsbn(props.propFormData.publicationTypeIdentifierRule) &&
       formData.skus?.some((item) => !item.isbn)
     ) {
       throw new Error('图书类刊物的 ISBN 不能为空')

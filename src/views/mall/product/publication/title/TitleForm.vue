@@ -42,6 +42,21 @@
       <el-form-item label="邮发代号" prop="postDistributionCode">
         <el-input v-model="formData.postDistributionCode" placeholder="请输入邮发代号" />
       </el-form-item>
+      <el-alert
+        v-if="titleIdentifierRequired"
+        class="mb-18px"
+        :closable="false"
+        show-icon
+        :type="titleIdentifierBlank ? 'warning' : 'success'"
+      >
+        <template #title>
+          {{
+            titleIdentifierBlank
+              ? '当前刊物类型启用前需至少填写 ISSN、CN 刊号或邮发代号'
+              : '当前刊物类型的主档标识已满足启用要求'
+          }}
+        </template>
+      </el-alert>
       <el-form-item label="状态" prop="status">
         <el-radio-group v-model="formData.status">
           <el-radio
@@ -104,6 +119,16 @@ const formRules = reactive({
   issueCycle: [required],
   status: [required]
 })
+const currentType = computed(() => typeList.value.find((item) => item.id === formData.value.typeId))
+const titleIdentifierRequired = computed(() => {
+  return (
+    formData.value.status === CommonStatusEnum.ENABLE &&
+    PublicationTypeApi.requiresTitleIdentifier(currentType.value?.identifierRule)
+  )
+})
+const titleIdentifierBlank = computed(() => {
+  return !formData.value.issn && !formData.value.cnCode && !formData.value.postDistributionCode
+})
 
 const resetForm = () => {
   lockedTypeName.value = ''
@@ -158,6 +183,10 @@ const emit = defineEmits(['success'])
 const submitForm = async () => {
   const valid = await formRef.value?.validate()
   if (!valid) return
+  if (titleIdentifierRequired.value && titleIdentifierBlank.value) {
+    message.error('当前刊物类型启用前需至少填写 ISSN、CN 刊号或邮发代号')
+    return
+  }
   formLoading.value = true
   try {
     if (formType.value === 'create') {

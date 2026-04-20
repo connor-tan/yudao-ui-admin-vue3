@@ -109,6 +109,7 @@
         </el-table-column>
         <el-table-column label="刊物类型" min-width="100" prop="publicationTypeName" align="center"/>
         <el-table-column label="出版社" min-width="160" prop="publisherName" />
+        <el-table-column label="商品适用年级" min-width="160" prop="applicableGradeNames" />
         <el-table-column label="基础可见年级" min-width="160" prop="gradeNames" />
         <el-table-column align="center" label="推荐" min-width="80">
           <template #default="{ row }">
@@ -116,7 +117,7 @@
             <span v-else>-</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="SKU启用/总数" min-width="110">
+        <el-table-column align="center" label="可售SKU/总数" min-width="110">
           <template #default="{ row }">
             {{ row.enabledSkuCount || 0 }}/{{ row.totalSkuCount || 0 }}
           </template>
@@ -281,7 +282,7 @@ const openSkuForm = (row: SubscriptionWindowSpu) => {
 }
 
 const openRuleForm = (row: SubscriptionWindowSpu) => {
-  ruleFormRef.value.open(row.id, row.productName)
+  ruleFormRef.value.open(row.id, row.productName, row.applicableGradeCatalogIds || [])
 }
 
 const handleDelete = async (id: number) => {

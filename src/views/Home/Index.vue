@@ -13,193 +13,203 @@
                   {{ t('workplace.welcome') }} {{ username }} {{ t('workplace.happyDay') }}
                 </div>
                 <div class="mt-10px text-14px text-gray-500">
-                  {{ t('workplace.toady') }}，20℃ - 32℃！
+                  {{ t('workplace.currentTime') }}：{{ currentTimeText }}
                 </div>
               </div>
             </div>
           </el-col>
-          <el-col :xl="12" :lg="12" :md="12" :sm="24" :xs="24">
-            <div class="h-70px flex items-center justify-end lt-sm:mt-10px">
-              <div class="px-8px text-right">
-                <div class="mb-16px text-14px text-gray-400">{{ t('workplace.project') }}</div>
-                <CountTo
-                  class="text-20px"
-                  :start-val="0"
-                  :end-val="totalSate.project"
-                  :duration="2600"
-                />
-              </div>
-              <el-divider direction="vertical" />
-              <div class="px-8px text-right">
-                <div class="mb-16px text-14px text-gray-400">{{ t('workplace.toDo') }}</div>
-                <CountTo
-                  class="text-20px"
-                  :start-val="0"
-                  :end-val="totalSate.todo"
-                  :duration="2600"
-                />
-              </div>
-              <el-divider direction="vertical" border-style="dashed" />
-              <div class="px-8px text-right">
-                <div class="mb-16px text-14px text-gray-400">{{ t('workplace.access') }}</div>
-                <CountTo
-                  class="text-20px"
-                  :start-val="0"
-                  :end-val="totalSate.access"
-                  :duration="2600"
-                />
-              </div>
-            </div>
-          </el-col>
+<!--          <el-col :xl="12" :lg="12" :md="12" :sm="24" :xs="24">-->
+<!--            <div class="h-70px flex items-center justify-end lt-sm:mt-10px">-->
+<!--              <div class="px-8px text-right">-->
+<!--                <div class="mb-16px text-14px text-gray-400">{{ t('workplace.project') }}</div>-->
+<!--                <CountTo-->
+<!--                  class="text-20px"-->
+<!--                  :start-val="0"-->
+<!--                  :end-val="totalSate.project"-->
+<!--                  :duration="2600"-->
+<!--                />-->
+<!--              </div>-->
+<!--              <el-divider direction="vertical" />-->
+<!--              <div class="px-8px text-right">-->
+<!--                <div class="mb-16px text-14px text-gray-400">{{ t('workplace.toDo') }}</div>-->
+<!--                <CountTo-->
+<!--                  class="text-20px"-->
+<!--                  :start-val="0"-->
+<!--                  :end-val="totalSate.todo"-->
+<!--                  :duration="2600"-->
+<!--                />-->
+<!--              </div>-->
+<!--              <el-divider direction="vertical" border-style="dashed" />-->
+<!--              <div class="px-8px text-right">-->
+<!--                <div class="mb-16px text-14px text-gray-400">{{ t('workplace.access') }}</div>-->
+<!--                <CountTo-->
+<!--                  class="text-20px"-->
+<!--                  :start-val="0"-->
+<!--                  :end-val="totalSate.access"-->
+<!--                  :duration="2600"-->
+<!--                />-->
+<!--              </div>-->
+<!--            </div>-->
+<!--          </el-col>-->
         </el-row>
       </el-skeleton>
     </el-card>
   </div>
 
   <el-row class="mt-8px" :gutter="8" justify="space-between">
-    <el-col :xl="16" :lg="16" :md="24" :sm="24" :xs="24" class="mb-8px">
-      <el-card shadow="never">
-        <template #header>
-          <div class="h-3 flex justify-between">
-            <span>{{ t('workplace.project') }}</span>
-            <el-link
-              type="primary"
-              :underline="false"
-              href="https://github.com/yudaocode"
-              target="_blank"
-            >
-              {{ t('action.more') }}
-            </el-link>
-          </div>
-        </template>
-        <el-skeleton :loading="loading" animated>
-          <el-row>
-            <el-col
-              v-for="(item, index) in projects"
-              :key="`card-${index}`"
-              :xl="8"
-              :lg="8"
-              :md="8"
-              :sm="24"
-              :xs="24"
-            >
-              <el-card
-                shadow="hover"
-                class="mr-5px mt-5px cursor-pointer"
-                @click="handleProjectClick(item.message)"
-              >
-                <div class="flex items-center">
-                  <Icon
-                    :icon="item.icon"
-                    :size="25"
-                    class="mr-8px"
-                    :style="{ color: item.color }"
-                  />
-                  <span class="text-16px">{{ item.name }}</span>
-                </div>
-                <div class="mt-12px text-12px text-gray-400">{{ t(item.message) }}</div>
-                <div class="mt-12px flex justify-between text-12px text-gray-400">
-                  <span>{{ item.personal }}</span>
-                  <span>{{ formatTime(item.time, 'yyyy-MM-dd') }}</span>
-                </div>
-              </el-card>
-            </el-col>
-          </el-row>
-        </el-skeleton>
-      </el-card>
+<!--    <el-col :xl="16" :lg="16" :md="24" :sm="24" :xs="24" class="mb-8px">-->
+<!--      <el-card shadow="never">-->
+<!--        <template #header>-->
+<!--          <div class="h-3 flex justify-between">-->
+<!--            <span>{{ t('workplace.project') }}</span>-->
+<!--            <el-link-->
+<!--              type="primary"-->
+<!--              :underline="false"-->
+<!--              href="https://github.com/yudaocode"-->
+<!--              target="_blank"-->
+<!--            >-->
+<!--              {{ t('action.more') }}-->
+<!--            </el-link>-->
+<!--          </div>-->
+<!--        </template>-->
+<!--        <el-skeleton :loading="loading" animated>-->
+<!--          <el-row>-->
+<!--            <el-col-->
+<!--              v-for="(item, index) in projects"-->
+<!--              :key="`card-${index}`"-->
+<!--              :xl="8"-->
+<!--              :lg="8"-->
+<!--              :md="8"-->
+<!--              :sm="24"-->
+<!--              :xs="24"-->
+<!--            >-->
+<!--              <el-card-->
+<!--                shadow="hover"-->
+<!--                class="mr-5px mt-5px cursor-pointer"-->
+<!--                @click="handleProjectClick(item.message)"-->
+<!--              >-->
+<!--                <div class="flex items-center">-->
+<!--                  <Icon-->
+<!--                    :icon="item.icon"-->
+<!--                    :size="25"-->
+<!--                    class="mr-8px"-->
+<!--                    :style="{ color: item.color }"-->
+<!--                  />-->
+<!--                  <span class="text-16px">{{ item.name }}</span>-->
+<!--                </div>-->
+<!--                <div class="mt-12px text-12px text-gray-400">{{ t(item.message) }}</div>-->
+<!--                <div class="mt-12px flex justify-between text-12px text-gray-400">-->
+<!--                  <span>{{ item.personal }}</span>-->
+<!--                  <span>{{ formatTime(item.time, 'yyyy-MM-dd') }}</span>-->
+<!--                </div>-->
+<!--              </el-card>-->
+<!--            </el-col>-->
+<!--          </el-row>-->
+<!--        </el-skeleton>-->
+<!--      </el-card>-->
 
-      <el-card shadow="never" class="mt-8px">
-        <el-skeleton :loading="loading" animated>
-          <el-row :gutter="20" justify="space-between">
-            <el-col :xl="10" :lg="10" :md="24" :sm="24" :xs="24">
-              <el-card shadow="hover" class="mb-8px">
-                <el-skeleton :loading="loading" animated>
-                  <Echart :options="pieOptionsData" :height="280" />
-                </el-skeleton>
-              </el-card>
-            </el-col>
-            <el-col :xl="14" :lg="14" :md="24" :sm="24" :xs="24">
-              <el-card shadow="hover" class="mb-8px">
-                <el-skeleton :loading="loading" animated>
-                  <Echart :options="barOptionsData" :height="280" />
-                </el-skeleton>
-              </el-card>
-            </el-col>
-          </el-row>
-        </el-skeleton>
-      </el-card>
-    </el-col>
-    <el-col :xl="8" :lg="8" :md="24" :sm="24" :xs="24" class="mb-8px">
-      <el-card shadow="never">
-        <template #header>
-          <div class="h-3 flex justify-between">
-            <span>{{ t('workplace.shortcutOperation') }}</span>
-          </div>
-        </template>
-        <el-skeleton :loading="loading" animated>
-          <el-row>
-            <el-col v-for="item in shortcut" :key="`team-${item.name}`" :span="8" class="mb-8px">
-              <div class="flex items-center">
-                <Icon :icon="item.icon" class="mr-8px" :style="{ color: item.color }" />
-                <el-link type="default" :underline="false" @click="handleShortcutClick(item.url)">
-                  {{ item.name }}
-                </el-link>
-              </div>
-            </el-col>
-          </el-row>
-        </el-skeleton>
-      </el-card>
-      <el-card shadow="never" class="mt-8px">
-        <template #header>
-          <div class="h-3 flex justify-between">
-            <span>{{ t('workplace.notice') }}</span>
-            <el-link type="primary" :underline="false">{{ t('action.more') }}</el-link>
-          </div>
-        </template>
-        <el-skeleton :loading="loading" animated>
-          <div v-for="(item, index) in notice" :key="`dynamics-${index}`">
-            <div class="flex items-center">
-              <el-avatar :src="avatar" :size="35" class="mr-16px">
-                <img src="@/assets/imgs/avatar.gif" alt="" />
-              </el-avatar>
-              <div>
-                <div class="text-14px">
-                  <Highlight :keys="item.keys.map((v) => t(v))">
-                    {{ item.type }} : {{ item.title }}
-                  </Highlight>
-                </div>
-                <div class="mt-16px text-12px text-gray-400">
-                  {{ formatTime(item.date, 'yyyy-MM-dd') }}
-                </div>
-              </div>
-            </div>
-            <el-divider />
-          </div>
-        </el-skeleton>
-      </el-card>
-    </el-col>
+<!--      <el-card shadow="never" class="mt-8px">-->
+<!--        <el-skeleton :loading="loading" animated>-->
+<!--          <el-row :gutter="20" justify="space-between">-->
+<!--            <el-col :xl="10" :lg="10" :md="24" :sm="24" :xs="24">-->
+<!--              <el-card shadow="hover" class="mb-8px">-->
+<!--                <el-skeleton :loading="loading" animated>-->
+<!--                  <Echart :options="pieOptionsData" :height="280" />-->
+<!--                </el-skeleton>-->
+<!--              </el-card>-->
+<!--            </el-col>-->
+<!--            <el-col :xl="14" :lg="14" :md="24" :sm="24" :xs="24">-->
+<!--              <el-card shadow="hover" class="mb-8px">-->
+<!--                <el-skeleton :loading="loading" animated>-->
+<!--                  <Echart :options="barOptionsData" :height="280" />-->
+<!--                </el-skeleton>-->
+<!--              </el-card>-->
+<!--            </el-col>-->
+<!--          </el-row>-->
+<!--        </el-skeleton>-->
+<!--      </el-card>-->
+<!--    </el-col>-->
+<!--    <el-col :xl="24" :lg="24" :md="24" :sm="24" :xs="24" class="mb-8px">-->
+<!--      <el-card shadow="never">-->
+<!--        <template #header>-->
+<!--          <div class="h-3 flex justify-between">-->
+<!--            <span>{{ t('workplace.shortcutOperation') }}</span>-->
+<!--          </div>-->
+<!--        </template>-->
+<!--        <el-skeleton :loading="loading" animated>-->
+<!--          <el-row>-->
+<!--            <el-col v-for="item in shortcut" :key="`team-${item.name}`" :span="8" class="mb-8px">-->
+<!--              <div class="flex items-center">-->
+<!--                <Icon :icon="item.icon" class="mr-8px" :style="{ color: item.color }" />-->
+<!--                <el-link type="default" :underline="false" @click="handleShortcutClick(item.url)">-->
+<!--                  {{ item.name }}-->
+<!--                </el-link>-->
+<!--              </div>-->
+<!--            </el-col>-->
+<!--          </el-row>-->
+<!--        </el-skeleton>-->
+<!--      </el-card>-->
+<!--      <el-card shadow="never" class="mt-8px">-->
+<!--        <template #header>-->
+<!--          <div class="h-3 flex justify-between">-->
+<!--            <span>{{ t('workplace.notice') }}</span>-->
+<!--            <el-link type="primary" :underline="false">{{ t('action.more') }}</el-link>-->
+<!--          </div>-->
+<!--        </template>-->
+<!--        <el-skeleton :loading="loading" animated>-->
+<!--          <div v-for="(item, index) in notice" :key="`dynamics-${index}`">-->
+<!--            <div class="flex items-center">-->
+<!--              <el-avatar :src="avatar" :size="35" class="mr-16px">-->
+<!--                <img src="@/assets/imgs/avatar.gif" alt="" />-->
+<!--              </el-avatar>-->
+<!--              <div>-->
+<!--                <div class="text-14px">-->
+<!--                  <Highlight :keys="item.keys.map((v) => t(v))">-->
+<!--                    {{ item.type }} : {{ item.title }}-->
+<!--                  </Highlight>-->
+<!--                </div>-->
+<!--                <div class="mt-16px text-12px text-gray-400">-->
+<!--                  {{ formatTime(item.date, 'yyyy-MM-dd') }}-->
+<!--                </div>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--            <el-divider />-->
+<!--          </div>-->
+<!--        </el-skeleton>-->
+<!--      </el-card>-->
+<!--    </el-col>-->
   </el-row>
 </template>
 <script lang="ts" setup>
 import { set } from 'lodash-es'
 import { EChartsOption } from 'echarts'
 import { formatTime } from '@/utils'
+import { useNow } from '@/hooks/web/useNow'
 
 import { useUserStore } from '@/store/modules/user'
 // import { useWatermark } from '@/hooks/web/useWatermark'
 import type { WorkplaceTotal, Project, Notice, Shortcut } from './types'
 import { pieOptions, barOptions } from './echarts-data'
-import { useRouter } from 'vue-router'
 
 defineOptions({ name: 'Index' })
 
 const { t } = useI18n()
-const router = useRouter()
 const userStore = useUserStore()
 // const { setWatermark } = useWatermark()
 const loading = ref(true)
 const avatar = userStore.getUser.avatar
 const username = userStore.getUser.nickname
+const { year, month, day, hour, minute, second } = useNow(true)
+const padTime = (value: number | string) => String(value).padStart(2, '0')
+const currentTimeText = computed(() => {
+  if (!year.value) {
+    return formatTime(new Date(), 'yyyy-MM-dd hh:mm:ss')
+  }
+  return [
+    `${year.value}-${padTime(month.value)}-${padTime(day.value)}`,
+    `${hour.value}:${minute.value}:${padTime(second.value)}`
+  ].join(' ')
+})
 const pieOptionsData = reactive<EChartsOption>(pieOptions) as EChartsOption
 // 获取统计数
 let totalSate = reactive<WorkplaceTotal>({
@@ -410,13 +420,9 @@ const getAllApi = async () => {
   loading.value = false
 }
 
-const handleProjectClick = (message: string) => {
-  window.open(`https://${message}`, '_blank')
-}
-
-const handleShortcutClick = (url: string) => {
-  router.push(url)
-}
+// const handleProjectClick = (message: string) => {
+//   window.open(`https://${message}`, '_blank')
+// }
 
 getAllApi()
 </script>

@@ -7,6 +7,16 @@
       <el-form-item label="类型名称" prop="name">
         <el-input v-model="formData.name" placeholder="请输入刊物类型名称" />
       </el-form-item>
+      <el-form-item label="标识规则" prop="identifierRule">
+        <el-select v-model="formData.identifierRule" class="w-full" placeholder="请选择标识规则">
+          <el-option
+            v-for="item in PublicationTypeApi.PUBLICATION_TYPE_IDENTIFIER_RULE_OPTIONS"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item label="排序" prop="sort">
         <el-input-number v-model="formData.sort" :min="0" class="!w-240px" controls-position="right" />
       </el-form-item>
@@ -50,6 +60,7 @@ const formData = ref<PublicationTypeApi.PublicationTypeVO>({
   id: undefined,
   code: '',
   name: '',
+  identifierRule: PublicationTypeApi.PUBLICATION_TYPE_IDENTIFIER_RULE_NONE,
   sort: 0,
   status: CommonStatusEnum.ENABLE,
   remark: ''
@@ -57,6 +68,7 @@ const formData = ref<PublicationTypeApi.PublicationTypeVO>({
 const formRules = reactive({
   code: [required],
   name: [required],
+  identifierRule: [required],
   sort: [required],
   status: [required]
 })
@@ -66,6 +78,7 @@ const resetForm = () => {
     id: undefined,
     code: '',
     name: '',
+    identifierRule: PublicationTypeApi.PUBLICATION_TYPE_IDENTIFIER_RULE_NONE,
     sort: 0,
     status: CommonStatusEnum.ENABLE,
     remark: ''
@@ -81,7 +94,11 @@ const open = async (type: 'create' | 'update', id?: number) => {
   if (!id) return
   formLoading.value = true
   try {
-    formData.value = await PublicationTypeApi.getPublicationType(id)
+    const data = await PublicationTypeApi.getPublicationType(id)
+    formData.value = {
+      ...data,
+      identifierRule: data.identifierRule || PublicationTypeApi.PUBLICATION_TYPE_IDENTIFIER_RULE_NONE
+    }
   } finally {
     formLoading.value = false
   }

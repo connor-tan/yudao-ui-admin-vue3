@@ -269,10 +269,29 @@ const handleFormSuccess = async () => {
   await getList()
 }
 
+const formatPrecheckMessages = (items: string[]) => items.map((item, index) => `${index + 1}. ${item}`).join('\n')
+
 const handleUpdateStatus = async (id: number, status: number) => {
   try {
-    await message.confirm(status === 0 ? '确认启用该订刊窗口？' : '确认停用该订刊窗口？')
-    await SubscriptionWindowApi.updateWindowStatus({ id, status })
+    let confirmWarnings = false
+    if (status === 0) {
+      const precheck = await SubscriptionWindowApi.precheckEnableWindow(id)
+      if (precheck.blockers?.length) {
+        await message.alertWarning(`该订刊窗口暂不能启用：\n${formatPrecheckMessages(precheck.blockers)}`)
+        return
+      }
+      if (precheck.warnings?.length) {
+        await message.confirm(
+          `启用前存在以下运营提醒：\n${formatPrecheckMessages(precheck.warnings)}\n确认继续启用？`
+        )
+        confirmWarnings = true
+      } else {
+        await message.confirm('确认启用该订刊窗口？')
+      }
+    } else {
+      await message.confirm('确认停用该订刊窗口？')
+    }
+    await SubscriptionWindowApi.updateWindowStatus({ id, status, confirmWarnings })
     message.success(t('common.updateSuccess'))
     await getList()
   } catch {}

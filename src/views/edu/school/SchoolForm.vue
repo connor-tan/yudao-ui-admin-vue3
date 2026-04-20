@@ -10,6 +10,23 @@
       <el-form-item label="学校名称" prop="schoolName">
         <el-input v-model="formData.schoolName" placeholder="请输入学校名称" />
       </el-form-item>
+      <el-form-item label="办学学段" prop="stageCodes">
+        <el-select
+          v-model="formData.stageCodes"
+          multiple
+          collapse-tags
+          collapse-tags-tooltip
+          placeholder="请选择办学学段"
+          class="w-1/1"
+        >
+          <el-option
+            v-for="dict in getStrDictOptions(DICT_TYPE.EDU_STAGE)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item label="所在地区" prop="areaId">
         <el-cascader
           v-model="formData.areaId"
@@ -44,6 +61,8 @@
 import { SchoolApi, School } from '@/api/edu/school'
 import * as AreaApi from '@/api/system/area'
 import { defaultProps, findPath } from '@/utils/tree'
+import { DICT_TYPE, getStrDictOptions } from '@/utils/dict'
+import type { FormRules } from 'element-plus'
 
 /** 学校信息 表单 */
 defineOptions({ name: 'SchoolForm' })
@@ -67,6 +86,7 @@ type SchoolFormData = {
   schoolAddress?: string
   schoolAddressDetail?: string
   code?: string
+  stageCodes: string[]
 }
 
 const formData = ref<SchoolFormData>({
@@ -75,10 +95,12 @@ const formData = ref<SchoolFormData>({
   areaId: undefined,
   schoolAddress: undefined,
   schoolAddressDetail: undefined,
-  code: undefined
+  code: undefined,
+  stageCodes: []
 })
-const formRules = reactive({
+const formRules = reactive<FormRules<SchoolFormData>>({
   schoolName: [{ required: true, message: '学校名称不能为空', trigger: 'blur' }],
+  stageCodes: [{ required: true, type: 'array', min: 1, message: '办学学段不能为空', trigger: 'change' }],
   areaId: [{ required: true, message: '学校所在地区不能为空', trigger: 'change' }],
   schoolAddressDetail: [{ required: true, message: '学校详细地址不能为空', trigger: 'blur' }]
 })
@@ -131,7 +153,8 @@ const open = async (type: string, id?: number) => {
         areaId: school.areaId,
         schoolAddress: school.schoolAddress,
         schoolAddressDetail: getSchoolAddressDetail(school.schoolAddress, school.areaId),
-        code: school.code
+        code: school.code,
+        stageCodes: school.stageCodes || []
       }
     }
   } finally {
@@ -156,7 +179,8 @@ const submitForm = async () => {
       schoolName: formData.value.schoolName,
       areaId: formData.value.areaId,
       schoolAddress: `${schoolAddressPrefix.value}${schoolAddressDetail}`,
-      code: formData.value.code
+      code: formData.value.code,
+      stageCodes: formData.value.stageCodes
     }
     if (formType.value === 'create') {
       await SchoolApi.createSchool(data)
@@ -181,7 +205,8 @@ const resetForm = () => {
     areaId: undefined,
     schoolAddress: undefined,
     schoolAddressDetail: undefined,
-    code: undefined
+    code: undefined,
+    stageCodes: []
   }
   formRef.value?.resetFields()
 }
