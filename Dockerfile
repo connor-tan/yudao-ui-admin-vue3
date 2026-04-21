@@ -13,7 +13,7 @@ RUN --mount=type=cache,id=xiaokanhui-admin-pnpm-store,target=/pnpm/store,sharing
 COPY . .
 
 ARG ADMIN_BUILD_MODE=prod
-ARG VITE_BASE_URL=
+ARG VITE_BASE_URL="http://localhost:48080"
 ARG VITE_API_URL=/admin-api
 ARG VITE_APP_TITLE=校刊汇管理系统
 
