@@ -43,6 +43,33 @@
           />
         </el-select>
       </el-form-item>
+      <el-form-item label="归属站点" prop="stationId">
+        <el-select
+          v-model="queryParams.stationId"
+          clearable
+          filterable
+          placeholder="请选择站点"
+          class="!w-200px"
+        >
+          <el-option
+            v-for="station in stationList"
+            :key="station.id"
+            :label="station.stationName"
+            :value="station.id"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="站点绑定" prop="stationBound">
+        <el-select
+          v-model="queryParams.stationBound"
+          clearable
+          placeholder="请选择绑定状态"
+          class="!w-180px"
+        >
+          <el-option label="已绑定" :value="true" />
+          <el-option label="未绑定" :value="false" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="学校地址" prop="schoolAddress">
         <el-input
           v-model="queryParams.schoolAddress"
@@ -125,6 +152,12 @@
           {{ getAreaLastName(scope.row.areaName) }}
         </template>
       </el-table-column>
+      <el-table-column label="归属站点" align="center" prop="stationName" min-width="120px">
+        <template #default="scope">
+          <span v-if="scope.row.stationName">{{ scope.row.stationName }}</span>
+          <el-tag v-else type="warning">未绑定</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="学校地址" align="center" prop="schoolAddress" />
       <!--      <el-table-column label="学校代码" align="center" prop="code" />-->
       <el-table-column
@@ -188,6 +221,7 @@ import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import * as AreaApi from '@/api/system/area'
 import { SchoolApi, School } from '@/api/edu/school'
+import { StationApi, type StationSimple } from '@/api/edu/station'
 import { defaultProps } from '@/utils/tree'
 import { DICT_TYPE, getStrDictOptions } from '@/utils/dict'
 import SchoolForm from './SchoolForm.vue'
@@ -205,6 +239,7 @@ const loading = ref(true) // 列表的加载中
 const list = ref<School[]>([]) // 列表的数据
 const total = ref(0) // 列表的总页数
 const areaList = ref<AreaApi.AreaNodeVO[]>([])
+const stationList = ref<StationSimple[]>([])
 const searchAreaProps = {
   ...defaultProps,
   checkStrictly: true
@@ -215,6 +250,8 @@ const queryParams = reactive({
   schoolName: undefined as string | undefined,
   areaId: undefined as number | undefined,
   stageCode: undefined as string | undefined,
+  stationId: undefined as number | undefined,
+  stationBound: undefined as boolean | undefined,
   schoolAddress: undefined as string | undefined,
   code: undefined as string | undefined
 })
@@ -226,6 +263,10 @@ const loadAreaList = async () => {
     return
   }
   areaList.value = await AreaApi.getEnabledAreaTree()
+}
+
+const loadStationList = async () => {
+  stationList.value = await StationApi.getStationSimpleList()
 }
 
 const getAreaLastName = (areaName?: string) => {
@@ -320,6 +361,7 @@ const handleCurrentChange = (row?: School) => {
 /** 初始化 **/
 onMounted(() => {
   loadAreaList()
+  loadStationList()
   getList()
 })
 </script>

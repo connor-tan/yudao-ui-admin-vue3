@@ -144,6 +144,24 @@
                 {{ pickUpStoreList.find((p) => p.id === scope.row.pickUpStoreId)?.detailAddress }}
               </span>
             </div>
+            <div
+              v-if="scope.row.deliveryType === DeliveryTypeEnum.STATION.type"
+              class="flex flex-col"
+            >
+              <span>买家：{{ scope.row.user?.nickname }}</span>
+              <span>学校：{{ scope.row.items?.[0]?.subscriptionSchoolNameSnapshot || '-' }}</span>
+              <span>班级：{{ scope.row.items?.[0]?.subscriptionClassNameSnapshot || '-' }}</span>
+            </div>
+            <div
+              v-if="scope.row.deliveryType === DeliveryTypeEnum.MIXED.type"
+              class="flex flex-col"
+            >
+              <span>买家：{{ scope.row.user?.nickname }}</span>
+              <span>混合配送：快递 + 学校站点</span>
+              <span v-if="scope.row.receiverName">
+                快递收件：{{ scope.row.receiverName }} {{ scope.row.receiverMobile }}
+              </span>
+            </div>
           </template>
         </el-table-column>
         <el-table-column align="center" label="配送方式" width="120">

@@ -35,32 +35,6 @@
           调整价格
         </el-button>
         <el-button type="primary" @click="remark">备注</el-button>
-        <!-- 待发货 -->
-        <template v-if="formData.status! === TradeOrderStatusEnum.UNDELIVERED.status">
-          <!-- 快递发货 -->
-          <el-button
-            v-if="formData.deliveryType === DeliveryTypeEnum.EXPRESS.type"
-            type="primary"
-            @click="delivery"
-          >
-            发货
-          </el-button>
-          <el-button
-            v-if="formData.deliveryType === DeliveryTypeEnum.EXPRESS.type"
-            type="primary"
-            @click="updateAddress"
-          >
-            修改地址
-          </el-button>
-          <!-- 到店自提 -->
-          <el-button
-            v-if="formData.deliveryType === DeliveryTypeEnum.PICK_UP.type && showPickUp"
-            type="primary"
-            @click="handlePickUp"
-          >
-            核销
-          </el-button>
-        </template>
       </el-descriptions-item>
       <el-descriptions-item>
         <template #label><span style="color: red">提醒: </span></template>
@@ -75,13 +49,40 @@
       <el-descriptions-item labelClassName="no-colon">
         <el-row :gutter="20">
           <el-col :span="15">
-            <el-table :data="formData.items" border>
+              <el-table :data="formData.items" border>
               <el-table-column label="商品" prop="spuName" width="auto">
                 <template #default="{ row }">
                   {{ row.spuName }}
                   <el-tag v-for="property in row.properties" :key="property.propertyId">
                     {{ property.propertyName }}: {{ property.valueName }}
                   </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column label="配送单" min-width="180">
+                <template #default="{ row }">
+                  <template v-if="row.deliveryId && deliveryMap[row.deliveryId]">
+                    <div>#{{
+                      row.deliveryId
+                    }}</div>
+                    <div class="text-xs text-gray-500">
+                      <dict-tag
+                        :type="DICT_TYPE.TRADE_DELIVERY_TYPE"
+                        :value="deliveryMap[row.deliveryId].deliveryType ?? ''"
+                      />
+                    </div>
+                  </template>
+                  <span v-else>-</span>
+                </template>
+              </el-table-column>
+              <el-table-column label="订刊归属" min-width="220">
+                <template #default="{ row }">
+                  <template v-if="row.subscriptionStudentId">
+                    <div>学生：{{ row.subscriptionStudentNameSnapshot }}</div>
+                    <div>学校：{{ row.subscriptionSchoolNameSnapshot }}</div>
+                    <div>班级：{{ row.subscriptionClassNameSnapshot || '-' }}</div>
+                    <div>年级：{{ row.subscriptionGradeNameSnapshot }}</div>
+                  </template>
+                  <span v-else>-</span>
                 </template>
               </el-table-column>
               <el-table-column label="商品原价" prop="price" width="150">
@@ -103,6 +104,92 @@
           </el-col>
           <el-col :span="10" />
         </el-row>
+      </el-descriptions-item>
+    </el-descriptions>
+
+    <el-descriptions v-if="hasDeliveries" title="配送信息">
+      <el-descriptions-item labelClassName="no-colon">
+        <el-table :data="formData.deliveries" border>
+          <el-table-column label="配送单" min-width="120">
+            <template #default="{ row }">#{{ row.id }}</template>
+          </el-table-column>
+          <el-table-column label="配送方式" min-width="120">
+            <template #default="{ row }">
+              <dict-tag :type="DICT_TYPE.TRADE_DELIVERY_TYPE" :value="row.deliveryType" />
+            </template>
+          </el-table-column>
+          <el-table-column label="配送状态" min-width="120">
+            <template #default="{ row }">
+              <dict-tag :type="DICT_TYPE.TRADE_ORDER_STATUS" :value="row.status" />
+            </template>
+          </el-table-column>
+          <el-table-column label="配送信息" min-width="320">
+            <template #default="{ row }">
+              <template v-if="row.deliveryType === DeliveryTypeEnum.EXPRESS.type">
+                <div>收件人：{{ row.receiverName }} {{ row.receiverMobile }}</div>
+                <div>{{ row.receiverAreaName }} {{ row.receiverDetailAddress }}</div>
+                <div v-if="row.logisticsId || row.logisticsNo">
+                  物流：{{ deliveryExpressLabel(row.logisticsId) || '-' }}
+                  {{ row.logisticsNo || '' }}
+                </div>
+              </template>
+              <template v-else-if="row.deliveryType === DeliveryTypeEnum.STATION.type">
+                <div>学校：{{ row.schoolNameSnapshot }}</div>
+                <div>站点：{{ row.stationNameSnapshot }}</div>
+                <div>地址：{{ row.stationAddressSnapshot || '-' }}</div>
+                <div>联系人：{{ row.contactName || '-' }} {{ row.contactMobile || '' }}</div>
+              </template>
+            </template>
+          </el-table-column>
+          <el-table-column label="时间" min-width="220">
+            <template #default="{ row }">
+              <div>发货：{{ row.deliveryTime ? formatDate(row.deliveryTime) : '-' }}</div>
+              <div>收货：{{ row.receiveTime ? formatDate(row.receiveTime) : '-' }}</div>
+            </template>
+          </el-table-column>
+          <el-table-column
+            v-if="showOrderUpdateActions"
+            label="操作"
+            fixed="right"
+            min-width="200"
+          >
+            <template #default="{ row }">
+              <el-button
+                v-if="
+                  row.deliveryType === DeliveryTypeEnum.EXPRESS.type &&
+                  row.status === TradeOrderStatusEnum.UNDELIVERED.status
+                "
+                link
+                type="primary"
+                @click="delivery(row)"
+              >
+                发货
+              </el-button>
+              <el-button
+                v-if="
+                  row.deliveryType === DeliveryTypeEnum.EXPRESS.type &&
+                  row.status === TradeOrderStatusEnum.UNDELIVERED.status
+                "
+                link
+                type="primary"
+                @click="updateAddress(row)"
+              >
+                修改地址
+              </el-button>
+              <el-button
+                v-if="
+                  row.deliveryType === DeliveryTypeEnum.STATION.type &&
+                  row.status === TradeOrderStatusEnum.UNDELIVERED.status
+                "
+                link
+                type="primary"
+                @click="handleStationDelivery(row)"
+              >
+                标记配送
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
       </el-descriptions-item>
     </el-descriptions>
     <el-descriptions :column="4">
@@ -142,7 +229,7 @@
     </el-descriptions>
 
     <!-- 物流信息 -->
-    <el-descriptions :column="4" title="收货信息">
+    <el-descriptions v-if="!hasDeliveries" :column="4" title="收货信息">
       <el-descriptions-item label="配送方式: ">
         <dict-tag :type="DICT_TYPE.TRADE_DELIVERY_TYPE" :value="formData.deliveryType!" />
       </el-descriptions-item>
@@ -232,6 +319,7 @@ import OrderDeliveryForm from '@/views/mall/trade/order/form/OrderDeliveryForm.v
 import OrderUpdateAddressForm from '@/views/mall/trade/order/form/OrderUpdateAddressForm.vue'
 import OrderUpdatePriceForm from '@/views/mall/trade/order/form/OrderUpdatePriceForm.vue'
 import * as DeliveryExpressApi from '@/api/mall/trade/delivery/express'
+import { computed } from 'vue'
 import { useTagsViewStore } from '@/store/modules/tagsView'
 import { DeliveryTypeEnum, TradeOrderStatusEnum } from '@/utils/constants'
 import * as DeliveryPickUpStoreApi from '@/api/mall/trade/delivery/pickUpStore'
@@ -260,9 +348,23 @@ const getUserTypeColor = (type: number) => {
 // 订单详情
 const createFormData = (): TradeOrderApi.OrderVO => ({
   items: [],
-  logs: []
+  logs: [],
+  deliveries: []
 })
 const formData = ref<TradeOrderApi.OrderVO>(createFormData())
+const hasDeliveries = computed(() => (formData.value.deliveries?.length || 0) > 0)
+const deliveryMap = computed<Record<number, TradeOrderApi.OrderDeliveryRespVO>>(() =>
+  (formData.value.deliveries || []).reduce(
+    (acc, delivery) => {
+      if (delivery.id != null) {
+        acc[delivery.id] = delivery
+      }
+      return acc
+    },
+    {} as Record<number, TradeOrderApi.OrderDeliveryRespVO>
+  )
+)
+const showOrderUpdateActions = computed(() => true)
 
 /** 各种操作 */
 const updateRemarkForm = ref<InstanceType<typeof OrderUpdateRemarkForm>>() // 订单备注表单 Ref
@@ -270,33 +372,58 @@ const remark = () => {
   updateRemarkForm.value?.open(formData.value)
 }
 const deliveryFormRef = ref<InstanceType<typeof OrderDeliveryForm>>() // 发货表单 Ref
-const delivery = () => {
-  deliveryFormRef.value?.open(formData.value)
+const delivery = (delivery?: TradeOrderApi.OrderDeliveryRespVO) => {
+  if (delivery?.id) {
+    deliveryFormRef.value?.open({
+      deliveryId: delivery.id,
+      logisticsId: delivery.logisticsId || null,
+      logisticsNo: delivery.logisticsNo || ''
+    })
+    return
+  }
+  deliveryFormRef.value?.open({
+    id: formData.value.id ?? undefined,
+    logisticsId: formData.value.logisticsId ?? null,
+    logisticsNo: formData.value.logisticsNo || ''
+  })
 }
 const updateAddressFormRef = ref<InstanceType<typeof OrderUpdateAddressForm>>() // 收货地址表单 Ref
-const updateAddress = () => {
-  updateAddressFormRef.value?.open(formData.value)
+const updateAddress = (delivery?: TradeOrderApi.OrderDeliveryRespVO) => {
+  const expressDelivery =
+    delivery || formData.value.deliveries?.find((item) => item.deliveryType === DeliveryTypeEnum.EXPRESS.type)
+  if (!expressDelivery) {
+    return
+  }
+  updateAddressFormRef.value?.open({
+    id: formData.value.id,
+    receiverName: expressDelivery.receiverName || '',
+    receiverMobile: expressDelivery.receiverMobile || '',
+    receiverAreaId: expressDelivery.receiverAreaId || null,
+    receiverDetailAddress: expressDelivery.receiverDetailAddress || ''
+  })
 }
 const updatePriceFormRef = ref<InstanceType<typeof OrderUpdatePriceForm>>() // 订单调价表单 Ref
 const updatePrice = () => {
   updatePriceFormRef.value?.open(formData.value)
 }
 
-/** 核销 */
-const handlePickUp = async () => {
-  const id = formData.value.id
-  if (id == null) {
+const handleStationDelivery = async (delivery: TradeOrderApi.OrderDeliveryRespVO) => {
+  if (!delivery.id) {
     return
   }
   try {
-    // 二次确认
-    await message.confirm('确认核销订单吗？')
-    // 提交
-    await TradeOrderApi.pickUpOrder(id)
-    message.success('核销成功')
-    // 刷新列表
+    await message.confirm('确认已完成该学校配送单的站点配送吗？')
+    await TradeOrderApi.stationDeliveryOrder(delivery.id)
+    message.success('操作成功')
     await getDetail()
   } catch {}
+}
+
+const deliveryExpressLabel = (id?: number | null) => {
+  if (!id) {
+    return ''
+  }
+  return deliveryExpressList.value.find((item) => item.id === id)?.name || ''
 }
 
 /** 获得详情 */
@@ -338,10 +465,15 @@ const expressTrackList = ref<TradeOrderApi.OrderExpressTrackRespVO[]>([]) // 物
 const pickUpStore = ref<DeliveryPickUpStoreApi.DeliveryPickUpStoreVO>() // 自提门店
 onMounted(async () => {
   await getDetail()
-  // 如果配送方式为快递，则查询物流公司
-  if (formData.value.deliveryType === DeliveryTypeEnum.EXPRESS.type) {
+  const hasExpressDelivery =
+    formData.value.deliveryType === DeliveryTypeEnum.EXPRESS.type ||
+    (formData.value.deliveries || []).some(
+      (item) => item.deliveryType === DeliveryTypeEnum.EXPRESS.type
+    )
+  // 如果存在快递配送单，则查询物流公司
+  if (hasExpressDelivery) {
     deliveryExpressList.value = await DeliveryExpressApi.getSimpleDeliveryExpressList()
-    if (formData.value.logisticsId) {
+    if (formData.value.logisticsId && !hasDeliveries.value) {
       expressTrackList.value = await TradeOrderApi.getExpressTrackList(formData.value.id!)
     }
   } else if (formData.value.deliveryType === DeliveryTypeEnum.PICK_UP.type) {

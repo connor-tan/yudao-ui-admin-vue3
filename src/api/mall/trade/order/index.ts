@@ -42,6 +42,7 @@ export interface OrderVO {
   receiverAreaId?: number | null // 收件人地区编号
   receiverAreaName?: string //收件人地区名字
   receiverDetailAddress?: string // 收件人详细地址
+  deliveries?: OrderDeliveryRespVO[] // 配送单列表
 
   // ========== 售后基本信息 ==========
   afterSaleStatus?: number | null // 售后状态
@@ -86,6 +87,7 @@ export interface OrderItemRespVO {
   id?: number | null // 编号
   userId?: number | null // 用户编号
   orderId?: number | null // 订单编号
+  deliveryId?: number | null // 配送单编号
   // ========== 商品基本信息 ==========
   spuId?: number | null // 商品 SPU 编号
   spuName?: string //商品 SPU 名称
@@ -104,7 +106,41 @@ export interface OrderItemRespVO {
   // TODO 芋艿：在捉摸一下
   // ========== 售后基本信息 ==========
   afterSaleStatus?: number | null // 售后状态
+  subscriptionStudentId?: number | null
+  subscriptionStudentNameSnapshot?: string
+  subscriptionSchoolId?: number | null
+  subscriptionSchoolNameSnapshot?: string
+  subscriptionClassId?: number | null
+  subscriptionClassNameSnapshot?: string
+  subscriptionGradeCatalogId?: number | null
+  subscriptionGradeNameSnapshot?: string
   properties?: ProductPropertiesVO[] //属性数组
+}
+
+export interface OrderDeliveryRespVO {
+  id?: number | null
+  orderId?: number | null
+  deliveryType?: number | null
+  status?: number | null
+  productCount?: number | null
+  payPrice?: number | null
+  deliveryPrice?: number | null
+  logisticsId?: number | null
+  logisticsNo?: string
+  deliveryTime?: string | null
+  receiveTime?: string | null
+  receiverName?: string
+  receiverMobile?: string
+  receiverAreaId?: number | null
+  receiverAreaName?: string
+  receiverDetailAddress?: string
+  schoolId?: number | null
+  schoolNameSnapshot?: string
+  stationId?: number | null
+  stationNameSnapshot?: string
+  stationAddressSnapshot?: string
+  contactName?: string
+  contactMobile?: string
 }
 
 export interface ProductPropertiesVO {
@@ -150,6 +186,7 @@ export const getExpressTrackList = async (id: number | null) => {
 
 export interface DeliveryVO {
   id?: number // 订单编号
+  deliveryId?: number // 配送单编号
   logisticsId: number | null // 物流公司编号
   logisticsNo: string // 物流编号
 }
@@ -157,6 +194,11 @@ export interface DeliveryVO {
 // 订单发货
 export const deliveryOrder = async (data: DeliveryVO) => {
   return await request.put({ url: `/trade/order/delivery`, data })
+}
+
+// 站点配送
+export const stationDeliveryOrder = async (deliveryId: number) => {
+  return await request.put({ url: `/trade/order/station-delivery`, data: { deliveryId } })
 }
 
 // 订单备注

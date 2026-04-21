@@ -52,6 +52,8 @@ export interface SchoolYearSimple {
 export interface SchoolSimple {
   id: number
   schoolName: string
+  stationId?: number
+  stationName?: string
   stageCodes?: string[]
 }
 
@@ -91,6 +93,8 @@ export interface School {
   areaId?: number
   areaName?: string
   schoolAddress?: string
+  stationId?: number
+  stationName?: string
   code?: string
   stageCode?: string
   stageCodes?: string[]

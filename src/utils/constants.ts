@@ -399,6 +399,14 @@ export const DeliveryTypeEnum = {
   PICK_UP: {
     type: 2,
     name: '到店自提'
+  },
+  STATION: {
+    type: 3,
+    name: '站点配送'
+  },
+  MIXED: {
+    type: 4,
+    name: '混合配送'
   }
 }
 /**

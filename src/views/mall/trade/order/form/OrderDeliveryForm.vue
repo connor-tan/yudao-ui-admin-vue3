@@ -50,7 +50,7 @@ const formData = ref<TradeOrderApi.DeliveryVO>({
 const formRef = ref() // 表单 Ref
 
 /** 打开弹窗 */
-const open = async (row: TradeOrderApi.OrderVO) => {
+const open = async (row: Partial<TradeOrderApi.DeliveryVO>) => {
   resetForm()
   // 设置数据
   copyValueToTarget(formData.value, row)
