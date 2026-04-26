@@ -7,11 +7,21 @@
       :rules="formRules"
       label-width="100px"
     >
-      <el-form-item label="学年开始" prop="yearStart">
-        <el-input-number v-model="formData.yearStart" :controls="false" :min="2000" placeholder="请输入开始年份" />
+      <el-form-item label="全局学年" prop="yearCatalogId">
+        <el-select v-model="formData.yearCatalogId" class="!w-full" filterable placeholder="请选择全局学年">
+          <el-option
+            v-for="item in yearCatalogList"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          />
+        </el-select>
       </el-form-item>
-      <el-form-item label="学年结束" prop="yearEnd">
-        <el-input-number v-model="formData.yearEnd" :controls="false" :min="2000" placeholder="请输入结束年份" />
+      <el-form-item label="学年开始">
+        <el-input :model-value="selectedYearCatalog?.yearStart || ''" readonly />
+      </el-form-item>
+      <el-form-item label="学年结束">
+        <el-input :model-value="selectedYearCatalog?.yearEnd || ''" readonly />
       </el-form-item>
       <el-form-item label="开学日期" prop="startDate">
         <el-date-picker
@@ -38,6 +48,7 @@
 </template>
 
 <script setup lang="ts">
+import { YearCatalogApi, type YearCatalogSimple } from '@/api/edu/yearCatalog'
 import { SchoolApi, type SchoolYear } from '@/api/edu/school'
 
 const { t } = useI18n()
@@ -50,6 +61,7 @@ const formType = ref('')
 type SchoolYearFormData = {
   id?: number
   schoolId?: number
+  yearCatalogId?: number
   yearStart?: number
   yearEnd?: number
   startDate?: string
@@ -59,19 +71,23 @@ type SchoolYearFormData = {
 const formData = ref<SchoolYearFormData>({
   id: undefined,
   schoolId: undefined,
+  yearCatalogId: undefined,
   yearStart: undefined,
   yearEnd: undefined,
   startDate: undefined,
   endDate: undefined
 })
+const yearCatalogList = ref<YearCatalogSimple[]>([])
 const formRules = reactive({
   schoolId: [{ required: true, message: '学校ID不能为空', trigger: 'blur' }],
-  yearStart: [{ required: true, message: '学年开始不能为空', trigger: 'blur' }],
-  yearEnd: [{ required: true, message: '学年结束不能为空', trigger: 'blur' }],
+  yearCatalogId: [{ required: true, message: '全局学年不能为空', trigger: 'change' }],
   startDate: [{ required: true, message: '开学日期不能为空', trigger: 'change' }],
   endDate: [{ required: true, message: '放假日期不能为空', trigger: 'change' }]
 })
 const formRef = ref()
+const selectedYearCatalog = computed(() =>
+  yearCatalogList.value.find((item) => item.id === formData.value.yearCatalogId)
+)
 
 // Compatible with old LocalDate array responses during backend rollout.
 const normalizeSchoolYearDate = (value?: string | number[]): string | undefined => {
@@ -88,6 +104,7 @@ const open = async (type: string, id?: number, schoolId?: number) => {
   formType.value = type
   resetForm()
   formData.value.schoolId = schoolId
+  yearCatalogList.value = await YearCatalogApi.getYearCatalogSimpleList()
   if (!id) {
     return
   }
@@ -97,6 +114,7 @@ const open = async (type: string, id?: number, schoolId?: number) => {
     formData.value = {
       id: schoolYear.id,
       schoolId: schoolYear.schoolId,
+      yearCatalogId: schoolYear.yearCatalogId,
       yearStart: schoolYear.yearStart,
       yearEnd: schoolYear.yearEnd,
       startDate: normalizeSchoolYearDate((schoolYear as SchoolYear & { startDate?: string | number[] }).startDate),
@@ -116,8 +134,7 @@ const submitForm = async () => {
     const data: SchoolYear = {
       id: formData.value.id,
       schoolId: formData.value.schoolId,
-      yearStart: formData.value.yearStart,
-      yearEnd: formData.value.yearEnd,
+      yearCatalogId: formData.value.yearCatalogId,
       startDate: formData.value.startDate,
       endDate: formData.value.endDate
     }
@@ -139,6 +156,7 @@ const resetForm = () => {
   formData.value = {
     id: undefined,
     schoolId: undefined,
+    yearCatalogId: undefined,
     yearStart: undefined,
     yearEnd: undefined,
     startDate: undefined,

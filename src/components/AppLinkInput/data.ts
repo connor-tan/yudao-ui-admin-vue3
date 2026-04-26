@@ -232,5 +232,14 @@ export const APP_LINK_GROUP_LIST = [
         path: '/pages/user/wallet/score'
       }
     ]
+  },
+  {
+    name: '动作',
+    links: [
+      {
+        name: '切换孩子',
+        path: 'action:switchStudent'
+      }
+    ]
   }
 ] as AppLinkGroup[]

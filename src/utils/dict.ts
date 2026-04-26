@@ -258,5 +258,8 @@ export enum DICT_TYPE {
   IOT_MODBUS_FRAME_FORMAT = 'iot_modbus_frame_format', // IoT Modbus 帧格式
 
   EDU_STAGE = 'edu_stage',
-  EDU_GRADE = 'edu_grade'
+  EDU_GRADE = 'edu_grade',
+  EDU_CYCLE = 'edu_cycle',
+  EDU_PUBLICATION_VOLUME = 'edu_publication_volume',
+  EDU_PUBLICATION_EDITION = 'edu_publication_edition'
 }

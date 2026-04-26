@@ -63,6 +63,7 @@ import SkuForm from './SkuForm.vue'
 import DeliveryForm from './DeliveryForm.vue'
 import { convertToInteger, floatToFixed2, formatToFraction } from '@/utils'
 import { isEmpty } from '@/utils/is'
+import { createPublicationSpuExt } from './helpers'
 
 defineOptions({ name: 'ProductSpuAdd' })
 
@@ -82,7 +83,7 @@ const descriptionRef = ref() // 商品详情 Ref
 const otherRef = ref() // 其他设置 Ref
 // SPU 表单数据
 const formData = ref<ProductSpuApi.Spu>({
-  domainType: 'NORMAL',
+  bizScene: undefined,
   name: '', // 商品名称
   categoryId: undefined, // 商品分类
   keyword: '', // 关键字
@@ -94,25 +95,12 @@ const formData = ref<ProductSpuApi.Spu>({
   brandId: undefined, // 商品品牌
   specType: false, // 商品规格
   subCommissionType: false, // 分销类型
-  skus: [
-    {
-      name: '', // SKU 名称，提交时会自动使用 SPU 名称
-      price: 0, // 商品价格
-      marketPrice: 0, // 市场价
-      costPrice: 0, // 成本价
-      barCode: '', // 商品条码
-      picUrl: '', // 图片地址
-      stock: 0, // 库存
-      weight: 0, // 商品重量
-      volume: 0, // 商品体积
-      firstBrokeragePrice: 0, // 一级分销的佣金
-      secondBrokeragePrice: 0 // 二级分销的佣金
-    }
-  ],
+  skus: [],
   description: '', // 商品详情
   sort: 0, // 商品排序
   giveIntegral: 0, // 赠送积分
-  virtualSalesCount: 0 // 虚拟销量
+  virtualSalesCount: 0, // 虚拟销量
+  publicationExt: createPublicationSpuExt()
 })
 
 /** 获得详情 */
@@ -167,8 +155,9 @@ const submitForm = async () => {
       return
     }
     deepCopyFormData.skus!.forEach((item) => {
-      // 给sku name赋值（使用商品名称作为 SKU 名称）
-      item.name = deepCopyFormData.name
+      if (deepCopyFormData.bizScene !== ProductSpuApi.BIZ_SCENE_PUBLICATION) {
+        item.name = deepCopyFormData.name
+      }
       // sku相关价格元转分
       item.price = convertToInteger(item.price)
       item.marketPrice = convertToInteger(item.marketPrice)

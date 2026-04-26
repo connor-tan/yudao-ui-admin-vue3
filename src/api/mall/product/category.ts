@@ -28,6 +28,18 @@ export interface CategoryVO {
    * 开启状态
    */
   status: number
+  /**
+   * 业务场景
+   */
+  bizScene?: string
+  /**
+   * 描述
+   */
+  description?: string
+  /**
+   * 子分类
+   */
+  children?: CategoryVO[]
 }
 
 // 创建商品分类

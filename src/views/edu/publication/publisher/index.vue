@@ -7,12 +7,12 @@
       class="-mb-15px"
       label-width="68px"
     >
-      <el-form-item label="类型名称" prop="name">
+      <el-form-item label="出版社" prop="name">
         <el-input
           v-model="queryParams.name"
           class="!w-240px"
           clearable
-          placeholder="请输入刊物类型名称"
+          placeholder="请输入出版社名称"
           @keyup.enter="handleQuery"
         />
       </el-form-item>
@@ -41,7 +41,7 @@
         <el-button @click="handleQuery"><Icon class="mr-5px" icon="ep:search" />搜索</el-button>
         <el-button @click="resetQuery"><Icon class="mr-5px" icon="ep:refresh" />重置</el-button>
         <el-button
-          v-hasPermi="['product:publication-type:create']"
+          v-hasPermi="['edu:publication-publisher:create']"
           plain
           type="primary"
           @click="openForm('create')"
@@ -55,13 +55,7 @@
   <ContentWrap>
     <el-table v-loading="loading" :data="list">
       <el-table-column label="编号" prop="id" width="90" />
-      <el-table-column label="编码" prop="code" min-width="140" />
-      <el-table-column label="名称" prop="name" min-width="140" />
-      <el-table-column label="标识规则" min-width="190">
-        <template #default="{ row }">
-          {{ PublicationTypeApi.formatPublicationTypeIdentifierRule(row.identifierRule) }}
-        </template>
-      </el-table-column>
+      <el-table-column label="名称" prop="name" min-width="180" />
       <el-table-column label="排序" prop="sort" width="90" />
       <el-table-column align="center" label="状态" prop="status" width="90">
         <template #default="{ row }">
@@ -79,7 +73,7 @@
       <el-table-column align="center" fixed="right" label="操作" width="140">
         <template #default="{ row }">
           <el-button
-            v-hasPermi="['product:publication-type:update']"
+            v-hasPermi="['edu:publication-publisher:update']"
             link
             type="primary"
             @click="openForm('update', row.id)"
@@ -87,7 +81,7 @@
             编辑
           </el-button>
           <el-button
-            v-hasPermi="['product:publication-type:delete']"
+            v-hasPermi="['edu:publication-publisher:delete']"
             link
             type="danger"
             @click="handleDelete(row.id)"
@@ -105,22 +99,22 @@
     />
   </ContentWrap>
 
-  <TypeForm ref="formRef" @success="getList" />
+  <PublisherForm ref="formRef" @success="getList" />
 </template>
 <script lang="ts" setup>
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import { dateFormatter } from '@/utils/formatTime'
-import * as PublicationTypeApi from '@/api/mall/product/publicationType'
-import TypeForm from './TypeForm.vue'
+import * as PublicationPublisherApi from '@/api/edu/publicationPublisher'
+import PublisherForm from './PublisherForm.vue'
 
-defineOptions({ name: 'ProductPublicationType' })
+defineOptions({ name: 'ProductPublicationPublisher' })
 
 const message = useMessage()
 const { t } = useI18n()
 
 const loading = ref(false)
 const total = ref(0)
-const list = ref<PublicationTypeApi.PublicationTypeVO[]>([])
+const list = ref<PublicationPublisherApi.PublicationPublisherVO[]>([])
 const queryFormRef = ref()
 const formRef = ref()
 const queryParams = reactive({
@@ -134,7 +128,7 @@ const queryParams = reactive({
 const getList = async () => {
   loading.value = true
   try {
-    const data = await PublicationTypeApi.getPublicationTypePage(queryParams)
+    const data = await PublicationPublisherApi.getPublicationPublisherPage(queryParams)
     list.value = data.list
     total.value = data.total
   } finally {
@@ -159,7 +153,7 @@ const openForm = (type: string, id?: number) => {
 const handleDelete = async (id: number) => {
   try {
     await message.delConfirm()
-    await PublicationTypeApi.deletePublicationType(id)
+    await PublicationPublisherApi.deletePublicationPublisher(id)
     message.success(t('common.delSuccess'))
     await getList()
   } catch {}

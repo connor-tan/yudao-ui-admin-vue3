@@ -1,9 +1,6 @@
 <template>
   <Dialog v-model="dialogVisible" :title="dialogTitle">
     <el-form ref="formRef" v-loading="formLoading" :model="formData" :rules="formRules" label-width="100px">
-      <el-form-item label="类型编码" prop="code">
-        <el-input v-model="formData.code" placeholder="请输入刊物类型编码" />
-      </el-form-item>
       <el-form-item label="类型名称" prop="name">
         <el-input v-model="formData.name" placeholder="请输入刊物类型名称" />
       </el-form-item>
@@ -16,6 +13,11 @@
             :value="item.value"
           />
         </el-select>
+      </el-form-item>
+      <el-form-item label="规则说明">
+        <div class="text-12px text-gray-500">
+          {{ PublicationTypeApi.getPublicationTypeIdentifierRuleHint(formData.identifierRule) }}
+        </div>
       </el-form-item>
       <el-form-item label="排序" prop="sort">
         <el-input-number v-model="formData.sort" :min="0" class="!w-240px" controls-position="right" />
@@ -44,7 +46,7 @@
 <script lang="ts" setup>
 import { CommonStatusEnum } from '@/utils/constants'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
-import * as PublicationTypeApi from '@/api/mall/product/publicationType'
+import * as PublicationTypeApi from '@/api/edu/publicationType'
 
 defineOptions({ name: 'ProductPublicationTypeForm' })
 
@@ -58,7 +60,6 @@ const formType = ref<'create' | 'update'>('create')
 const formRef = ref()
 const formData = ref<PublicationTypeApi.PublicationTypeVO>({
   id: undefined,
-  code: '',
   name: '',
   identifierRule: PublicationTypeApi.PUBLICATION_TYPE_IDENTIFIER_RULE_NONE,
   sort: 0,
@@ -66,7 +67,6 @@ const formData = ref<PublicationTypeApi.PublicationTypeVO>({
   remark: ''
 })
 const formRules = reactive({
-  code: [required],
   name: [required],
   identifierRule: [required],
   sort: [required],
@@ -76,7 +76,6 @@ const formRules = reactive({
 const resetForm = () => {
   formData.value = {
     id: undefined,
-    code: '',
     name: '',
     identifierRule: PublicationTypeApi.PUBLICATION_TYPE_IDENTIFIER_RULE_NONE,
     sort: 0,

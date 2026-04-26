@@ -31,7 +31,7 @@
 <script lang="ts" setup>
 import { CommonStatusEnum } from '@/utils/constants'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
-import * as PublicationPublisherApi from '@/api/mall/product/publicationPublisher'
+import * as PublicationPublisherApi from '@/api/edu/publicationPublisher'
 
 defineOptions({ name: 'ProductPublicationPublisherForm' })
 

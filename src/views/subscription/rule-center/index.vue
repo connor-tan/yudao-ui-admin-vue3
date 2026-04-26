@@ -16,13 +16,19 @@
           @keyup.enter="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="目标学年" prop="targetYearKey">
-        <el-select v-model="queryParams.targetYearKey" class="!w-240px" clearable filterable placeholder="请选择目标学年">
+      <el-form-item label="目标学年" prop="targetYearCatalogId">
+        <el-select
+          v-model="queryParams.targetYearCatalogId"
+          class="!w-240px"
+          clearable
+          filterable
+          placeholder="请选择目标学年"
+        >
           <el-option
             v-for="item in windowYearList"
-            :key="buildSubscriptionTargetYearKey(item.yearStart, item.yearEnd)"
+            :key="item.id"
             :label="item.name"
-            :value="buildSubscriptionTargetYearKey(item.yearStart, item.yearEnd)"
+            :value="item.id"
           />
         </el-select>
       </el-form-item>
@@ -85,16 +91,15 @@
     >
       <el-table-column align="center" label="编号" prop="id" width="80" />
       <el-table-column align="center" label="窗口名称" min-width="160" prop="name" />
-      <el-table-column align="center" label="目标学年" min-width="140" prop="targetYearName" />
-      <el-table-column align="center" label="规则模板" min-width="150" prop="templateNameSnapshot" />
+      <el-table-column align="center" label="目标学年" min-width="140" prop="targetYearNameSnapshot" />
       <el-table-column align="center" label="目标周期" min-width="100">
         <template #default="scope">
           {{ getSubscriptionTargetPeriodLabel(scope.row.targetPeriod) }}
         </template>
       </el-table-column>
-      <el-table-column align="center" label="年级判定" min-width="140">
+      <el-table-column align="center" label="年级策略" min-width="180">
         <template #default="scope">
-          {{ getSubscriptionGradeCalcRuleLabel(scope.row.gradeCalcRule) }}
+          {{ scope.row.gradePolicyName || getSubscriptionGradePolicyLabel(scope.row.gradeCalcRule) }}
         </template>
       </el-table-column>
       <el-table-column align="center" label="开始时间" min-width="180" prop="startTime" />
@@ -154,8 +159,8 @@
 
   <ContentWrap>
     <el-tabs v-if="currentWindowId" v-model="activeTab">
-      <el-tab-pane label="窗口刊物" name="windowSpu">
-        <WindowSpuPanel :window-id="currentWindowId" />
+      <el-tab-pane label="窗口刊物" name="offer">
+        <OfferPanel :window-id="currentWindowId" />
       </el-tab-pane>
       <el-tab-pane
         v-hasPermi="['subscription:preview:query']"
@@ -173,8 +178,7 @@
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import { dateFormatter } from '@/utils/formatTime'
 import {
-  buildSubscriptionTargetYearKey,
-  getSubscriptionGradeCalcRuleLabel,
+  getSubscriptionGradePolicyLabel,
   getSubscriptionTargetPeriodLabel,
   SUBSCRIPTION_TARGET_PERIOD_OPTIONS
 } from '@/utils/subscription'
@@ -185,7 +189,7 @@ import {
 import { SubscriptionWindowApi, type SubscriptionWindow } from '@/api/subscription/window'
 import WindowForm from './components/WindowForm.vue'
 import PreviewPanel from './components/PreviewPanel.vue'
-import WindowSpuPanel from './components/WindowSpuPanel.vue'
+import OfferPanel from './components/OfferPanel.vue'
 
 defineOptions({ name: 'SubscriptionRuleCenter' })
 
@@ -196,7 +200,7 @@ const loading = ref(false)
 const total = ref(0)
 const list = ref<SubscriptionWindow[]>([])
 const windowYearList = ref<SubscriptionSupportWindowYearSimple[]>([])
-const activeTab = ref('windowSpu')
+const activeTab = ref('offer')
 const queryFormRef = ref()
 const tableRef = ref()
 const currentWindowId = ref<number>()
@@ -204,7 +208,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
   name: undefined as string | undefined,
-  targetYearKey: undefined as string | undefined,
+  targetYearCatalogId: undefined as number | undefined,
   targetPeriod: undefined as string | undefined,
   status: undefined as number | undefined
 })
@@ -214,13 +218,9 @@ const buildWindowQueryParams = () => {
     pageNo: queryParams.pageNo,
     pageSize: queryParams.pageSize,
     name: queryParams.name,
+    targetYearCatalogId: queryParams.targetYearCatalogId,
     targetPeriod: queryParams.targetPeriod,
     status: queryParams.status
-  }
-  if (queryParams.targetYearKey) {
-    const [targetYearStart, targetYearEnd] = queryParams.targetYearKey.split('-').map((item) => Number(item))
-    params.targetYearStart = targetYearStart
-    params.targetYearEnd = targetYearEnd
   }
   return params
 }
@@ -269,29 +269,14 @@ const handleFormSuccess = async () => {
   await getList()
 }
 
-const formatPrecheckMessages = (items: string[]) => items.map((item, index) => `${index + 1}. ${item}`).join('\n')
-
 const handleUpdateStatus = async (id: number, status: number) => {
   try {
-    let confirmWarnings = false
     if (status === 0) {
-      const precheck = await SubscriptionWindowApi.precheckEnableWindow(id)
-      if (precheck.blockers?.length) {
-        await message.alertWarning(`该订刊窗口暂不能启用：\n${formatPrecheckMessages(precheck.blockers)}`)
-        return
-      }
-      if (precheck.warnings?.length) {
-        await message.confirm(
-          `启用前存在以下运营提醒：\n${formatPrecheckMessages(precheck.warnings)}\n确认继续启用？`
-        )
-        confirmWarnings = true
-      } else {
-        await message.confirm('确认启用该订刊窗口？')
-      }
+      await message.confirm('确认启用该订刊窗口？')
     } else {
       await message.confirm('确认停用该订刊窗口？')
     }
-    await SubscriptionWindowApi.updateWindowStatus({ id, status, confirmWarnings })
+    await SubscriptionWindowApi.updateWindowStatus({ id, status })
     message.success(t('common.updateSuccess'))
     await getList()
   } catch {}

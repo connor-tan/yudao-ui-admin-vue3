@@ -1,70 +1,70 @@
 import request from '@/config/axios'
 
+export interface SubscriptionPreviewSku {
+  offerSkuId: number
+  productSkuId: number
+  productSkuName?: string
+  decisionStatus?: string
+  decisionStatusName?: string
+  price?: number
+  stock?: number
+  targetPeriod?: string
+  volumeLabel?: string
+  editionLabel?: string
+  isbn?: string
+  applicableGradeCatalogIds?: number[]
+  applicableGradeNames?: string[]
+  reason?: string
+  matchedRuleId?: number
+  matchedRuleName?: string
+  gradeApplicabilityOverride?: boolean
+}
+
+export interface SubscriptionPreviewOffer {
+  offerId: number
+  productSpuId: number
+  productName?: string
+  picUrl?: string
+  visible?: boolean
+  reason?: string
+  reasonDesc?: string
+  totalOfferSkuCount?: number
+  candidateSkuCount?: number
+  finalSkuCount?: number
+  matchedRuleId?: number
+  matchedRuleName?: string
+  gradeApplicabilityOverride?: boolean
+  finalSkus?: SubscriptionPreviewSku[]
+  diagnosticSkus?: SubscriptionPreviewSku[]
+}
+
 export interface SubscriptionRulePreviewRespVO {
-  studentId?: number
-  studentName?: string
-  schoolId?: number
-  schoolName?: string
-  effectiveGradeCatalogId?: number
-  effectiveGradeNo?: string
-  effectiveGradeName?: string
-  effectiveGradeAliasName?: string
+  window?: {
+    id?: number
+    name?: string
+    targetYearNameSnapshot?: string
+    targetPeriod?: string
+  }
+  student?: {
+    studentId?: number
+    studentName?: string
+    schoolId?: number
+    schoolName?: string
+    classId?: number
+    className?: string
+    gradeCatalogId?: number
+    gradeName?: string
+    gradeResolveSource?: string
+    blockedReason?: string
+    blockedReasonDesc?: string
+  }
   blockedReason?: string
-  diagnostics?: Array<{
-    windowSpuId: number
-    productSpuId: number
-    productName?: string
-    visible?: boolean
-    reason?: string
-    reasonDesc?: string
-    gradeApplicabilityOverride?: boolean
-    enabledSkuCount?: number
-    totalSkuCount?: number
-    windowTargetPeriod?: string
-    enabledPeriodMismatchedSkuCount?: number
-    matchedRule?: {
-      id?: number
-      effectType?: string
-      scopeType?: string
-      schoolId?: number
-      gradeCatalogId?: number
-    }
-  }>
-  publications?: Array<{
-    windowSpuId: number
-    productSpuId: number
-    productName: string
-    picUrl?: string
-    categoryId?: number
-    categoryName?: string
-    publicationTitleName?: string
-    recommendFlag?: boolean
-    visibilityReason?: string
-    visibilityReasonDesc?: string
-    gradeApplicabilityOverride?: boolean
-    matchedRule?: {
-      id?: number
-      effectType?: string
-      scopeType?: string
-      schoolId?: number
-      gradeCatalogId?: number
-    }
-    skus: Array<{
-      windowSkuId: number
-      productSkuId: number
-      volumeLabel?: string
-      editionLabel?: string
-      targetPeriod?: string
-      isbn?: string
-      price?: number
-      stock?: number
-      maxQuantityPerStudent?: number
-    }>
-  }>
+  blockedReasonDesc?: string
+  decisions?: SubscriptionPreviewOffer[]
 }
 
 export const SubscriptionPreviewApi = {
-  execute: async (data: { windowId: number; studentId: number }) => {
-    return await request.post({ url: '/subscription/preview/execute', data })
+  previewStudent: async (params: { windowId?: number; studentId: number }) => {
+    return await request.get({ url: '/subscription/preview/student', params })
   }
 }

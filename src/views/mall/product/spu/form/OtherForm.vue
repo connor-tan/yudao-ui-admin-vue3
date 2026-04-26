@@ -9,7 +9,7 @@
         class="w-80!"
       />
     </el-form-item>
-    <el-form-item label="赠送积分" prop="giveIntegral">
+    <el-form-item v-if="isNormalScene" label="赠送积分" prop="giveIntegral">
       <el-input-number
         v-model="formData.giveIntegral"
         :min="0"
@@ -28,7 +28,9 @@
   </el-form>
 </template>
 <script lang="ts" setup>
+import { computed } from 'vue'
 import type { Spu } from '@/api/mall/product/spu'
+import * as ProductSpuApi from '@/api/mall/product/spu'
 import { PropType } from 'vue'
 import { propTypes } from '@/utils/propTypes'
 import { copyValueToTarget } from '@/utils'
@@ -48,10 +50,12 @@ const props = defineProps({
 const formRef = ref() // 表单Ref
 // 表单数据
 const formData = ref<Spu>({
+  bizScene: undefined,
   sort: 0, // 商品排序
   giveIntegral: 0, // 赠送积分
   virtualSalesCount: 0 // 虚拟销量
 })
+const isNormalScene = computed(() => formData.value.bizScene === ProductSpuApi.BIZ_SCENE_NORMAL)
 // 表单规则
 const rules = reactive({
   sort: [required],
@@ -69,7 +73,8 @@ watch(
     copyValueToTarget(formData.value, data)
   },
   {
-    immediate: true
+    immediate: true,
+    deep: true
   }
 )
 
@@ -80,7 +85,11 @@ const validate = async () => {
   try {
     await unref(formRef)?.validate()
     // 校验通过更新数据
-    Object.assign(props.propFormData, formData.value)
+    Object.assign(props.propFormData, {
+      sort: formData.value.sort,
+      giveIntegral: formData.value.giveIntegral,
+      virtualSalesCount: formData.value.virtualSalesCount
+    })
   } catch (e) {
     message.error('【其它设置】不完善，请填写相关信息')
     emit('update:activeName', 'other')

@@ -11,11 +11,13 @@ export const SUBSCRIPTION_SEMESTER_OPTIONS = [
 export const SUBSCRIPTION_TARGET_PERIOD_OPTIONS = PUBLICATION_TARGET_PERIOD_OPTIONS
 
 export const SUBSCRIPTION_GRADE_CALC_RULE_OPTIONS = [
+  { label: '按目标学年自动解析', value: 'AUTO_TARGET_YEAR_GRADE' },
   { label: '当前学籍年级', value: 'CURRENT_GRADE' },
   { label: '升学后年级', value: 'PROMOTED_GRADE' }
 ]
 
 export const SUBSCRIPTION_GRADE_RESOLVE_MODE_OPTIONS = [
+  { label: '按目标学年自动解析', value: 'AUTO_TARGET_YEAR_GRADE' },
   { label: '当前班级链路', value: 'CURRENT_CHAIN' },
   { label: '未来班级优先', value: 'TARGET_CLASS_FIRST' }
 ]
@@ -38,17 +40,31 @@ export const getSubscriptionSemesterLabel = (value?: number | null) =>
 export const getSubscriptionTargetPeriodLabel = getPublicationTargetPeriodLabel
 
 export const getSubscriptionGradeCalcRuleLabel = (value?: string | null) =>
-  value === 'PROMOTED_GRADE'
-    ? '升学后年级'
-    : value === 'CURRENT_GRADE'
-      ? '当前学籍年级'
-      : '-'
+  value === 'AUTO_TARGET_YEAR_GRADE'
+    ? '按目标学年自动解析'
+    : value === 'PROMOTED_GRADE'
+      ? '升学后年级'
+      : value === 'CURRENT_GRADE'
+        ? '当前学籍年级'
+        : '-'
 
 export const getSubscriptionGradeResolveModeLabel = (value?: string | null) =>
-  value === 'TARGET_CLASS_FIRST'
-    ? '未来班级优先'
-    : value === 'CURRENT_CHAIN'
-      ? '当前班级链路'
+  value === 'AUTO_TARGET_YEAR_GRADE'
+    ? '按目标学年自动解析'
+    : value === 'TARGET_CLASS_FIRST'
+      ? '未来班级优先'
+      : value === 'CURRENT_CHAIN'
+        ? '当前班级链路'
+        : '-'
+
+export const getSubscriptionGradePolicyLabel = (value?: string | null) =>
+  value === 'AUTO_TARGET_YEAR_GRADE' || !value ? '按目标学年自动解析' : getSubscriptionGradeCalcRuleLabel(value)
+
+export const getSubscriptionGradeResolveSourceLabel = (value?: string | null) =>
+  value === 'TARGET_YEAR_CLASS'
+    ? '目标学年班级'
+    : value === 'PROMOTED_FROM_CURRENT'
+      ? '当前年级推算'
       : '-'
 
 export const getSubscriptionRuleEffectTypeLabel = (value?: string | null) =>

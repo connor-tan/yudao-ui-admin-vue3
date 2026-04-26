@@ -47,63 +47,56 @@
     <!-- 商品信息 -->
     <el-descriptions title="商品信息">
       <el-descriptions-item labelClassName="no-colon">
-        <el-row :gutter="20">
-          <el-col :span="15">
-              <el-table :data="formData.items" border>
-              <el-table-column label="商品" prop="spuName" width="auto">
-                <template #default="{ row }">
-                  {{ row.spuName }}
-                  <el-tag v-for="property in row.properties" :key="property.propertyId">
-                    {{ property.propertyName }}: {{ property.valueName }}
-                  </el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column label="配送单" min-width="180">
-                <template #default="{ row }">
-                  <template v-if="row.deliveryId && deliveryMap[row.deliveryId]">
-                    <div>#{{
-                      row.deliveryId
-                    }}</div>
-                    <div class="text-xs text-gray-500">
-                      <dict-tag
-                        :type="DICT_TYPE.TRADE_DELIVERY_TYPE"
-                        :value="deliveryMap[row.deliveryId].deliveryType ?? ''"
-                      />
-                    </div>
-                  </template>
-                  <span v-else>-</span>
-                </template>
-              </el-table-column>
-              <el-table-column label="订刊归属" min-width="220">
-                <template #default="{ row }">
-                  <template v-if="row.subscriptionStudentId">
-                    <div>学生：{{ row.subscriptionStudentNameSnapshot }}</div>
-                    <div>学校：{{ row.subscriptionSchoolNameSnapshot }}</div>
-                    <div>班级：{{ row.subscriptionClassNameSnapshot || '-' }}</div>
-                    <div>年级：{{ row.subscriptionGradeNameSnapshot }}</div>
-                  </template>
-                  <span v-else>-</span>
-                </template>
-              </el-table-column>
-              <el-table-column label="商品原价" prop="price" width="150">
-                <template #default="{ row }">{{ fenToYuan(row.price) }}元</template>
-              </el-table-column>
-              <el-table-column label="数量" prop="count" width="100" />
-              <el-table-column label="合计" prop="payPrice" width="150">
-                <template #default="{ row }">{{ fenToYuan(row.payPrice) }}元</template>
-              </el-table-column>
-              <el-table-column label="售后状态" prop="afterSaleStatus" width="120">
-                <template #default="{ row }">
+        <el-table :data="formData.items" border class="w-full">
+          <el-table-column label="商品" prop="spuName" min-width="180">
+            <template #default="{ row }">
+              {{ row.spuName }}
+              <el-tag v-for="property in row.properties" :key="property.propertyId">
+                {{ property.propertyName }}: {{ property.valueName }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="配送单" min-width="180">
+            <template #default="{ row }">
+              <template v-if="row.deliveryId && deliveryMap[row.deliveryId]">
+                <div>#{{ row.deliveryId }}</div>
+                <div class="text-xs text-gray-500">
                   <dict-tag
-                    :type="DICT_TYPE.TRADE_ORDER_ITEM_AFTER_SALE_STATUS"
-                    :value="row.afterSaleStatus"
+                    :type="DICT_TYPE.TRADE_DELIVERY_TYPE"
+                    :value="deliveryMap[row.deliveryId].deliveryType ?? ''"
                   />
-                </template>
-              </el-table-column>
-            </el-table>
-          </el-col>
-          <el-col :span="10" />
-        </el-row>
+                </div>
+              </template>
+              <span v-else>-</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="订刊归属" min-width="260">
+            <template #default="{ row }">
+              <template v-if="row.subscriptionStudentId">
+                <div>学生：{{ row.subscriptionStudentNameSnapshot }}</div>
+                <div>学校：{{ row.subscriptionSchoolNameSnapshot }}</div>
+                <div>班级：{{ row.subscriptionClassNameSnapshot || '-' }}</div>
+                <div>年级：{{ row.subscriptionGradeNameSnapshot }}</div>
+              </template>
+              <span v-else>-</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="商品原价" prop="price" width="150">
+            <template #default="{ row }">{{ fenToYuan(row.price) }}元</template>
+          </el-table-column>
+          <el-table-column label="数量" prop="count" width="100" />
+          <el-table-column label="合计" prop="payPrice" width="150">
+            <template #default="{ row }">{{ fenToYuan(row.payPrice) }}元</template>
+          </el-table-column>
+          <el-table-column label="售后状态" prop="afterSaleStatus" width="120">
+            <template #default="{ row }">
+              <dict-tag
+                :type="DICT_TYPE.TRADE_ORDER_ITEM_AFTER_SALE_STATUS"
+                :value="row.afterSaleStatus"
+              />
+            </template>
+          </el-table-column>
+        </el-table>
       </el-descriptions-item>
     </el-descriptions>
 

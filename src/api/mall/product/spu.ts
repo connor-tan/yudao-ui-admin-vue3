@@ -1,5 +1,26 @@
 import request from '@/config/axios'
 
+export const BIZ_SCENE_NORMAL = 'NORMAL'
+export const BIZ_SCENE_PUBLICATION = 'PUBLICATION'
+
+export const PUBLICATION_TARGET_PERIOD_FULL_YEAR = 'FULL_YEAR'
+export const PUBLICATION_TARGET_PERIOD_FIRST_TERM = 'FIRST_TERM'
+export const PUBLICATION_TARGET_PERIOD_SECOND_TERM = 'SECOND_TERM'
+export const PUBLICATION_TARGET_PERIOD_OPTIONS = [
+  { value: PUBLICATION_TARGET_PERIOD_FULL_YEAR, label: '全学年' },
+  { value: PUBLICATION_TARGET_PERIOD_FIRST_TERM, label: '上学期' },
+  { value: PUBLICATION_TARGET_PERIOD_SECOND_TERM, label: '下学期' }
+]
+
+export const PUBLICATION_FULFILLMENT_MODE_STANDARD_EXPRESS = 'STANDARD_EXPRESS'
+export const PUBLICATION_FULFILLMENT_MODE_STANDARD_PICK_UP = 'STANDARD_PICK_UP'
+export const PUBLICATION_FULFILLMENT_MODE_SCHOOL_STATION = 'SCHOOL_STATION'
+export const PUBLICATION_FULFILLMENT_MODE_OPTIONS = [
+  { value: PUBLICATION_FULFILLMENT_MODE_STANDARD_EXPRESS, label: '快递发货' },
+  { value: PUBLICATION_FULFILLMENT_MODE_STANDARD_PICK_UP, label: '普通自提' },
+  { value: PUBLICATION_FULFILLMENT_MODE_SCHOOL_STATION, label: '学校站点' }
+]
+
 export interface Property {
   propertyId?: number // 属性编号
   propertyName?: string // 属性名称
@@ -7,10 +28,32 @@ export interface Property {
   valueName?: string // 属性值名称
 }
 
+export interface PublicationSpuExt {
+  publisherId?: number
+  publisherName?: string
+  publicationTypeId?: number
+  publicationTypeName?: string
+  publicationTypeIdentifierRule?: string
+  issueCycle?: string
+  issn?: string
+  cnCode?: string
+  postDistributionCode?: string
+  fulfillmentMode?: string
+}
+
+export interface PublicationSkuExt {
+  targetPeriod?: string
+  volumeLabel?: string
+  editionLabel?: string
+  isbn?: string
+  remark?: string
+}
+
 export interface Sku {
   id?: number // 商品 SKU 编号
   name?: string // 商品 SKU 名称
   spuId?: number // SPU 编号
+  status?: number // SKU 状态
   properties?: Property[] // 属性数组
   price?: number | string // 商品价格
   marketPrice?: number | string // 市场价
@@ -23,6 +66,9 @@ export interface Sku {
   firstBrokeragePrice?: number | string // 一级分销的佣金
   secondBrokeragePrice?: number | string // 二级分销的佣金
   salesCount?: number // 商品销量
+  publicationExt?: PublicationSkuExt
+  applicableGradeCatalogIds?: number[]
+  applicableGradeNames?: string[]
 }
 
 export interface GiveCouponTemplate {
@@ -32,11 +78,10 @@ export interface GiveCouponTemplate {
 
 export interface Spu {
   id?: number
-  domainType?: string // 业务域类型
+  bizScene?: string // 业务场景
   name?: string // 商品名称
   categoryId?: number // 商品分类
   keyword?: string // 关键字
-  unit?: number | undefined // 单位
   picUrl?: string // 商品封面图
   sliderPicUrls?: string[] // 商品轮播图
   introduction?: string // 商品简介
@@ -59,15 +104,22 @@ export interface Spu {
   stock?: number // 商品库存
   createTime?: string // 商品创建时间
   status?: number // 商品状态
+  publicationExt?: PublicationSpuExt
+}
+
+export interface PublicationSpuGradeSummary {
+  productSpuId: number
+  gradeCatalogIds: number[]
+  gradeNames: string[]
 }
 
 // 获得 Spu 列表
-export const getSpuPage = (params: PageParam & { domainType?: string }) => {
+export const getSpuPage = (params: PageParam & { bizScene?: string }) => {
   return request.get({ url: '/product/spu/page', params })
 }
 
 // 获得 Spu 列表 tabsCount
-export const getTabsCount = (params?: { domainType?: string }) => {
+export const getTabsCount = (params?: { bizScene?: string }) => {
   return request.get({ url: '/product/spu/get-count', params })
 }
 
@@ -89,6 +141,31 @@ export const updateStatus = (data: { id: number; status: number }) => {
 // 获得商品 Spu
 export const getSpu = (id: number) => {
   return request.get({ url: `/product/spu/get-detail?id=${id}` })
+}
+
+export const getPublicationSpuGradeSummary = async (
+  id: number
+): Promise<PublicationSpuGradeSummary> => {
+  const spu = (await getSpu(id)) as Spu
+  const gradeIdSet = new Set<number>()
+  const gradeNameSet = new Set<string>()
+  ;(spu.skus || []).forEach((sku) => {
+    ;(sku.applicableGradeCatalogIds || []).forEach((gradeCatalogId) => {
+      if (gradeCatalogId !== undefined && gradeCatalogId !== null) {
+        gradeIdSet.add(gradeCatalogId)
+      }
+    })
+    ;(sku.applicableGradeNames || []).forEach((gradeName) => {
+      if (gradeName) {
+        gradeNameSet.add(gradeName)
+      }
+    })
+  })
+  return {
+    productSpuId: id,
+    gradeCatalogIds: Array.from(gradeIdSet),
+    gradeNames: Array.from(gradeNameSet)
+  }
 }
 
 // 获得商品 Spu 详情列表

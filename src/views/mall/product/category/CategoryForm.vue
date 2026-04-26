@@ -7,11 +7,17 @@
       label-width="120px"
       v-loading="formLoading"
     >
+      <el-form-item label="业务场景" prop="bizScene">
+        <el-radio-group v-model="formData.bizScene">
+          <el-radio :value="ProductSpuApi.BIZ_SCENE_NORMAL">普通商品</el-radio>
+          <el-radio :value="ProductSpuApi.BIZ_SCENE_PUBLICATION">刊物商品</el-radio>
+        </el-radio-group>
+      </el-form-item>
       <el-form-item label="上级分类" prop="parentId">
         <el-select v-model="formData.parentId" placeholder="请选择上级分类">
           <el-option :key="0" label="顶级分类" :value="0" />
           <el-option
-            v-for="item in categoryList"
+            v-for="item in availableParentCategoryList"
             :key="item.id"
             :label="item.name"
             :value="item.id"
@@ -49,6 +55,7 @@
 <script lang="ts" setup>
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import { CommonStatusEnum } from '@/utils/constants'
+import * as ProductSpuApi from '@/api/mall/product/spu'
 import * as ProductCategoryApi from '@/api/mall/product/category'
 
 defineOptions({ name: 'ProductCategory' })
@@ -62,6 +69,7 @@ const formLoading = ref(false) // 表单的加载中：1）修改时的数据加
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
 const formData = ref({
   id: undefined,
+  bizScene: ProductSpuApi.BIZ_SCENE_NORMAL,
   parentId: 0,
   name: '',
   picUrl: '',
@@ -69,6 +77,7 @@ const formData = ref({
   status: CommonStatusEnum.ENABLE
 })
 const formRules = reactive({
+  bizScene: [{ required: true, message: '请选择业务场景', trigger: 'change' }],
   parentId: [{ required: true, message: '请选择上级分类', trigger: 'blur' }],
   name: [{ required: true, message: '分类名称不能为空', trigger: 'blur' }],
   picUrl: [{ required: true, message: '分类图片不能为空', trigger: 'blur' }],
@@ -77,6 +86,9 @@ const formRules = reactive({
 })
 const formRef = ref() // 表单 Ref
 const categoryList = ref<any[]>([]) // 分类树
+const availableParentCategoryList = computed(() =>
+  categoryList.value.filter((item) => item.bizScene === formData.value.bizScene)
+)
 
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {
@@ -128,6 +140,7 @@ const submitForm = async () => {
 const resetForm = () => {
   formData.value = {
     id: undefined,
+    bizScene: ProductSpuApi.BIZ_SCENE_NORMAL,
     parentId: 0,
     name: '',
     picUrl: '',
@@ -136,4 +149,16 @@ const resetForm = () => {
   }
   formRef.value?.resetFields()
 }
+
+watch(
+  () => formData.value.bizScene,
+  () => {
+    if (
+      formData.value.parentId &&
+      !availableParentCategoryList.value.some((item) => item.id === formData.value.parentId)
+    ) {
+      formData.value.parentId = 0
+    }
+  }
+)
 </script>

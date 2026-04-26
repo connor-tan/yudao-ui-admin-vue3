@@ -33,6 +33,7 @@ export interface SchoolGradeSimple {
 export interface SchoolYear {
   id?: number
   schoolId?: number
+  yearCatalogId?: number
   yearStart?: number
   yearEnd?: number
   startDate?: string
@@ -42,6 +43,7 @@ export interface SchoolYear {
 
 export interface SchoolYearSimple {
   id: number
+  yearCatalogId?: number
   name: string
   yearStart: number
   yearEnd: number

@@ -19,6 +19,17 @@
           class="!w-240px"
         />
       </el-form-item>
+      <el-form-item label="业务场景" prop="bizScene">
+        <el-select
+          v-model="queryParams.bizScene"
+          class="!w-240px"
+          clearable
+          placeholder="请选择业务场景"
+        >
+          <el-option label="普通商品" :value="ProductSpuApi.BIZ_SCENE_NORMAL" />
+          <el-option label="刊物商品" :value="ProductSpuApi.BIZ_SCENE_PUBLICATION" />
+        </el-select>
+      </el-form-item>
       <el-form-item>
         <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
@@ -44,6 +55,11 @@
         </template>
       </el-table-column>
       <el-table-column label="排序" align="center" min-width="150" prop="sort" />
+      <el-table-column label="业务场景" align="center" min-width="120" prop="bizScene">
+        <template #default="{ row }">
+          {{ row.bizScene === ProductSpuApi.BIZ_SCENE_PUBLICATION ? '刊物商品' : '普通商品' }}
+        </template>
+      </el-table-column>
       <el-table-column label="状态" align="center" min-width="150" prop="status">
         <template #default="scope">
           <dict-tag :type="DICT_TYPE.COMMON_STATUS" :value="scope.row.status" />
@@ -78,7 +94,6 @@
           <el-button
             link
             type="danger"
-            v-if="scope.row.id !== publicationRootCategoryId"
             @click="handleDelete(scope.row.id)"
             v-hasPermi="['product:category:delete']"
           >
@@ -96,6 +111,7 @@
 import { DICT_TYPE } from '@/utils/dict'
 import { handleTree } from '@/utils/tree'
 import { dateFormatter } from '@/utils/formatTime'
+import * as ProductSpuApi from '@/api/mall/product/spu'
 import * as ProductCategoryApi from '@/api/mall/product/category'
 import CategoryForm from './CategoryForm.vue'
 
@@ -106,10 +122,9 @@ const { t } = useI18n() // 国际化
 
 const loading = ref(true) // 列表的加载中
 const list = ref<any[]>([]) // 列表的数据
-const publicationCategoryIds = ref<Set<number>>(new Set())
-const publicationRootCategoryId = ref<number>()
 const queryParams = reactive({
-  name: undefined
+  name: undefined,
+  bizScene: undefined
 })
 const queryFormRef = ref() // 搜索的表单
 
@@ -160,24 +175,12 @@ const handleViewSpu = (row: any) => {
   router.push({
     name: 'ProductCenter',
     query: {
-      domainType: publicationCategoryIds.value.has(row.id) ? 'PUBLICATION' : 'NORMAL',
       categoryId: row.id
     }
   })
 }
 
-/** 初始化 **/
-const initPublicationCategoryIds = async () => {
-  const data = await ProductCategoryApi.getCategoryList({
-    status: 0,
-    domainType: 'PUBLICATION'
-  })
-  publicationRootCategoryId.value = data?.length ? data[0].parentId : undefined
-  publicationCategoryIds.value = new Set((data || []).map((item) => item.id))
-}
-
 onMounted(async () => {
-  await initPublicationCategoryIds()
   await getList()
 })
 </script>
