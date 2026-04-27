@@ -237,7 +237,7 @@ export const APP_LINK_GROUP_LIST = [
     name: '动作',
     links: [
       {
-        name: '切换孩子',
+        name: '切换角色/切换孩子',
         path: 'action:switchStudent'
       }
     ]

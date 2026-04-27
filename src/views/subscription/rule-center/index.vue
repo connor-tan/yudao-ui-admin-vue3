@@ -99,7 +99,7 @@
       </el-table-column>
       <el-table-column align="center" label="年级策略" min-width="180">
         <template #default="scope">
-          {{ scope.row.gradePolicyName || getSubscriptionGradePolicyLabel(scope.row.gradeCalcRule) }}
+          {{ scope.row.gradePolicyName || '按目标学年自动解析' }}
         </template>
       </el-table-column>
       <el-table-column align="center" label="开始时间" min-width="180" prop="startTime" />
@@ -178,7 +178,6 @@
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import { dateFormatter } from '@/utils/formatTime'
 import {
-  getSubscriptionGradePolicyLabel,
   getSubscriptionTargetPeriodLabel,
   SUBSCRIPTION_TARGET_PERIOD_OPTIONS
 } from '@/utils/subscription'

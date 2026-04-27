@@ -10,8 +10,6 @@ export interface SubscriptionWindow {
   targetYearEnd?: number
   targetYearNameSnapshot?: string
   targetPeriod?: string
-  gradeCalcRule?: string
-  gradeResolveMode?: string
   gradePolicyName?: string
   status?: number
   remark?: string
@@ -26,8 +24,6 @@ export interface SubscriptionWindowSimple {
   targetYearEnd?: number
   targetYearNameSnapshot?: string
   targetPeriod?: string
-  gradeCalcRule?: string
-  gradeResolveMode?: string
   gradePolicyName?: string
   status?: number
 }
