@@ -8,24 +8,22 @@
         </div>
       </el-form-item>
     </template>
-    <template v-else-if="isPublicationScene">
-      <el-form-item label="履约说明">
-        <div class="w-80 text-13px text-gray-500">
-          刊物默认按学校站点履约，不走普通商品的快递模板与自提门店配置。
-        </div>
-      </el-form-item>
-    </template>
     <template v-else>
       <el-form-item label="配送方式" prop="deliveryTypes">
         <el-checkbox-group v-model="formData.deliveryTypes" class="w-80">
           <el-checkbox
-            v-for="dict in getIntDictOptions(DICT_TYPE.TRADE_DELIVERY_TYPE)"
+            v-for="dict in deliveryTypeOptions"
             :key="dict.value"
             :value="dict.value"
           >
             {{ dict.label }}
           </el-checkbox>
         </el-checkbox-group>
+      </el-form-item>
+      <el-form-item v-if="isPublicationScene" label="站点说明">
+        <div class="w-80 text-13px text-gray-500">
+          站点配送按学生学校绑定站点履约；混合配送只在订单中按配送组自动聚合，不在商品中配置。
+        </div>
       </el-form-item>
       <el-form-item
         v-if="formData.deliveryTypes?.includes(DeliveryTypeEnum.EXPRESS.type)"
@@ -74,16 +72,38 @@ const formData = reactive<Spu>({
 const hasBizScene = computed(() => !!formData.bizScene)
 const isPublicationScene = computed(() => formData.bizScene === ProductSpuApi.BIZ_SCENE_PUBLICATION)
 const isNormalScene = computed(() => formData.bizScene === ProductSpuApi.BIZ_SCENE_NORMAL)
+const allowedDeliveryTypeValues = computed(() => {
+  if (isPublicationScene.value) {
+    return [DeliveryTypeEnum.EXPRESS.type, DeliveryTypeEnum.STATION.type]
+  }
+  if (isNormalScene.value) {
+    return [DeliveryTypeEnum.EXPRESS.type, DeliveryTypeEnum.PICK_UP.type]
+  }
+  return []
+})
+const deliveryTypeOptions = computed(() =>
+  getIntDictOptions(DICT_TYPE.TRADE_DELIVERY_TYPE).filter((dict) =>
+    allowedDeliveryTypeValues.value.includes(dict.value)
+  )
+)
 const validateDeliveryTypes = (_rule, value, callback) => {
-  if (!isNormalScene.value || (value && value.length > 0)) {
+  if (!hasBizScene.value) {
     callback()
     return
   }
-  callback(new Error('请选择配送方式'))
+  if (!value || value.length === 0) {
+    callback(new Error('请选择配送方式'))
+    return
+  }
+  if (value.some((deliveryType) => !allowedDeliveryTypeValues.value.includes(deliveryType))) {
+    callback(new Error('配送方式不符合当前商品分类'))
+    return
+  }
+  callback()
 }
 const validateDeliveryTemplate = (_rule, value, callback) => {
   if (
-    !isNormalScene.value ||
+    !hasBizScene.value ||
     !formData.deliveryTypes?.includes(DeliveryTypeEnum.EXPRESS.type) ||
     value
   ) {

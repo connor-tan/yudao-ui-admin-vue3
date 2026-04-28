@@ -124,20 +124,6 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="履约方式" prop="publicationExt.fulfillmentMode">
-        <el-select
-          v-model="formData.publicationExt!.fulfillmentMode"
-          class="w-80!"
-          placeholder="请选择履约方式"
-        >
-          <el-option
-            v-for="item in ProductSpuApi.PUBLICATION_FULFILLMENT_MODE_OPTIONS"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
-      </el-form-item>
       <el-form-item v-if="selectedPublicationType" :required="requiresTitleIdentifierRule" label="刊物标识">
         <div class="w-80 text-12px text-gray-500">
           {{

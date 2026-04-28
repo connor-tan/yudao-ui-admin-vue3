@@ -1,6 +1,6 @@
-import * as ProductSpuApi from '@/api/mall/product/spu'
 import type { CategoryVO } from '@/api/mall/product/category'
 import type { Spu, Sku } from '@/api/mall/product/spu'
+import { PUBLICATION_TARGET_PERIOD_FULL_YEAR } from '@/api/mall/product/spu'
 
 export const createPublicationSpuExt = (): NonNullable<Spu['publicationExt']> => ({
   publisherId: undefined,
@@ -8,8 +8,7 @@ export const createPublicationSpuExt = (): NonNullable<Spu['publicationExt']> =>
   issueCycle: '',
   issn: '',
   cnCode: '',
-  postDistributionCode: '',
-  fulfillmentMode: ProductSpuApi.PUBLICATION_FULFILLMENT_MODE_SCHOOL_STATION
+  postDistributionCode: ''
 })
 
 export const createNormalSku = (): Sku => ({
@@ -30,7 +29,7 @@ export const createNormalSku = (): Sku => ({
 export const createPublicationSku = (): Sku => ({
   ...createNormalSku(),
   publicationExt: {
-    targetPeriod: ProductSpuApi.PUBLICATION_TARGET_PERIOD_FULL_YEAR,
+    targetPeriod: PUBLICATION_TARGET_PERIOD_FULL_YEAR,
     volumeLabel: '',
     editionLabel: '',
     isbn: '',

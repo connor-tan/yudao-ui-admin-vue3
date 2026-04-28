@@ -12,15 +12,6 @@ export const PUBLICATION_TARGET_PERIOD_OPTIONS = [
   { value: PUBLICATION_TARGET_PERIOD_SECOND_TERM, label: '下学期' }
 ]
 
-export const PUBLICATION_FULFILLMENT_MODE_STANDARD_EXPRESS = 'STANDARD_EXPRESS'
-export const PUBLICATION_FULFILLMENT_MODE_STANDARD_PICK_UP = 'STANDARD_PICK_UP'
-export const PUBLICATION_FULFILLMENT_MODE_SCHOOL_STATION = 'SCHOOL_STATION'
-export const PUBLICATION_FULFILLMENT_MODE_OPTIONS = [
-  { value: PUBLICATION_FULFILLMENT_MODE_STANDARD_EXPRESS, label: '快递发货' },
-  { value: PUBLICATION_FULFILLMENT_MODE_STANDARD_PICK_UP, label: '普通自提' },
-  { value: PUBLICATION_FULFILLMENT_MODE_SCHOOL_STATION, label: '学校站点' }
-]
-
 export interface Property {
   propertyId?: number // 属性编号
   propertyName?: string // 属性名称
@@ -38,7 +29,6 @@ export interface PublicationSpuExt {
   issn?: string
   cnCode?: string
   postDistributionCode?: string
-  fulfillmentMode?: string
 }
 
 export interface PublicationSkuExt {
