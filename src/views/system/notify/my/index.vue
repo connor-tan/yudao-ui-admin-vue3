@@ -1,5 +1,5 @@
 <template>
-  <doc-alert title="站内信配置" url="https://doc.iocoder.cn/notify/" />
+  <doc-alert v-if="false" title="站内信配置" url="https://doc.iocoder.cn/notify/" />
 
   <ContentWrap>
     <!-- 搜索工作栏 -->

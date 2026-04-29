@@ -1,6 +1,6 @@
 <template>
-  <doc-alert title="【交易】交易订单" url="https://doc.iocoder.cn/mall/trade-order/" />
-  <doc-alert title="【交易】购物车" url="https://doc.iocoder.cn/mall/trade-cart/" />
+  <doc-alert v-if="false" title="【交易】交易订单" url="https://doc.iocoder.cn/mall/trade-order/"  />
+  <doc-alert v-if="false" title="【交易】购物车" url="https://doc.iocoder.cn/mall/trade-cart/"  />
 
   <ContentWrap>
     <el-form
@@ -67,12 +67,12 @@
               商城商品满多少金额即可包邮，单位：元
             </el-text>
           </el-form-item>
-          <el-form-item label="启用门店自提" prop="deliveryPickUpEnabled">
+          <el-form-item label="启用门店自提" prop="deliveryPickUpEnabled" v-if="false">
             <el-switch v-model="formData.deliveryPickUpEnabled" style="user-select: none" />
           </el-form-item>
         </el-tab-pane>
         <!-- 分销 -->
-        <el-tab-pane label="分销">
+        <el-tab-pane label="分销" v-if="false">
           <el-form-item label="分佣启用" prop="brokerageEnabled">
             <el-switch v-model="formData.brokerageEnabled" style="user-select: none" />
             <el-text class="w-full" size="small" type="info"> 商城是否开启分销模式</el-text>

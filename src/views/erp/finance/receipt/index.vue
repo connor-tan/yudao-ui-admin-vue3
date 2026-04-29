@@ -1,5 +1,5 @@
 <template>
-  <doc-alert
+  <doc-alert v-if="false"
     title="【财务】采购付款、销售收款"
     url="https://doc.iocoder.cn/sale/finance-payment-receipt/"
   />
