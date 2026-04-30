@@ -86,7 +86,7 @@
         mode="pop"
         @success="handleLogin"
       />
-      <el-col :span="24" class="px-10px">
+      <el-col :span="24" class="px-10px" v-if="false">
         <el-form-item>
           <el-row :gutter="5" justify="space-between" style="width: 100%">
             <el-col :span="8">
@@ -113,8 +113,8 @@
           </el-row>
         </el-form-item>
       </el-col>
-      <el-divider content-position="center">{{ t('login.otherLogin') }}</el-divider>
-      <el-col :span="24" class="px-10px">
+      <el-divider content-position="center" v-if="false">{{ t('login.otherLogin') }}</el-divider>
+      <el-col :span="24" class="px-10px" v-if="false">
         <el-form-item>
           <div class="w-full flex justify-between">
             <Icon
@@ -129,8 +129,8 @@
           </div>
         </el-form-item>
       </el-col>
-      <el-divider content-position="center">萌新必读</el-divider>
-      <el-col :span="24" class="px-10px">
+      <el-divider content-position="center" v-if="false">萌新必读</el-divider>
+      <el-col :span="24" class="px-10px" v-if="false">
         <el-form-item>
           <div class="w-full flex justify-between">
             <el-link href="https://doc.iocoder.cn/" target="_blank">📚开发指南</el-link>
