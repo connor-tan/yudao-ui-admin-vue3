@@ -86,7 +86,7 @@
         mode="pop"
         @success="handleLogin"
       />
-      <el-col :span="24" class="px-10px" v-if="false">
+      <el-col :span="24" class="px-10px">
         <el-form-item>
           <el-row :gutter="5" justify="space-between" style="width: 100%">
             <el-col :span="8">
