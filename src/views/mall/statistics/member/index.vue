@@ -1,5 +1,5 @@
 <template>
-  <doc-alert v-if="false" title="【统计】会员、商品、交易统计" url="https://doc.iocoder.cn/mall/statistics/" />
+  <doc-alert title="假数据，目前还未涉及到统计的部分。但是页面形态就是这样的设计，只是数据不同" />
 
   <div class="flex flex-col">
     <el-row :gutter="16" class="summary">
