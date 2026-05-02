@@ -696,7 +696,6 @@ const openPopover = async (type: string) => {
       message.warning('表单校验不通过，请先完善表单!!')
       return
     }
-    initNextAssigneesFormField()
   }
   if (type === 'return') {
     // 获取退回节点
@@ -709,6 +708,13 @@ const openPopover = async (type: string) => {
   Object.keys(popOverVisible.value).forEach((item) => {
     popOverVisible.value[item] = item === type
   })
+  if (type === 'approve') {
+    // 等待表单渲染完成后，再初始化下一个节点信息
+    await nextTick()
+    // 再等待一个 tick，确保 form-create 的 API 已经初始化
+    await nextTick()
+    initNextAssigneesFormField()
+  }
   // await nextTick()
   // formRef.value.resetFields()
 }
@@ -1081,6 +1087,22 @@ const loadTodoTask = (task: any) => {
   if (task && task.formId && task.formConf) {
     const tempApproveForm = {}
     setConfAndFields2(tempApproveForm, task.formConf, task.formFields, task.formVariables)
+    // 为表单添加 onChange 事件，当表单值变化时，重新计算下一个节点的信息
+    // @ts-ignore
+    if (!tempApproveForm.option) {
+      // @ts-ignore
+      tempApproveForm.option = {}
+    }
+    // @ts-ignore
+    tempApproveForm.option.onChange = () => {
+      // 当弹窗打开时，才重新计算下一个节点的信息
+      if (popOverVisible.value.approve) {
+        // 清空之前的节点信息
+        nextAssigneesActivityNode.value = []
+        // 重新计算下一个节点的信息
+        initNextAssigneesFormField()
+      }
+    }
     approveForm.value = tempApproveForm
   } else {
     approveForm.value = {} // 占位，避免为空
@@ -1105,9 +1127,40 @@ const validateNormalForm = async () => {
 /** 从可以编辑的流程表单字段，获取需要修改的流程实例的变量 */
 const getUpdatedProcessInstanceVariables = () => {
   const variables = {}
-  props.writableFields.forEach((field) => {
-    variables[field] = props.normalFormApi.getValue(field)
-  })
+  // 从流程表单（流程定义级别）中获取变量
+  if (props.writableFields && props.writableFields.length > 0 && props.normalFormApi) {
+    props.writableFields.forEach((field) => {
+      variables[field] = props.normalFormApi.getValue(field)
+    })
+  }
+  // 从节点表单（节点级别）中获取变量
+  // 优先从 approveForm.value.value 中获取（这是 form-create 存储的值）
+  if (approveForm.value?.value) {
+    Object.assign(variables, approveForm.value.value)
+  }
+  // 再从 formVariables 中获取（这是后端返回的已保存的变量）
+  if (approveForm.value?.formVariables) {
+    Object.assign(variables, approveForm.value.formVariables)
+  }
+  // 再从 formFields 中获取（这是表单的字段值）
+  if (approveForm.value?.formFields) {
+    Object.assign(variables, approveForm.value.formFields)
+  }
+  // 最后尝试从 approveFormFApi 中获取（这是用户在表单中修改的值）
+  if (approveFormFApi.value && approveForm.value?.rule) {
+    approveForm.value.rule.forEach((field: any) => {
+      if (field.field) {
+        try {
+          const value = approveFormFApi.value.getValue(field.field)
+          if (value !== undefined && value !== null) {
+            variables[field.field] = value
+          }
+        } catch (e) {
+          // 忽略获取值时的错误
+        }
+      }
+    })
+  }
   return variables
 }
 
