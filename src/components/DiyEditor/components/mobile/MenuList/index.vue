@@ -10,7 +10,9 @@
         <span class="text-16px" :style="{ color: item.titleColor }">{{ item.title }}</span>
       </div>
       <div class="item-center flex flex-row justify-center gap-4px">
-        <span class="text-12px" :style="{ color: item.subtitleColor }">{{ item.subtitle }}</span>
+        <span v-if="resolveSubtitle(item)" class="text-12px" :style="{ color: item.subtitleColor }">
+          {{ resolveSubtitle(item) }}
+        </span>
         <Icon icon="ep-arrow-right" color="#000" :size="16" />
       </div>
     </div>
@@ -22,6 +24,11 @@ import { MenuListProperty } from './config'
 /** 列表导航 */
 defineOptions({ name: 'MenuList' })
 defineProps<{ property: MenuListProperty }>()
+
+const SWITCH_STUDENT_ACTION = 'action:switchStudent'
+
+const resolveSubtitle = (item: { url?: string; subtitle?: string }) =>
+  item.url === SWITCH_STUDENT_ACTION ? '' : item.subtitle
 </script>
 
 <style scoped lang="scss">

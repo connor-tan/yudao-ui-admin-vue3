@@ -18,8 +18,12 @@
       <span class="m-t-8px h-16px text-12px leading-16px" :style="{ color: item.titleColor }">
         {{ item.title }}
       </span>
-      <span class="m-t-6px h-12px text-10px leading-12px" :style="{ color: item.subtitleColor }">
-        {{ item.subtitle }}
+      <span
+        v-if="resolveSubtitle(item)"
+        class="m-t-6px h-12px text-10px leading-12px"
+        :style="{ color: item.subtitleColor }"
+      >
+        {{ resolveSubtitle(item) }}
       </span>
     </div>
   </div>
@@ -30,6 +34,11 @@ import { MenuGridProperty } from './config'
 /** 宫格导航 */
 defineOptions({ name: 'MenuGrid' })
 defineProps<{ property: MenuGridProperty }>()
+
+const SWITCH_STUDENT_ACTION = 'action:switchStudent'
+
+const resolveSubtitle = (item: { url?: string; subtitle?: string }) =>
+  item.url === SWITCH_STUDENT_ACTION ? '' : item.subtitle
 </script>
 
 <style scoped lang="scss"></style>
