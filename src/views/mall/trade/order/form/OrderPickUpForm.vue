@@ -101,12 +101,21 @@ const getOrderByPickUpVerifyCode = async () => {
   formLoading.value = true
   const data = await TradeOrderApi.getOrderByPickUpVerifyCode(formData.value.pickUpVerifyCode)
   formLoading.value = false
-  if (data?.deliveryType !== DeliveryTypeEnum.PICK_UP.type) {
+  const pickUpDelivery = data?.deliveries?.find(
+    (delivery) =>
+      delivery.deliveryType === DeliveryTypeEnum.PICK_UP.type &&
+      delivery.pickUpVerifyCode === formData.value.pickUpVerifyCode
+  )
+  if (!pickUpDelivery) {
     message.error('未查询到订单')
     return
   }
   if (data?.status !== TradeOrderStatusEnum.UNDELIVERED.status) {
     message.error('订单不是待核销状态')
+    return
+  }
+  if (pickUpDelivery.status !== TradeOrderStatusEnum.UNDELIVERED.status) {
+    message.error('自提配送组不是待核销状态')
     return
   }
   orderDetails.value = data

@@ -92,6 +92,29 @@
               >
                 {{ property.propertyName }}: {{ property.valueName }}
               </el-tag>
+              <div v-if="row.subscriptionOfferSkuId" class="w-full text-xs text-gray-500">
+                刊物发货：
+                <el-tag
+                  :type="
+                    row.publicationDeliveryStatus === PublicationDeliveryStatusEnum.DELIVERED.status
+                      ? 'success'
+                      : 'warning'
+                  "
+                  size="small"
+                >
+                  {{
+                    row.publicationDeliveryStatus === PublicationDeliveryStatusEnum.DELIVERED.status
+                      ? '已发货'
+                      : '待发货'
+                  }}
+                </el-tag>
+                <span v-if="row.publicationDeliveryBatchId" class="ml-5px">
+                  批次：#{{ row.publicationDeliveryBatchId }}
+                </span>
+                <span v-if="row.publicationDeliveryTime" class="ml-5px">
+                  时间：{{ formatDate(row.publicationDeliveryTime) }}
+                </span>
+              </div>
             </div>
           </template>
         </el-table-column>
@@ -157,9 +180,13 @@
               class="flex flex-col"
             >
               <span>买家：{{ scope.row.user?.nickname }}</span>
-              <span>混合配送：快递 + 学校站点</span>
+              <span>混合配送：{{ formatMixedDeliveryText(scope.row) }}</span>
               <span v-if="scope.row.receiverName">
                 快递收件：{{ scope.row.receiverName }} {{ scope.row.receiverMobile }}
+              </span>
+              <span v-if="getPickUpDelivery(scope.row)">
+                自提联系人：{{ getPickUpDelivery(scope.row)?.receiverName || '-' }}
+                {{ getPickUpDelivery(scope.row)?.receiverMobile || '' }}
               </span>
             </div>
           </template>
@@ -187,7 +214,7 @@
 import { nextTick, onMounted, onUnmounted, watch } from 'vue'
 import type { CSSProperties } from 'vue'
 import { DICT_TYPE } from '@/utils/dict'
-import { DeliveryTypeEnum } from '@/utils/constants'
+import { DeliveryTypeEnum, PublicationDeliveryStatusEnum } from '@/utils/constants'
 import { formatDate } from '@/utils/formatTime'
 import { floatToFixed2 } from '@/utils'
 import * as TradeOrderApi from '@/api/mall/trade/order'
@@ -202,6 +229,21 @@ const props = defineProps<{
   list: OrderVO[]
   pickUpStoreList: DeliveryPickUpStoreVO[]
 }>()
+
+const getPickUpDelivery = (order: OrderVO) =>
+  order.deliveries?.find((delivery) => delivery.deliveryType === DeliveryTypeEnum.PICK_UP.type)
+
+const formatMixedDeliveryText = (order: OrderVO) =>
+  (order.deliveries || [])
+    .map((delivery) => delivery.deliveryType)
+    .filter((deliveryType, index, list) => deliveryType != null && list.indexOf(deliveryType) === index)
+    .map((deliveryType) => {
+      if (deliveryType === DeliveryTypeEnum.EXPRESS.type) return '快递'
+      if (deliveryType === DeliveryTypeEnum.STATION.type) return '学校站点'
+      if (deliveryType === DeliveryTypeEnum.PICK_UP.type) return '用户自提'
+      return '其他'
+    })
+    .join(' + ')
 
 const headerStyle = ({ row, columnIndex }: any): CSSProperties => {
   // 表头第一行第一列占 8

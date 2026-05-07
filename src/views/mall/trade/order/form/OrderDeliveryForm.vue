@@ -44,6 +44,7 @@ const formLoading = ref(false) // 表单的加载中：1）修改时的数据加
 const expressType = ref('express') // 如果值是 express，则是快递；none 则是无；未来做同城配送；
 const formData = ref<TradeOrderApi.DeliveryVO>({
   id: undefined, // 订单编号
+  deliveryId: undefined, // 配送单编号
   logisticsId: null, // 物流公司编号
   logisticsNo: '' // 物流编号
 })
@@ -87,6 +88,7 @@ const submitForm = async () => {
 const resetForm = () => {
   formData.value = {
     id: undefined, // 订单编号
+    deliveryId: undefined, // 配送单编号
     logisticsId: null, // 物流公司编号
     logisticsNo: '' // 物流编号
   }

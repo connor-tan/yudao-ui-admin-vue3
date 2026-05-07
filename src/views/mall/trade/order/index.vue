@@ -94,10 +94,10 @@
       <el-form-item
         v-if="queryParams.deliveryType === DeliveryTypeEnum.PICK_UP.type"
         label="自提门店"
-        prop="pickUpStoreId"
+        prop="pickUpStoreIds"
       >
         <el-select
-          v-model="queryParams.pickUpStoreId"
+          v-model="queryParams.pickUpStoreIds"
           class="!w-280px"
           clearable
           multiple
@@ -193,8 +193,8 @@
                   <!-- 如果是【快递】，并且【未发货】，则展示【发货】按钮 -->
                   <el-dropdown-item
                     v-if="
-                      row.deliveryType === DeliveryTypeEnum.EXPRESS.type &&
-                      row.status === TradeOrderStatusEnum.UNDELIVERED.status
+                      row.status === TradeOrderStatusEnum.UNDELIVERED.status &&
+                      getPendingExpressDeliveries(row).length > 0
                     "
                     command="delivery"
                   >
@@ -240,6 +240,7 @@ import { OrderTableColumn } from './components'
 defineOptions({ name: 'TradeOrder' })
 
 const { currentRoute, push } = useRouter() // 路由跳转
+const message = useMessage()
 const loading = ref(true) // 列表的加载中
 const total = ref(2) // 列表的总页数
 const list = ref<TradeOrderApi.OrderVO[]>([]) // 列表的数据
@@ -255,7 +256,7 @@ const queryParams = ref({
   type: undefined, // 订单类型
   deliveryType: undefined, // 配送方式
   logisticsId: undefined, // 快递公司
-  pickUpStoreId: undefined, // 自提门店
+  pickUpStoreIds: undefined as number[] | undefined, // 自提门店
   pickUpVerifyCode: undefined // 自提核销码
 })
 const queryType = reactive({ queryParam: '' }) // 订单搜索类型 queryParam
@@ -313,7 +314,7 @@ const resetQuery = () => {
     type: undefined, // 订单类型
     deliveryType: undefined, // 配送方式
     logisticsId: undefined, // 快递公司
-    pickUpStoreId: undefined, // 自提门店
+    pickUpStoreIds: undefined, // 自提门店
     pickUpVerifyCode: undefined // 自提核销码
   }
   handleQuery()
@@ -327,14 +328,36 @@ const openDetail = (id: number) => {
 /** 操作分发 */
 const deliveryFormRef = ref()
 const updateRemarkForm = ref()
+const getPendingExpressDeliveries = (row: TradeOrderApi.OrderVO) => {
+  return (row.deliveries || []).filter(
+    (delivery) =>
+      delivery.deliveryType === DeliveryTypeEnum.EXPRESS.type &&
+      delivery.status === TradeOrderStatusEnum.UNDELIVERED.status
+  )
+}
 const handleCommand = (command: string, row: TradeOrderApi.OrderVO) => {
   switch (command) {
     case 'remark':
       updateRemarkForm.value?.open(row)
       break
-    case 'delivery':
-      deliveryFormRef.value?.open(row)
+    case 'delivery': {
+      const pendingExpressDeliveries = getPendingExpressDeliveries(row)
+      if (pendingExpressDeliveries.length > 1) {
+        message.warning('订单包含多个待发货快递配送组，请进入订单详情按配送组发货')
+        return
+      }
+      const delivery = pendingExpressDeliveries[0]
+      if (!delivery?.id) {
+        return
+      }
+      deliveryFormRef.value?.open({
+        id: row.id ?? undefined,
+        deliveryId: delivery.id,
+        logisticsId: delivery.logisticsId || null,
+        logisticsNo: delivery.logisticsNo || ''
+      })
       break
+    }
   }
 }
 

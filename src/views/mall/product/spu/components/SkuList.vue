@@ -416,6 +416,81 @@ const handleSelectionChange = (val: Sku[]) => {
   emit('selectionChange', val)
 }
 
+const SKU_FORM_VALUE_FIELDS: (keyof Sku)[] = [
+  'id',
+  'name',
+  'status',
+  'barCode',
+  'picUrl',
+  'price',
+  'marketPrice',
+  'costPrice',
+  'stock',
+  'weight',
+  'volume',
+  'firstBrokeragePrice',
+  'secondBrokeragePrice'
+]
+
+const createDefaultSku = (properties: Property[]): Sku => ({
+  name: '', // SKU 名称，提交时会自动使用 SPU 名称
+  properties,
+  price: 0,
+  marketPrice: 0,
+  costPrice: 0,
+  barCode: '',
+  picUrl: '',
+  stock: 0,
+  weight: 0,
+  volume: 0,
+  firstBrokeragePrice: 0,
+  secondBrokeragePrice: 0
+})
+
+const buildPropertyValueKey = (properties?: Property[]) => {
+  return (properties || [])
+    .map((property) => `${property.propertyId}:${property.valueId}`)
+    .sort()
+    .join('|')
+}
+
+const getMatchedPropertyCount = (
+  sourceProperties: Property[] = [],
+  targetProperties: Property[] = []
+) => {
+  const targetKeySet = new Set(
+    targetProperties.map((property) => `${property.propertyId}:${property.valueId}`)
+  )
+  return sourceProperties.filter((property) =>
+    targetKeySet.has(`${property.propertyId}:${property.valueId}`)
+  ).length
+}
+
+const findBestReusableSku = (properties: Property[], oldSkus: Sku[]) => {
+  let matchedSku: Sku | undefined
+  let matchedCount = -1
+  for (const sku of oldSkus) {
+    const currentMatchedCount = getMatchedPropertyCount(sku.properties, properties)
+    if (currentMatchedCount > matchedCount) {
+      matchedSku = sku
+      matchedCount = currentMatchedCount
+    }
+  }
+  return matchedCount > 0 ? matchedSku : undefined
+}
+
+const copyReusableSkuFields = (target: Sku, source?: Sku) => {
+  if (!source) {
+    return target
+  }
+  for (const field of SKU_FORM_VALUE_FIELDS) {
+    if (source[field] !== undefined) {
+      target[field] = source[field] as never
+    }
+  }
+  return target
+}
+
 /**
  * 将传进来的值赋值给 skuList
  */
@@ -433,6 +508,8 @@ watch(
 
 /** 生成表数据 */
 const generateTableData = (propertyList: any[]) => {
+  const oldSkus = [...(formData.value!.skus || [])]
+  const oldSkuMap = new Map(oldSkus.map((sku) => [buildPropertyValueKey(sku.properties), sku]))
   // 构建数据结构
   const propertyValues = propertyList.map((item) =>
     item.values.map((v: any) => ({
@@ -443,35 +520,11 @@ const generateTableData = (propertyList: any[]) => {
     }))
   )
   const buildSkuList = build(propertyValues)
-  // 如果回显的 sku 属性和添加的属性不一致则重置 skus 列表
-  if (!validateData(propertyList)) {
-    // 如果不一致则重置表数据，默认添加新的属性重新生成 sku 列表
-    formData.value!.skus = []
-  }
-  for (const item of buildSkuList) {
-    const row = {
-      name: '', // SKU 名称，提交时会自动使用 SPU 名称
-      properties: item,
-      price: 0,
-      marketPrice: 0,
-      costPrice: 0,
-      barCode: '',
-      picUrl: '',
-      stock: 0,
-      weight: 0,
-      volume: 0,
-      firstBrokeragePrice: 0,
-      secondBrokeragePrice: 0
-    }
-    // 如果存在属性相同的 sku 则不做处理
-    const index = formData.value!.skus!.findIndex(
-      (sku) => JSON.stringify(sku.properties) === JSON.stringify(row.properties)
-    )
-    if (index !== -1) {
-      continue
-    }
-    formData.value!.skus!.push(row)
-  }
+  formData.value!.skus = buildSkuList.map((item) => {
+    const sameSku = oldSkuMap.get(buildPropertyValueKey(item))
+    const reusableSku = sameSku || findBestReusableSku(item, oldSkus)
+    return copyReusableSkuFields(createDefaultSku(item), reusableSku)
+  })
 }
 
 /**

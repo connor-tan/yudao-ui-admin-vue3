@@ -409,6 +409,30 @@ export const DeliveryTypeEnum = {
     name: '混合配送'
   }
 }
+
+/**
+ * 刊物订单项发货状态
+ */
+export const PublicationDeliveryStatusEnum = {
+  UNDELIVERED: {
+    status: 10,
+    name: '待发货'
+  },
+  DELIVERED: {
+    status: 20,
+    name: '已发货'
+  }
+}
+
+/**
+ * 刊物发货批次状态
+ */
+export const PublicationDeliveryBatchStatusEnum = {
+  DELIVERED: {
+    status: 20,
+    name: '已发货'
+  }
+}
 /**
  * 交易订单 - 状态
  */

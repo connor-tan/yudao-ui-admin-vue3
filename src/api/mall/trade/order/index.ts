@@ -114,6 +114,11 @@ export interface OrderItemRespVO {
   subscriptionClassNameSnapshot?: string
   subscriptionGradeCatalogId?: number | null
   subscriptionGradeNameSnapshot?: string
+  subscriptionOfferId?: number | null
+  subscriptionOfferSkuId?: number | null
+  publicationDeliveryStatus?: number | null
+  publicationDeliveryBatchId?: number | null
+  publicationDeliveryTime?: string | null
   properties?: ProductPropertiesVO[] //属性数组
 }
 
@@ -134,6 +139,8 @@ export interface OrderDeliveryRespVO {
   receiverAreaId?: number | null
   receiverAreaName?: string
   receiverDetailAddress?: string
+  pickUpStoreId?: number | null
+  pickUpVerifyCode?: string
   schoolId?: number | null
   schoolNameSnapshot?: string
   stationId?: number | null
@@ -194,11 +201,6 @@ export interface DeliveryVO {
 // 订单发货
 export const deliveryOrder = async (data: DeliveryVO) => {
   return await request.put({ url: `/trade/order/delivery`, data })
-}
-
-// 站点配送
-export const stationDeliveryOrder = async (deliveryId: number) => {
-  return await request.put({ url: `/trade/order/station-delivery`, data: { deliveryId } })
 }
 
 // 订单备注
