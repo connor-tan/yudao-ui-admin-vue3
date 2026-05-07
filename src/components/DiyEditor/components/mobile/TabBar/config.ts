@@ -1,5 +1,22 @@
 import { DiyComponent } from '@/components/DiyEditor/util'
 
+const XKH_TABBAR_IMAGES = {
+  home: 'http://61.160.108.46:29000/connor/20260507/xkh-tab-home-tight_1778158484466.png',
+  homeActive:
+    'http://61.160.108.46:29000/connor/20260507/xkh-tab-home-active-tight_1778158484434.png',
+  publication:
+    'http://61.160.108.46:29000/connor/20260507/xkh-tab-publication-tight_1778158484603.png',
+  publicationActive:
+    'http://61.160.108.46:29000/connor/20260507/xkh-tab-publication-active-tight_1778158484570.png',
+  cart: 'http://61.160.108.46:29000/connor/20260507/xkh-tab-cart-tight_1778158484400.png',
+  cartActive:
+    'http://61.160.108.46:29000/connor/20260507/xkh-tab-cart-active-tight_1778158484352.png',
+  profile:
+    'http://61.160.108.46:29000/connor/20260507/xkh-tab-profile-tight_1778158484534.png',
+  profileActive:
+    'http://61.160.108.46:29000/connor/20260507/xkh-tab-profile-active-tight_1778158484499.png'
+} as const
+
 /** 底部导航菜单属性 */
 export interface TabBarProperty {
   // 选项列表
@@ -42,37 +59,37 @@ export const component = {
   name: '底部导航',
   icon: 'fluent:table-bottom-row-16-filled',
   property: {
-    theme: 'red',
+    theme: 'blue',
     style: {
       bgType: 'color',
-      bgColor: '#fff',
-      color: '#282828',
-      activeColor: '#fc4141'
+      bgColor: '#FFFFFF',
+      color: '#7A8794',
+      activeColor: '#0081FF'
     },
     items: [
       {
         text: '首页',
         url: '/pages/index/index',
-        iconUrl: 'http://mall.yudao.iocoder.cn/static/images/1-001.png',
-        activeIconUrl: 'http://mall.yudao.iocoder.cn/static/images/1-002.png'
+        iconUrl: XKH_TABBAR_IMAGES.home,
+        activeIconUrl: XKH_TABBAR_IMAGES.homeActive
       },
       {
-        text: '分类',
+        text: '订刊',
         url: '/pages/index/category?id=3',
-        iconUrl: 'http://mall.yudao.iocoder.cn/static/images/2-001.png',
-        activeIconUrl: 'http://mall.yudao.iocoder.cn/static/images/2-002.png'
+        iconUrl: XKH_TABBAR_IMAGES.publication,
+        activeIconUrl: XKH_TABBAR_IMAGES.publicationActive
       },
       {
         text: '购物车',
         url: '/pages/index/cart',
-        iconUrl: 'http://mall.yudao.iocoder.cn/static/images/3-001.png',
-        activeIconUrl: 'http://mall.yudao.iocoder.cn/static/images/3-002.png'
+        iconUrl: XKH_TABBAR_IMAGES.cart,
+        activeIconUrl: XKH_TABBAR_IMAGES.cartActive
       },
       {
         text: '我的',
         url: '/pages/index/user',
-        iconUrl: 'http://mall.yudao.iocoder.cn/static/images/4-001.png',
-        activeIconUrl: 'http://mall.yudao.iocoder.cn/static/images/4-002.png'
+        iconUrl: XKH_TABBAR_IMAGES.profile,
+        activeIconUrl: XKH_TABBAR_IMAGES.profileActive
       }
     ]
   }
