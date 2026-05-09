@@ -20,12 +20,14 @@
           @keyup.enter="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="商品分类" prop="categoryId">
+      <el-form-item label="商品分类" prop="categoryIds">
         <el-cascader
-          v-model="queryParams.categoryId"
+          v-model="queryParams.categoryIds"
           :options="categoryList"
-          :props="defaultProps"
+          :props="categoryCascaderProps"
           class="w-1/1"
+          collapse-tags
+          collapse-tags-tooltip
           clearable
           filterable
           placeholder="请选择商品分类"
@@ -93,7 +95,7 @@
                 <el-row>
                   <el-col :span="8">
                     <el-form-item label="商品分类:">
-                      <span>{{ formatCategoryName(row.categoryId) }}</span>
+                      <span>{{ formatCategoryNames(row) }}</span>
                     </el-form-item>
                   </el-col>
                   <el-col :span="8">
@@ -241,13 +243,12 @@
 import { TabsPaneContext } from 'element-plus'
 import { createImageViewer } from '@/components/ImageViewer'
 import { dateFormatter } from '@/utils/formatTime'
-import { defaultProps, handleTree, treeToString } from '@/utils/tree'
+import { defaultProps, handleTree } from '@/utils/tree'
 import { ProductSpuStatusEnum } from '@/utils/constants'
 import { fenToYuan } from '@/utils'
 import download from '@/utils/download'
 import * as ProductSpuApi from '@/api/mall/product/spu'
 import * as ProductCategoryApi from '@/api/mall/product/category'
-import type { LocationQueryValue } from 'vue-router'
 
 defineOptions({ name: 'ProductSpu' })
 
@@ -295,14 +296,14 @@ const queryParams = ref<{
   tabType: number
   bizScene?: string
   name: string
-  categoryId: LocationQueryValue | undefined
+  categoryIds: number[]
   createTime: string[] | undefined
 }>({
   pageNo: 1,
   pageSize: 10,
   tabType: 0,
   name: '',
-  categoryId: undefined,
+  categoryIds: [],
   createTime: undefined
 }) // 查询参数
 const queryFormRef = ref() // 搜索的表单Ref
@@ -437,8 +438,13 @@ const handleExport = async () => {
 
 /** 获取分类的节点的完整结构 */
 const categoryList = ref() // 分类树
-const formatCategoryName = (categoryId: number) => {
-  return treeToString(categoryList.value, categoryId)
+const categoryCascaderProps = {
+  ...defaultProps,
+  multiple: true,
+  emitPath: false
+}
+const formatCategoryNames = (row: ProductSpuApi.Spu) => {
+  return (row.categories || []).map((item) => item.name).filter(Boolean).join('、') || '-'
 }
 
 /** 激活时 */
@@ -456,9 +462,14 @@ onMounted(async () => {
 })
 
 watch(
-  () => route.query.categoryId,
-  (categoryId) => {
-    queryParams.value.categoryId = Array.isArray(categoryId) ? categoryId[0] : categoryId || undefined
+  () => route.query.categoryIds,
+  (categoryIds) => {
+    if (!categoryIds) {
+      queryParams.value.categoryIds = []
+      return
+    }
+    const values = Array.isArray(categoryIds) ? categoryIds : [categoryIds]
+    queryParams.value.categoryIds = values.map((item) => Number(item)).filter((item) => !Number.isNaN(item))
   },
   { immediate: true }
 )

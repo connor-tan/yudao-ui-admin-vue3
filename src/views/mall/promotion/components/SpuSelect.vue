@@ -13,11 +13,14 @@
         </el-col>
         <el-col :span="6">
           <el-tree-select
-            v-model="queryParams.categoryId"
+            v-model="queryParams.categoryIds"
             :data="categoryList"
             :props="defaultProps"
             check-strictly
             class="w-1/1"
+            multiple
+            collapse-tags
+            collapse-tags-tooltip
             node-key="id"
             placeholder="请选择商品分类"
           />
@@ -79,6 +82,11 @@
           min-width="300"
           prop="name"
         />
+        <el-table-column label="商品分类" min-width="140">
+          <template #default="{ row }">
+            {{ formatCategoryNames(row) }}
+          </template>
+        </el-table-column>
         <el-table-column align="center" label="商品售价" min-width="90" prop="price">
           <template #default="{ row }">
             {{ formatToFraction(row.price) }}
@@ -142,7 +150,7 @@ const queryParams = ref({
   pageSize: 10,
   tabType: 0, // 默认获取上架的商品
   name: '',
-  categoryId: null,
+  categoryIds: [],
   createTime: []
 }) // 查询参数
 const propertyList = ref<PropertyAndValues[]>([]) // 商品属性列表
@@ -299,7 +307,7 @@ const resetQuery = () => {
     pageSize: 10,
     tabType: 0, // 默认获取上架的商品
     name: '',
-    categoryId: null,
+    categoryIds: [],
     createTime: []
   }
   getList()
@@ -314,6 +322,9 @@ const imagePreview = (imgUrl: string) => {
 }
 
 const categoryList = ref() // 分类树
+const formatCategoryNames = (row: ProductSpuApi.Spu) => {
+  return (row.categories || []).map((item) => item.name).filter(Boolean).join('、') || '-'
+}
 
 /** 初始化 **/
 onMounted(async () => {

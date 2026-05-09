@@ -23,14 +23,17 @@
             @keyup.enter="handleQuery"
           />
         </el-form-item>
-        <el-form-item label="商品分类" prop="categoryId">
+        <el-form-item label="商品分类" prop="categoryIds">
           <el-tree-select
-            v-model="queryParams.categoryId"
+            v-model="queryParams.categoryIds"
             :data="categoryTreeList"
             :props="defaultProps"
             check-strictly
             class="!w-220px"
             clearable
+            multiple
+            collapse-tags
+            collapse-tags-tooltip
             node-key="id"
             placeholder="请选择商品分类"
           />
@@ -167,7 +170,9 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="分类" min-width="130" prop="categoryName" />
+        <el-table-column label="分类" min-width="130">
+          <template #default="{ row }">{{ joinText(row.categoryNames) }}</template>
+        </el-table-column>
         <el-table-column label="出版社" min-width="130" prop="publisherName" />
         <el-table-column label="刊物类型" min-width="120" prop="publicationTypeName" />
         <el-table-column label="出刊周期" min-width="110">
@@ -316,7 +321,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
   productName: undefined as string | undefined,
-  categoryId: undefined as number | undefined,
+  categoryIds: [] as number[],
   publisherId: undefined as number | undefined,
   publicationTypeId: undefined as number | undefined,
   issueCycle: undefined as string | undefined,
@@ -387,7 +392,7 @@ const resetQueryParams = () => {
     pageNo: 1,
     pageSize: 10,
     productName: undefined,
-    categoryId: undefined,
+    categoryIds: [],
     publisherId: undefined,
     publicationTypeId: undefined,
     issueCycle: undefined,

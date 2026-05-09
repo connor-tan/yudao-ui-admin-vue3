@@ -13,12 +13,21 @@
         type="textarea"
       />
     </el-form-item>
-    <el-form-item label="商品分类" prop="categoryId">
+    <el-form-item label="业务场景" prop="bizScene">
+      <el-radio-group v-model="formData.bizScene" @change="handleBizSceneChange">
+        <el-radio :value="ProductSpuApi.BIZ_SCENE_NORMAL">普通商品</el-radio>
+        <el-radio :value="ProductSpuApi.BIZ_SCENE_PUBLICATION">刊物商品</el-radio>
+      </el-radio-group>
+    </el-form-item>
+    <el-form-item label="商品分类" prop="categoryIds">
       <el-cascader
-        v-model="formData.categoryId"
-        :options="categoryList"
-        :props="defaultProps"
+        v-model="formData.categoryIds"
+        :disabled="!hasBizScene"
+        :options="sceneCategoryList"
+        :props="categoryCascaderProps"
         class="w-80!"
+        collapse-tags
+        collapse-tags-tooltip
         clearable
         filterable
         placeholder="请选择商品分类"
@@ -28,7 +37,7 @@
     </el-form-item>
     <el-form-item v-if="!hasBizScene" label="字段说明">
       <div class="w-80 text-13px text-gray-500">
-        请选择商品分类，系统会根据分类所属业务场景自动展示普通商品或刊物商品字段。
+        请先选择业务场景，系统会只展示同场景下可用的叶子分类。
       </div>
     </el-form-item>
     <el-form-item v-if="isNormalScene" label="商品品牌" prop="brandId">
@@ -177,8 +186,7 @@ import { RefreshRight } from '@element-plus/icons-vue'
 import {
   createNormalSku,
   createPublicationSku,
-  createPublicationSpuExt,
-  resolveCategoryBizScene
+  createPublicationSpuExt
 } from './helpers'
 
 defineOptions({ name: 'ProductSpuInfoForm' })
@@ -202,7 +210,7 @@ const formRef = ref()
 const formData = reactive<SpuInfoFormData>({
   bizScene: undefined,
   name: '',
-  categoryId: undefined,
+  categoryIds: [],
   keyword: '',
   picUrl: '',
   sliderPicUrls: [],
@@ -212,11 +220,16 @@ const formData = reactive<SpuInfoFormData>({
   skus: []
 })
 
-const lastCategoryId = ref<number | string | undefined>(undefined)
 const lastBizScene = ref<string | undefined>(undefined)
 const hasBizScene = computed(() => !!formData.bizScene)
 const isPublicationScene = computed(() => formData.bizScene === ProductSpuApi.BIZ_SCENE_PUBLICATION)
 const isNormalScene = computed(() => formData.bizScene === ProductSpuApi.BIZ_SCENE_NORMAL)
+const categoryCascaderProps = {
+  ...defaultProps,
+  multiple: true,
+  emitPath: false
+}
+const sceneCategoryList = computed<any[]>(() => filterCategoryTreeByScene(categoryList.value, formData.bizScene))
 const selectedPublicationType = computed(() =>
   publicationTypeList.value.find((item) => item.id === formData.publicationExt?.publicationTypeId)
 )
@@ -270,7 +283,8 @@ const validateTitleIdentifier = (_rule, _value, callback) => {
 
 const rules = reactive({
   name: [required],
-  categoryId: [required],
+  bizScene: [required],
+  categoryIds: [required],
   keyword: [required],
   introduction: [required],
   picUrl: [required],
@@ -290,10 +304,10 @@ watch(
     if (!data) {
       return
     }
-    lastCategoryId.value = data.categoryId
     lastBizScene.value = data.bizScene
     copyValueToTarget(formData, {
       ...data,
+      categoryIds: data.categoryIds || [],
       publicationExt: {
         ...createPublicationSpuExt(),
         ...(data.publicationExt || {})
@@ -362,7 +376,7 @@ const getTitleIdentifierPlaceholder = (fieldLabel: string) => {
 
 const buildInfoSubmitData = () => ({
   name: formData.name,
-  categoryId: formData.categoryId,
+  categoryIds: cloneDeep(formData.categoryIds || []),
   keyword: formData.keyword,
   picUrl: formData.picUrl,
   sliderPicUrls: cloneDeep(formData.sliderPicUrls || []),
@@ -375,7 +389,7 @@ const buildInfoSubmitData = () => ({
 const syncSceneStateToParent = (options: { syncSceneDefaults?: boolean } = {}) => {
   const sceneState: Partial<ProductSpuApi.Spu> = {
     name: formData.name,
-    categoryId: formData.categoryId,
+    categoryIds: cloneDeep(formData.categoryIds || []),
     keyword: formData.keyword,
     picUrl: formData.picUrl,
     sliderPicUrls: cloneDeep(formData.sliderPicUrls || []),
@@ -423,18 +437,10 @@ const resetSceneSpecificData = (targetBizScene?: string) => {
   }
 }
 
-const handleCategoryChange = async (categoryId?: number | string) => {
-  if (!categoryId) {
-    lastBizScene.value = formData.bizScene
-    formData.bizScene = undefined
-    lastCategoryId.value = undefined
-    syncSceneStateToParent({ syncSceneDefaults: true })
-    return
-  }
-  const targetBizScene = resolveCategoryBizScene(categoryList.value, categoryId)
-  const previousBizScene = formData.bizScene || lastBizScene.value
+const handleBizSceneChange = async (targetBizScene?: string) => {
+  const previousBizScene = lastBizScene.value
   if (!targetBizScene) {
-    formData.bizScene = undefined
+    formData.categoryIds = []
     syncSceneStateToParent({ syncSceneDefaults: true })
     return
   }
@@ -447,17 +453,33 @@ const handleCategoryChange = async (categoryId?: number | string) => {
           : '切换到普通商品分类后，将清空刊物扩展、适用年级和刊物 SKU 结构，确认继续吗？'
       )
     } catch {
-      formData.categoryId = lastCategoryId.value as any
+      formData.bizScene = previousBizScene
       return
     }
+    formData.categoryIds = []
     resetSceneSpecificData(targetBizScene)
   } else if (!previousBizScene) {
     initializeSceneDefaults(targetBizScene)
   }
   formData.bizScene = targetBizScene
-  lastCategoryId.value = categoryId
   lastBizScene.value = targetBizScene
   syncSceneStateToParent({ syncSceneDefaults: isCrossSceneSwitch || !previousBizScene })
+}
+
+const handleCategoryChange = () => {
+  syncSceneStateToParent()
+}
+
+const filterCategoryTreeByScene = (categories: CategoryVO[] = [], bizScene?: string): CategoryVO[] => {
+  if (!bizScene) {
+    return []
+  }
+  return categories
+    .filter((item) => item.bizScene === bizScene)
+    .map((item) => ({
+      ...item,
+      children: filterCategoryTreeByScene(item.children || [], bizScene)
+    }))
 }
 
 onMounted(async () => {

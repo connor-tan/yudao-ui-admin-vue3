@@ -45,7 +45,7 @@
         label="分类"
         prop="productCategoryIds"
       >
-        <ProductCategorySelect v-model="formData.productCategoryIds" />
+        <ProductCategorySelect v-model="formData.productCategoryIds" :multiple="true" />
       </el-form-item>
       <el-form-item label="优惠类型" prop="discountType">
         <el-radio-group v-model="formData.discountType">
@@ -370,13 +370,8 @@ const getProductScope = async () => {
       break
     case PromotionProductScopeEnum.CATEGORY.scope:
       await nextTick(() => {
-        let productCategoryIds = formData.value.productScopeValues
-        if (Array.isArray(productCategoryIds) && productCategoryIds.length > 0) {
-          // 单选时使用数组不能反显
-          productCategoryIds = productCategoryIds[0]
-        }
         // 设置品类编号
-        formData.value.productCategoryIds = productCategoryIds
+        formData.value.productCategoryIds = formData.value.productScopeValues || []
       })
       break
     default:

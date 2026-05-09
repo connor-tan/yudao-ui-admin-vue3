@@ -85,7 +85,7 @@ const otherRef = ref() // 其他设置 Ref
 const formData = ref<ProductSpuApi.Spu>({
   bizScene: undefined,
   name: '', // 商品名称
-  categoryId: undefined, // 商品分类
+  categoryIds: [], // 商品分类
   keyword: '', // 关键字
   picUrl: '', // 商品封面图
   sliderPicUrls: [], // 商品轮播图

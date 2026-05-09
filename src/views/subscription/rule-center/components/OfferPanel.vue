@@ -45,7 +45,7 @@
               <el-image :src="row.picUrl" class="h-50px w-50px flex-none" fit="cover" />
               <div class="ml-4 min-w-0">
                 <div class="truncate font-600">{{ row.productName }}</div>
-                <div class="mt-1 text-12px text-gray-500">{{ row.categoryName || '-' }}</div>
+                <div class="mt-1 text-12px text-gray-500">{{ row.categoryNames?.join('、') || '-' }}</div>
               </div>
             </div>
           </template>

@@ -2,7 +2,8 @@
   <el-tree-select
     v-model="selectCategoryId"
     :data="categoryList"
-    :props="defaultProps"
+    :props="treeProps"
+    :check-strictly="!leafOnly"
     :multiple="multiple"
     :show-checkbox="multiple"
     class="w-1/1"
@@ -24,6 +25,10 @@ const props = defineProps({
   modelValue: oneOfType<number | number[]>([Number, Array<Number>]),
   // 是否多选
   multiple: propTypes.bool.def(false),
+  // 是否只允许选择叶子分类
+  leafOnly: propTypes.bool.def(false),
+  // 业务场景
+  bizScene: propTypes.string.def(undefined),
   // 上级品类的编号
   parentId: propTypes.number.def(undefined)
 })
@@ -43,9 +48,24 @@ const emit = defineEmits(['update:modelValue'])
 
 /** 初始化 **/
 const categoryList = ref<ProductCategoryApi.CategoryVO[]>([]) // 分类树
-onMounted(async () => {
-  // 获得分类树
-  const data = await ProductCategoryApi.getCategoryList({ parentId: props.parentId })
+const treeProps = computed(() => ({
+  ...defaultProps,
+  disabled: (data: ProductCategoryApi.CategoryVO) =>
+    props.leafOnly && Array.isArray(data.children) && data.children.length > 0
+}))
+
+const loadCategoryList = async () => {
+  const params: Record<string, any> = {}
+  if (props.parentId !== undefined) {
+    params.parentId = props.parentId
+  }
+  if (props.bizScene) {
+    params.bizScene = props.bizScene
+  }
+  const data = await ProductCategoryApi.getCategoryList(params)
   categoryList.value = handleTree(data, 'id', 'parentId')
-})
+}
+
+watch(() => [props.parentId, props.bizScene], loadCategoryList)
+onMounted(loadCategoryList)
 </script>

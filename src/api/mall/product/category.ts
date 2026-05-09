@@ -37,6 +37,10 @@ export interface CategoryVO {
    */
   description?: string
   /**
+   * 分类自身或子孙分类是否已被商品引用
+   */
+  spuReferenced?: boolean
+  /**
    * 子分类
    */
   children?: CategoryVO[]

@@ -175,7 +175,7 @@ const handleViewSpu = (row: any) => {
   router.push({
     name: 'ProductCenter',
     query: {
-      categoryId: row.id
+      categoryIds: row.id
     }
   })
 }

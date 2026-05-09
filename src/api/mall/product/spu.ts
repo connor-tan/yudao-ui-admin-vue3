@@ -66,11 +66,18 @@ export interface GiveCouponTemplate {
   name?: string // 优惠券名称
 }
 
+export interface SpuCategory {
+  id?: number
+  name?: string
+  bizScene?: string
+}
+
 export interface Spu {
   id?: number
   bizScene?: string // 业务场景
   name?: string // 商品名称
-  categoryId?: number // 商品分类
+  categoryIds?: number[] // 商品分类
+  categories?: SpuCategory[] // 商品分类对象
   keyword?: string // 关键字
   picUrl?: string // 商品封面图
   sliderPicUrls?: string[] // 商品轮播图
@@ -104,7 +111,7 @@ export interface PublicationSpuGradeSummary {
 }
 
 // 获得 Spu 列表
-export const getSpuPage = (params: PageParam & { bizScene?: string }) => {
+export const getSpuPage = (params: PageParam & { bizScene?: string; categoryIds?: number[] }) => {
   return request.get({ url: '/product/spu/page', params })
 }
 

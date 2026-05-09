@@ -8,14 +8,23 @@
       v-loading="formLoading"
     >
       <el-form-item label="业务场景" prop="bizScene">
-        <el-radio-group v-model="formData.bizScene">
+        <el-radio-group v-model="formData.bizScene" :disabled="isBizSceneDisabled">
           <el-radio :value="ProductSpuApi.BIZ_SCENE_NORMAL">普通商品</el-radio>
           <el-radio :value="ProductSpuApi.BIZ_SCENE_PUBLICATION">刊物商品</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="上级分类" prop="parentId">
-        <el-select v-model="formData.parentId" placeholder="请选择上级分类">
-          <el-option :key="0" label="顶级分类" :value="0" />
+        <el-select
+          v-model="formData.parentId"
+          :disabled="isParentSelectDisabled"
+          placeholder="请选择上级分类"
+        >
+          <el-option
+            :key="0"
+            label="顶级分类"
+            :value="0"
+            :disabled="isTopLevelOptionDisabled"
+          />
           <el-option
             v-for="item in availableParentCategoryList"
             :key="item.id"
@@ -39,6 +48,10 @@
           <el-radio
             v-for="dict in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
             :key="dict.value"
+            :disabled="
+              (isReferencedCategory || isPublicationRootCategory) &&
+              dict.value === CommonStatusEnum.DISABLE
+            "
             :value="dict.value"
           >
             {{ dict.label }}
@@ -74,7 +87,8 @@ const formData = ref({
   name: '',
   picUrl: '',
   sort: 0,
-  status: CommonStatusEnum.ENABLE
+  status: CommonStatusEnum.ENABLE,
+  spuReferenced: false
 })
 const formRules = reactive({
   bizScene: [{ required: true, message: '请选择业务场景', trigger: 'change' }],
@@ -86,9 +100,45 @@ const formRules = reactive({
 })
 const formRef = ref() // 表单 Ref
 const categoryList = ref<any[]>([]) // 分类树
-const availableParentCategoryList = computed(() =>
-  categoryList.value.filter((item) => item.bizScene === formData.value.bizScene)
+const isPublicationScene = computed(
+  () => formData.value.bizScene === ProductSpuApi.BIZ_SCENE_PUBLICATION
 )
+const publicationRootCategory = computed(() =>
+  categoryList.value.find(
+    (item) => item.bizScene === ProductSpuApi.BIZ_SCENE_PUBLICATION && item.parentId === 0
+  )
+)
+const isPublicationRootCategory = computed(
+  () => formType.value === 'update' && isPublicationScene.value && formData.value.parentId === 0
+)
+const isReferencedCategory = computed(
+  () => formType.value === 'update' && Boolean(formData.value.spuReferenced)
+)
+const isBizSceneDisabled = computed(() => isReferencedCategory.value || isPublicationRootCategory.value)
+const isParentSelectDisabled = computed(
+  () =>
+    isReferencedCategory.value ||
+    isPublicationRootCategory.value ||
+    (isPublicationScene.value && Boolean(publicationRootCategory.value))
+)
+const isTopLevelOptionDisabled = computed(
+  () => isPublicationScene.value && !isPublicationRootCategory.value
+)
+const availableParentCategoryList = computed(() => {
+  if (isPublicationScene.value) {
+    return publicationRootCategory.value ? [publicationRootCategory.value] : []
+  }
+  return categoryList.value.filter((item) => item.bizScene === formData.value.bizScene)
+})
+
+const syncPublicationParent = () => {
+  if (!isPublicationScene.value || isPublicationRootCategory.value) {
+    return
+  }
+  if (publicationRootCategory.value) {
+    formData.value.parentId = publicationRootCategory.value.id
+  }
+}
 
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {
@@ -107,6 +157,7 @@ const open = async (type: string, id?: number) => {
   }
   // 获得分类树
   categoryList.value = await ProductCategoryApi.getCategoryList({ parentId: 0 })
+  syncPublicationParent()
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 
@@ -117,6 +168,13 @@ const submitForm = async () => {
   if (!formRef) return
   const valid = await formRef.value.validate()
   if (!valid) return
+  if (isPublicationScene.value && !isPublicationRootCategory.value) {
+    if (!publicationRootCategory.value) {
+      message.error('请先初始化刊物根分类')
+      return
+    }
+    formData.value.parentId = publicationRootCategory.value.id
+  }
   // 提交请求
   formLoading.value = true
   try {
@@ -145,7 +203,8 @@ const resetForm = () => {
     name: '',
     picUrl: '',
     sort: 0,
-    status: CommonStatusEnum.ENABLE
+    status: CommonStatusEnum.ENABLE,
+    spuReferenced: false
   }
   formRef.value?.resetFields()
 }
@@ -153,6 +212,10 @@ const resetForm = () => {
 watch(
   () => formData.value.bizScene,
   () => {
+    syncPublicationParent()
+    if (isPublicationScene.value) {
+      return
+    }
     if (
       formData.value.parentId &&
       !availableParentCategoryList.value.some((item) => item.id === formData.value.parentId)
@@ -161,4 +224,8 @@ watch(
     }
   }
 )
+
+watch(publicationRootCategory, () => {
+  syncPublicationParent()
+})
 </script>

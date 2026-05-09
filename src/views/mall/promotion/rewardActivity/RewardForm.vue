@@ -205,13 +205,8 @@ const getProductScope = async () => {
       break
     case PromotionProductScopeEnum.CATEGORY.scope:
       await nextTick()
-      let productCategoryIds: number | number[] = formData.value.productScopeValues || []
-      if (Array.isArray(productCategoryIds) && productCategoryIds.length === 1) {
-        // 单选时使用数组不能反显
-        productCategoryIds = productCategoryIds[0]
-      }
       // 设置品类编号
-      formData.value.productCategoryIds = productCategoryIds
+      formData.value.productCategoryIds = formData.value.productScopeValues || []
       break
     default:
       break

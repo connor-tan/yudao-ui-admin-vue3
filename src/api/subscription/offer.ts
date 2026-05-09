@@ -5,8 +5,9 @@ export interface SubscriptionOffer {
   windowId?: number
   productSpuId?: number
   productName?: string
-  categoryId?: number
-  categoryName?: string
+  categoryIds?: number[]
+  categoryNames?: string[]
+  categories?: Array<{ id?: number; name?: string; bizScene?: string }>
   picUrl?: string
   price?: number
   publisherId?: number
@@ -28,8 +29,8 @@ export interface SubscriptionOffer {
 export interface SubscriptionOfferAvailable {
   productSpuId: number
   productName?: string
-  categoryId?: number
-  categoryName?: string
+  categoryIds?: number[]
+  categoryNames?: string[]
   picUrl?: string
   price?: number
   stock?: number
@@ -52,7 +53,7 @@ export interface SubscriptionOfferAvailablePageReq {
   pageNo?: number
   pageSize?: number
   productName?: string
-  categoryId?: number
+  categoryIds?: number[]
   publisherId?: number
   publicationTypeId?: number
   issueCycle?: string

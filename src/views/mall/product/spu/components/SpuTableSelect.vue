@@ -17,13 +17,16 @@
             @keyup.enter="handleQuery"
           />
         </el-form-item>
-        <el-form-item label="商品分类" prop="categoryId">
+        <el-form-item label="商品分类" prop="categoryIds">
           <el-tree-select
-            v-model="queryParams.categoryId"
+            v-model="queryParams.categoryIds"
             :data="categoryTreeList"
             :props="defaultProps"
             check-strictly
             class="!w-240px"
+            multiple
+            collapse-tags
+            collapse-tags-tooltip
             node-key="id"
             placeholder="请选择商品分类"
           />
@@ -88,9 +91,9 @@
           </template>
         </el-table-column>
         <el-table-column label="商品名称" min-width="200" prop="name" />
-        <el-table-column label="商品分类" min-width="100" prop="categoryId">
+        <el-table-column label="商品分类" min-width="140">
           <template #default="{ row }">
-            <span>{{ categoryList?.find((c) => c.id === row.categoryId)?.name }}</span>
+            <span>{{ formatCategoryNames(row) }}</span>
           </template>
         </el-table-column>
       </el-table>
@@ -152,7 +155,7 @@ const queryParams = ref({
   // 默认获取上架的商品
   tabType: 0,
   name: '',
-  categoryId: null,
+  categoryIds: [],
   createTime: []
 })
 
@@ -208,7 +211,7 @@ const resetQuery = () => {
     // 默认获取上架的商品
     tabType: 0,
     name: '',
-    categoryId: null,
+    categoryIds: [],
     createTime: []
   }
   getList()
@@ -293,6 +296,9 @@ const calculateIsCheckAll = () => {
 const categoryList = ref()
 // 分类树
 const categoryTreeList = ref()
+const formatCategoryNames = (row: ProductSpuApi.Spu) => {
+  return (row.categories || []).map((item) => item.name).filter(Boolean).join('、') || '-'
+}
 /** 初始化 **/
 onMounted(async () => {
   await getList()
