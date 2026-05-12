@@ -1,10 +1,14 @@
 import type { CategoryVO } from '@/api/mall/product/category'
 import type { Spu, Sku } from '@/api/mall/product/spu'
-import { PUBLICATION_TARGET_PERIOD_FULL_YEAR } from '@/api/mall/product/spu'
+import {
+  PUBLICATION_ISSUE_MODE_SINGLE,
+  PUBLICATION_TARGET_PERIOD_FULL_YEAR
+} from '@/api/mall/product/spu'
 
 export const createPublicationSpuExt = (): NonNullable<Spu['publicationExt']> => ({
   publisherId: undefined,
   publicationTypeId: undefined,
+  issueMode: PUBLICATION_ISSUE_MODE_SINGLE,
   issueCycle: '',
   issn: '',
   cnCode: '',

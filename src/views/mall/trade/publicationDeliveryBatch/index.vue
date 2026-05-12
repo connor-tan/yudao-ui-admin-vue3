@@ -26,6 +26,21 @@
               />
             </el-select>
           </el-form-item>
+          <el-form-item label="配送方式" prop="deliveryType">
+            <el-select
+              v-model="candidateQueryParams.deliveryType"
+              class="!w-180px"
+              clearable
+              placeholder="请选择配送方式"
+            >
+              <el-option
+                v-for="item in publicationDeliveryTypeOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
           <el-form-item label="刊物" prop="offerId">
             <el-select
               v-model="candidateQueryParams.offerId"
@@ -59,6 +74,14 @@
                 :value="item.id!"
               />
             </el-select>
+          </el-form-item>
+          <el-form-item label="期号" prop="issueNo">
+            <el-input-number
+              v-model="candidateQueryParams.issueNo"
+              :min="1"
+              :step="1"
+              class="!w-180px"
+            />
           </el-form-item>
           <el-form-item label="学校" prop="schoolId">
             <el-select
@@ -111,6 +134,9 @@
           :stripe="true"
           class="mt-20px"
         >
+          <el-table-column align="center" label="配送方式" width="110">
+            <template #default="{ row }">{{ formatDeliveryType(row.deliveryType) }}</template>
+          </el-table-column>
           <el-table-column align="center" label="站点" min-width="140" prop="stationNameSnapshot" />
           <el-table-column align="center" label="学校" min-width="160" prop="schoolNameSnapshot" />
           <el-table-column
@@ -129,6 +155,15 @@
           <el-table-column align="center" label="目标周期" min-width="100">
             <template #default="{ row }">
               {{ getSubscriptionTargetPeriodLabel(row.targetPeriod) }}
+            </template>
+          </el-table-column>
+          <el-table-column align="center" label="期次" min-width="140">
+            <template #default="{ row }">
+              <div>第 {{ row.issueNo }} 期</div>
+              <div class="text-xs text-gray-500">{{ row.issueName || '-' }}</div>
+              <div v-if="row.plannedDeliveryDate" class="text-xs text-gray-500">
+                配送：{{ row.plannedDeliveryDate }}
+              </div>
             </template>
           </el-table-column>
           <el-table-column align="center" label="待发数量" prop="totalCount" width="100" />
@@ -189,6 +224,21 @@
               />
             </el-select>
           </el-form-item>
+          <el-form-item label="配送方式" prop="deliveryType">
+            <el-select
+              v-model="batchQueryParams.deliveryType"
+              class="!w-180px"
+              clearable
+              placeholder="请选择配送方式"
+            >
+              <el-option
+                v-for="item in publicationDeliveryTypeOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
           <el-form-item label="刊物" prop="offerId">
             <el-select
               v-model="batchQueryParams.offerId"
@@ -222,6 +272,14 @@
                 :value="item.id!"
               />
             </el-select>
+          </el-form-item>
+          <el-form-item label="期号" prop="issueNo">
+            <el-input-number
+              v-model="batchQueryParams.issueNo"
+              :min="1"
+              :step="1"
+              class="!w-180px"
+            />
           </el-form-item>
           <el-form-item label="学校" prop="schoolId">
             <el-select
@@ -286,6 +344,9 @@
           class="mt-20px"
         >
           <el-table-column align="center" label="批次号" min-width="160" prop="batchNo" />
+          <el-table-column align="center" label="配送方式" width="110">
+            <template #default="{ row }">{{ formatDeliveryType(row.deliveryType) }}</template>
+          </el-table-column>
           <el-table-column align="center" label="站点" min-width="140" prop="stationNameSnapshot" />
           <el-table-column align="center" label="学校" min-width="160" prop="schoolNameSnapshot" />
           <el-table-column
@@ -295,6 +356,12 @@
             prop="windowNameSnapshot"
           />
           <el-table-column align="center" label="刊物" min-width="200" prop="productNameSnapshot" />
+          <el-table-column align="center" label="期次" min-width="130">
+            <template #default="{ row }">
+              <div>第 {{ row.issueNo }} 期</div>
+              <div class="text-xs text-gray-500">{{ row.issueName || '-' }}</div>
+            </template>
+          </el-table-column>
           <el-table-column align="center" label="数量" width="150">
             <template #default="{ row }">
               {{ row.totalCount || 0 }} 本 / {{ row.orderCount || 0 }} 单
@@ -342,8 +409,14 @@
       <el-descriptions-item label="状态">
         <el-tag type="success">{{ getBatchStatusLabel(batchDetail.status) }}</el-tag>
       </el-descriptions-item>
+      <el-descriptions-item label="配送方式">
+        {{ formatDeliveryType(batchDetail.deliveryType) }}
+      </el-descriptions-item>
+      <el-descriptions-item label="期次">
+        第 {{ batchDetail.issueNo }} 期 {{ batchDetail.issueName || '' }}
+      </el-descriptions-item>
       <el-descriptions-item label="站点">{{
-        batchDetail.stationNameSnapshot
+        batchDetail.stationNameSnapshot || '-'
       }}</el-descriptions-item>
       <el-descriptions-item label="学校">{{ batchDetail.schoolNameSnapshot }}</el-descriptions-item>
       <el-descriptions-item label="订刊窗口">{{
@@ -374,25 +447,100 @@
       <el-table-column align="center" label="配送单" min-width="100">
         <template #default="{ row }">#{{ row.deliveryId }}</template>
       </el-table-column>
+      <el-table-column align="center" label="订单期次" min-width="110">
+        <template #default="{ row }">#{{ row.orderIssueId }}</template>
+      </el-table-column>
+      <el-table-column align="center" label="期次" min-width="120">
+        <template #default="{ row }">第 {{ row.issueNo }} 期 {{ row.issueName || '' }}</template>
+      </el-table-column>
       <el-table-column align="center" label="学生" min-width="120" prop="studentNameSnapshot" />
       <el-table-column align="center" label="班级" min-width="140" prop="classNameSnapshot" />
       <el-table-column align="center" label="数量" width="80" prop="count" />
+      <el-table-column align="center" label="物流" min-width="180">
+        <template #default="{ row }">
+          <template v-if="row.logisticsNo">
+            {{ deliveryExpressLabel(row.logisticsId) || row.logisticsId }} / {{ row.logisticsNo }}
+          </template>
+          <span v-else>-</span>
+        </template>
+      </el-table-column>
     </el-table>
+  </Dialog>
+
+  <Dialog v-model="expressDialogVisible" title="刊物快递期次发货" width="1080px">
+    <el-descriptions v-if="expressCandidate" :column="3" border class="mb-20px">
+      <el-descriptions-item label="刊物">{{ expressCandidate.productNameSnapshot }}</el-descriptions-item>
+      <el-descriptions-item label="期次">
+        第 {{ expressCandidate.issueNo }} 期 {{ expressCandidate.issueName || '' }}
+      </el-descriptions-item>
+      <el-descriptions-item label="待发">
+        {{ expressCandidate.totalCount || 0 }} 本 / {{ expressCandidate.orderCount || 0 }} 单
+      </el-descriptions-item>
+    </el-descriptions>
+    <el-form :inline="true" label-width="92px">
+      <el-form-item label="批量导入">
+        <el-input
+          v-model="expressImportText"
+          :autosize="{ minRows: 2, maxRows: 4 }"
+          class="!w-680px"
+          placeholder="每行：订单期次ID,物流公司ID,物流单号"
+          type="textarea"
+        />
+      </el-form-item>
+      <el-form-item>
+        <el-button plain type="primary" @click="applyExpressImport">填充物流</el-button>
+      </el-form-item>
+    </el-form>
+    <el-table v-loading="expressLoading" :data="expressItemList" border>
+      <el-table-column align="center" label="订单号" min-width="180" prop="orderNo" />
+      <el-table-column align="center" label="订单期次" min-width="110">
+        <template #default="{ row }">#{{ row.orderIssueId }}</template>
+      </el-table-column>
+      <el-table-column align="center" label="学生" min-width="120" prop="studentNameSnapshot" />
+      <el-table-column align="center" label="班级" min-width="140" prop="classNameSnapshot" />
+      <el-table-column align="center" label="数量" width="80" prop="count" />
+      <el-table-column align="center" label="物流公司" min-width="180">
+        <template #default="{ row }">
+          <el-select v-model="row.logisticsId" filterable placeholder="请选择物流公司">
+            <el-option
+              v-for="item in deliveryExpressList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="物流单号" min-width="180">
+        <template #default="{ row }">
+          <el-input v-model="row.logisticsNo" placeholder="请输入物流单号" />
+        </template>
+      </el-table-column>
+    </el-table>
+    <template #footer>
+      <el-button :loading="expressSubmitting" type="primary" @click="submitExpressDelivery">
+        确认发货
+      </el-button>
+      <el-button @click="expressDialogVisible = false">取 消</el-button>
+    </template>
   </Dialog>
 </template>
 
 <script setup lang="ts">
 import { dateFormatter, formatDate } from '@/utils/formatTime'
 import { getSubscriptionTargetPeriodLabel } from '@/utils/subscription'
-import { PublicationDeliveryBatchStatusEnum } from '@/utils/constants'
+import { DeliveryTypeEnum, PublicationDeliveryBatchStatusEnum } from '@/utils/constants'
 import { SubscriptionWindowApi, type SubscriptionWindowSimple } from '@/api/subscription/window'
 import { SubscriptionOfferApi, type SubscriptionOffer } from '@/api/subscription/offer'
 import { SubscriptionOfferSkuApi, type SubscriptionOfferSku } from '@/api/subscription/offerSku'
 import { SchoolApi, type SchoolSimple } from '@/api/edu/school'
 import { StationApi, type StationSimple } from '@/api/edu/station'
+import * as DeliveryExpressApi from '@/api/mall/trade/delivery/express'
 import {
   PublicationDeliveryBatchApi,
   type PublicationDeliveryBatchRespVO,
+  type PublicationDeliveryCandidateItemRespVO,
+  type PublicationDeliveryCandidatePageReqVO,
   type PublicationDeliveryCandidateRespVO
 } from '@/api/mall/trade/publicationDeliveryBatch'
 
@@ -408,6 +556,12 @@ const candidateOfferList = ref<SubscriptionOffer[]>([])
 const candidateOfferSkuList = ref<SubscriptionOfferSku[]>([])
 const batchOfferList = ref<SubscriptionOffer[]>([])
 const batchOfferSkuList = ref<SubscriptionOfferSku[]>([])
+const deliveryExpressList = ref<DeliveryExpressApi.DeliveryExpressVO[]>([])
+const publicationDeliveryTypeOptions = [
+  { value: DeliveryTypeEnum.STATION.type, label: '站点配送' },
+  { value: DeliveryTypeEnum.EXPRESS.type, label: '快递配送' }
+]
+const PUBLICATION_EXPRESS_BATCH_ITEM_LIMIT = 500
 
 const candidateLoading = ref(false)
 const candidateTotal = ref(0)
@@ -416,12 +570,15 @@ const candidateQueryFormRef = ref()
 const candidateQueryParams = reactive({
   pageNo: 1,
   pageSize: 10,
+  deliveryType: undefined as number | undefined,
   schoolId: undefined as number | undefined,
   stationId: undefined as number | undefined,
   windowId: undefined as number | undefined,
   offerId: undefined as number | undefined,
   offerSkuId: undefined as number | undefined,
-  skuId: undefined as number | undefined
+  skuId: undefined as number | undefined,
+  issueId: undefined as number | undefined,
+  issueNo: undefined as number | undefined
 })
 
 const batchLoading = ref(false)
@@ -432,20 +589,46 @@ const batchQueryParams = reactive({
   pageNo: 1,
   pageSize: 10,
   batchNo: undefined as string | undefined,
+  deliveryType: undefined as number | undefined,
   schoolId: undefined as number | undefined,
   stationId: undefined as number | undefined,
   windowId: undefined as number | undefined,
   offerId: undefined as number | undefined,
   offerSkuId: undefined as number | undefined,
   skuId: undefined as number | undefined,
+  issueId: undefined as number | undefined,
+  issueNo: undefined as number | undefined,
   deliveryTime: undefined as string[] | undefined
 })
 
 const detailVisible = ref(false)
 const batchDetail = ref<PublicationDeliveryBatchRespVO>()
+const expressDialogVisible = ref(false)
+const expressLoading = ref(false)
+const expressSubmitting = ref(false)
+const expressCandidate = ref<PublicationDeliveryCandidateRespVO>()
+const expressItemList = ref<PublicationDeliveryCandidateItemRespVO[]>([])
+const expressImportText = ref('')
 
 const getBatchStatusLabel = (status?: number) => {
   return status === PublicationDeliveryBatchStatusEnum.DELIVERED.status ? '已发货' : '-'
+}
+
+const formatDeliveryType = (deliveryType?: number) => {
+  if (deliveryType === DeliveryTypeEnum.STATION.type) {
+    return '站点配送'
+  }
+  if (deliveryType === DeliveryTypeEnum.EXPRESS.type) {
+    return '快递配送'
+  }
+  return '-'
+}
+
+const deliveryExpressLabel = (id?: number) => {
+  if (!id) {
+    return ''
+  }
+  return deliveryExpressList.value.find((item) => item.id === id)?.name || ''
 }
 
 const loadWindowList = async () => {
@@ -549,6 +732,7 @@ const resetCandidateQuery = async () => {
   candidateQueryParams.pageNo = 1
   candidateQueryParams.pageSize = 10
   candidateQueryParams.skuId = undefined
+  candidateQueryParams.issueId = undefined
   candidateOfferList.value = []
   candidateOfferSkuList.value = []
   await getCandidateList()
@@ -575,19 +759,26 @@ const resetBatchQuery = async () => {
   batchQueryParams.pageNo = 1
   batchQueryParams.pageSize = 10
   batchQueryParams.skuId = undefined
+  batchQueryParams.issueId = undefined
   batchOfferList.value = []
   batchOfferSkuList.value = []
   await getBatchList()
 }
 
 const handleCreateAndDeliver = async (row: PublicationDeliveryCandidateRespVO) => {
+  if (row.deliveryType === DeliveryTypeEnum.EXPRESS.type) {
+    await openExpressDelivery(row)
+    return
+  }
   if (
     !row.schoolId ||
+    row.deliveryType !== DeliveryTypeEnum.STATION.type ||
     !row.stationId ||
     !row.windowId ||
     !row.offerId ||
     !row.offerSkuId ||
-    !row.skuId
+    !row.skuId ||
+    !row.issueNo
   ) {
     message.error('待发货聚合数据不完整')
     return
@@ -602,15 +793,133 @@ const handleCreateAndDeliver = async (row: PublicationDeliveryCandidateRespVO) =
     return
   }
   await PublicationDeliveryBatchApi.createAndDeliver({
-    schoolId: row.schoolId,
+    deliveryType: row.deliveryType!,
+    schoolId: row.schoolId!,
     stationId: row.stationId,
-    windowId: row.windowId,
-    offerId: row.offerId,
-    offerSkuId: row.offerSkuId,
-    skuId: row.skuId
+    windowId: row.windowId!,
+    offerId: row.offerId!,
+    offerSkuId: row.offerSkuId!,
+    skuId: row.skuId!,
+    issueId: row.issueId,
+    issueNo: row.issueNo!
   })
   message.success('发货成功')
   await Promise.all([getCandidateList(), getBatchList()])
+}
+
+const buildCandidateReq = (
+  row: PublicationDeliveryCandidateRespVO
+): PublicationDeliveryCandidatePageReqVO => ({
+  deliveryType: row.deliveryType,
+  schoolId: row.schoolId,
+  stationId: row.stationId,
+  windowId: row.windowId,
+  offerId: row.offerId,
+  offerSkuId: row.offerSkuId,
+  skuId: row.skuId,
+  issueId: row.issueId,
+  issueNo: row.issueNo
+})
+
+const openExpressDelivery = async (row: PublicationDeliveryCandidateRespVO) => {
+  if ((row.orderCount || 0) > PUBLICATION_EXPRESS_BATCH_ITEM_LIMIT) {
+    message.error(`快递刊物期次单批最多支持 ${PUBLICATION_EXPRESS_BATCH_ITEM_LIMIT} 条，请缩小筛选范围后再发货`)
+    return
+  }
+  if (
+    !row.schoolId ||
+    !row.windowId ||
+    !row.offerId ||
+    !row.offerSkuId ||
+    !row.skuId ||
+    !row.issueNo
+  ) {
+    message.error('待发货聚合数据不完整')
+    return
+  }
+  expressCandidate.value = row
+  expressDialogVisible.value = true
+  expressImportText.value = ''
+  expressLoading.value = true
+  try {
+    const [expressList, items] = await Promise.all([
+      deliveryExpressList.value.length
+        ? Promise.resolve(deliveryExpressList.value)
+        : DeliveryExpressApi.getSimpleDeliveryExpressList(),
+      PublicationDeliveryBatchApi.getCandidateItemList(buildCandidateReq(row))
+    ])
+    deliveryExpressList.value = expressList
+    expressItemList.value = (items || []).map((item) => ({
+      ...item,
+      logisticsId: item.logisticsId,
+      logisticsNo: item.logisticsNo || ''
+    }))
+  } finally {
+    expressLoading.value = false
+  }
+}
+
+const applyExpressImport = () => {
+  const lines = expressImportText.value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+  if (lines.length === 0) {
+    message.warning('请先粘贴物流数据')
+    return
+  }
+  let appliedCount = 0
+  lines.forEach((line) => {
+    const [orderIssueIdText, logisticsIdText, logisticsNo] = line.split(/[,\t ]+/).map((item) => item.trim())
+    const orderIssueId = Number(orderIssueIdText)
+    const logisticsId = Number(logisticsIdText)
+    if (!orderIssueId || !logisticsId || !logisticsNo) {
+      return
+    }
+    const target = expressItemList.value.find((item) => item.orderIssueId === orderIssueId)
+    if (!target) {
+      return
+    }
+    target.logisticsId = logisticsId
+    target.logisticsNo = logisticsNo
+    appliedCount += 1
+  })
+  message.success(`已填充 ${appliedCount} 条物流`)
+}
+
+const submitExpressDelivery = async () => {
+  const row = expressCandidate.value
+  if (!row) {
+    return
+  }
+  const invalidItem = expressItemList.value.find((item) => !item.logisticsId || !item.logisticsNo)
+  if (invalidItem) {
+    message.error(`请补全订单 ${invalidItem.orderNo || invalidItem.orderIssueId} 的物流信息`)
+    return
+  }
+  expressSubmitting.value = true
+  try {
+    await PublicationDeliveryBatchApi.createAndDeliver({
+      deliveryType: DeliveryTypeEnum.EXPRESS.type,
+      schoolId: row.schoolId!,
+      windowId: row.windowId!,
+      offerId: row.offerId!,
+      offerSkuId: row.offerSkuId!,
+      skuId: row.skuId!,
+      issueId: row.issueId,
+      issueNo: row.issueNo!,
+      expressItems: expressItemList.value.map((item) => ({
+        orderIssueId: item.orderIssueId!,
+        logisticsId: item.logisticsId!,
+        logisticsNo: item.logisticsNo!
+      }))
+    })
+    message.success('发货成功')
+    expressDialogVisible.value = false
+    await Promise.all([getCandidateList(), getBatchList()])
+  } finally {
+    expressSubmitting.value = false
+  }
 }
 
 const openBatchDetail = async (id?: number) => {
@@ -631,7 +940,10 @@ onMounted(async () => {
       stationList.value = data
     }),
     getCandidateList(),
-    getBatchList()
+    getBatchList(),
+    DeliveryExpressApi.getSimpleDeliveryExpressList().then((data) => {
+      deliveryExpressList.value = data
+    })
   ])
 })
 </script>

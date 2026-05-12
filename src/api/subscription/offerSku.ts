@@ -11,6 +11,8 @@ export interface SubscriptionOfferSku {
   volumeLabel?: string
   editionLabel?: string
   isbn?: string
+  issueMode?: string
+  issueCount?: number
   applicableGradeCatalogIds?: number[]
   applicableGradeNames?: string[]
   sort?: number

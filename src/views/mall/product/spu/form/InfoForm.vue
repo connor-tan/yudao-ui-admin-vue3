@@ -118,7 +118,22 @@
           />
         </div>
       </el-form-item>
-      <el-form-item label="出刊周期" prop="publicationExt.issueCycle">
+      <el-form-item label="履约类型" prop="publicationExt.issueMode">
+        <el-select
+          v-model="formData.publicationExt!.issueMode"
+          class="w-80!"
+          placeholder="请选择履约类型"
+          @change="handleIssueModeChange"
+        >
+          <el-option
+            v-for="item in ProductSpuApi.PUBLICATION_ISSUE_MODE_OPTIONS"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item v-if="isPublicationPeriodical" label="出刊周期" prop="publicationExt.issueCycle">
         <el-select
           v-model="formData.publicationExt!.issueCycle"
           class="w-80!"
@@ -224,6 +239,9 @@ const lastBizScene = ref<string | undefined>(undefined)
 const hasBizScene = computed(() => !!formData.bizScene)
 const isPublicationScene = computed(() => formData.bizScene === ProductSpuApi.BIZ_SCENE_PUBLICATION)
 const isNormalScene = computed(() => formData.bizScene === ProductSpuApi.BIZ_SCENE_NORMAL)
+const isPublicationPeriodical = computed(
+  () => formData.publicationExt?.issueMode === ProductSpuApi.PUBLICATION_ISSUE_MODE_PERIODICAL
+)
 const categoryCascaderProps = {
   ...defaultProps,
   multiple: true,
@@ -261,8 +279,15 @@ const validatePublicationType = (_rule, value, callback) => {
   }
   callback(new Error('请选择刊物类型'))
 }
-const validateIssueCycle = (_rule, value, callback) => {
+const validateIssueMode = (_rule, value, callback) => {
   if (!isPublicationScene.value || value) {
+    callback()
+    return
+  }
+  callback(new Error('请选择履约类型'))
+}
+const validateIssueCycle = (_rule, value, callback) => {
+  if (!isPublicationScene.value || !isPublicationPeriodical.value || value) {
     callback()
     return
   }
@@ -292,6 +317,7 @@ const rules = reactive({
   brandId: [{ validator: validateBrand, trigger: 'change' }],
   'publicationExt.publisherId': [{ validator: validatePublicationPublisher, trigger: 'change' }],
   'publicationExt.publicationTypeId': [{ validator: validatePublicationType, trigger: 'change' }],
+  'publicationExt.issueMode': [{ validator: validateIssueMode, trigger: 'change' }],
   'publicationExt.issueCycle': [{ validator: validateIssueCycle, trigger: 'change' }],
   'publicationExt.issn': [{ validator: validateTitleIdentifier, trigger: 'blur' }],
   'publicationExt.cnCode': [{ validator: validateTitleIdentifier, trigger: 'blur' }],
@@ -366,6 +392,15 @@ const handlePublicationTypeChange = async () => {
     'publicationExt.cnCode',
     'publicationExt.postDistributionCode'
   ])
+}
+
+const handleIssueModeChange = async () => {
+  if (!isPublicationPeriodical.value) {
+    formData.publicationExt.issueCycle = ''
+  }
+  syncSceneStateToParent()
+  await nextTick()
+  formRef.value?.clearValidate?.(['publicationExt.issueCycle'])
 }
 
 const getTitleIdentifierPlaceholder = (fieldLabel: string) => {

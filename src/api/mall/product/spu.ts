@@ -11,6 +11,12 @@ export const PUBLICATION_TARGET_PERIOD_OPTIONS = [
   { value: PUBLICATION_TARGET_PERIOD_FIRST_TERM, label: '上学期' },
   { value: PUBLICATION_TARGET_PERIOD_SECOND_TERM, label: '下学期' }
 ]
+export const PUBLICATION_ISSUE_MODE_SINGLE = 'SINGLE'
+export const PUBLICATION_ISSUE_MODE_PERIODICAL = 'PERIODICAL'
+export const PUBLICATION_ISSUE_MODE_OPTIONS = [
+  { value: PUBLICATION_ISSUE_MODE_SINGLE, label: '独立刊物' },
+  { value: PUBLICATION_ISSUE_MODE_PERIODICAL, label: '期刊' }
+]
 
 export interface Property {
   propertyId?: number // 属性编号
@@ -25,6 +31,7 @@ export interface PublicationSpuExt {
   publicationTypeId?: number
   publicationTypeName?: string
   publicationTypeIdentifierRule?: string
+  issueMode?: string
   issueCycle?: string
   issn?: string
   cnCode?: string

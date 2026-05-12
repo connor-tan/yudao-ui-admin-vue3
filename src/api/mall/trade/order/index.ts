@@ -119,7 +119,29 @@ export interface OrderItemRespVO {
   publicationDeliveryStatus?: number | null
   publicationDeliveryBatchId?: number | null
   publicationDeliveryTime?: string | null
+  publicationIssueMode?: string
+  publicationIssueTotalCount?: number
+  publicationIssueDeliveredCount?: number
+  publicationIssueReceivedCount?: number
+  publicationFulfillmentStatus?: number
+  publicationIssues?: OrderItemPublicationIssueRespVO[]
   properties?: ProductPropertiesVO[] //属性数组
+}
+
+export interface OrderItemPublicationIssueRespVO {
+  id?: number
+  issueId?: number
+  issueNo?: number
+  issueName?: string
+  plannedPublishDate?: string
+  plannedDeliveryDate?: string
+  deliveryStatus?: number
+  receiveStatus?: number
+  deliveryBatchId?: number
+  deliveryTime?: string
+  logisticsId?: number
+  logisticsNo?: string
+  receiveTime?: string
 }
 
 export interface OrderDeliveryRespVO {

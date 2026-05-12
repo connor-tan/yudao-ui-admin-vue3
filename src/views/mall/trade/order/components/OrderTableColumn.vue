@@ -93,26 +93,14 @@
                 {{ property.propertyName }}: {{ property.valueName }}
               </el-tag>
               <div v-if="row.subscriptionOfferSkuId" class="w-full text-xs text-gray-500">
-                刊物发货：
-                <el-tag
-                  :type="
-                    row.publicationDeliveryStatus === PublicationDeliveryStatusEnum.DELIVERED.status
-                      ? 'success'
-                      : 'warning'
-                  "
-                  size="small"
-                >
-                  {{
-                    row.publicationDeliveryStatus === PublicationDeliveryStatusEnum.DELIVERED.status
-                      ? '已发货'
-                      : '待发货'
-                  }}
+                刊物期次：
+                <el-tag :type="getPublicationFulfillmentTagType(row.publicationFulfillmentStatus)" size="small">
+                  {{ getPublicationFulfillmentLabel(row.publicationFulfillmentStatus) }}
                 </el-tag>
-                <span v-if="row.publicationDeliveryBatchId" class="ml-5px">
-                  批次：#{{ row.publicationDeliveryBatchId }}
-                </span>
-                <span v-if="row.publicationDeliveryTime" class="ml-5px">
-                  时间：{{ formatDate(row.publicationDeliveryTime) }}
+                <span class="ml-5px">
+                  共 {{ row.publicationIssueTotalCount || 0 }} 期 / 已发
+                  {{ row.publicationIssueDeliveredCount || 0 }} / 已收
+                  {{ row.publicationIssueReceivedCount || 0 }}
                 </span>
               </div>
             </div>
@@ -214,7 +202,7 @@
 import { nextTick, onMounted, onUnmounted, watch } from 'vue'
 import type { CSSProperties } from 'vue'
 import { DICT_TYPE } from '@/utils/dict'
-import { DeliveryTypeEnum, PublicationDeliveryStatusEnum } from '@/utils/constants'
+import { DeliveryTypeEnum, PublicationFulfillmentStatusEnum } from '@/utils/constants'
 import { formatDate } from '@/utils/formatTime'
 import { floatToFixed2 } from '@/utils'
 import * as TradeOrderApi from '@/api/mall/trade/order'
@@ -244,6 +232,26 @@ const formatMixedDeliveryText = (order: OrderVO) =>
       return '其他'
     })
     .join(' + ')
+
+const getPublicationFulfillmentLabel = (status?: number) => {
+  return (
+    Object.values(PublicationFulfillmentStatusEnum).find((item) => item.status === status)?.name ||
+    '-'
+  )
+}
+
+const getPublicationFulfillmentTagType = (status?: number) => {
+  if (status === PublicationFulfillmentStatusEnum.COMPLETED.status) {
+    return 'success'
+  }
+  if (
+    status === PublicationFulfillmentStatusEnum.DELIVERED.status ||
+    status === PublicationFulfillmentStatusEnum.PARTIAL_RECEIVED.status
+  ) {
+    return 'warning'
+  }
+  return 'info'
+}
 
 const headerStyle = ({ row, columnIndex }: any): CSSProperties => {
   // 表头第一行第一列占 8

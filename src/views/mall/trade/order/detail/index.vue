@@ -75,27 +75,45 @@
               <span v-else>-</span>
             </template>
           </el-table-column>
-          <el-table-column label="刊物发货" min-width="220">
+          <el-table-column label="刊物期次" min-width="340">
             <template #default="{ row }">
               <template v-if="row.subscriptionOfferSkuId">
-                <el-tag
-                  :type="
-                    row.publicationDeliveryStatus === PublicationDeliveryStatusEnum.DELIVERED.status
-                      ? 'success'
-                      : 'warning'
-                  "
-                >
-                  {{
-                    row.publicationDeliveryStatus === PublicationDeliveryStatusEnum.DELIVERED.status
-                      ? '已发货'
-                      : '待发货'
-                  }}
+                <el-tag :type="getPublicationFulfillmentTagType(row.publicationFulfillmentStatus)">
+                  {{ getPublicationFulfillmentLabel(row.publicationFulfillmentStatus) }}
                 </el-tag>
-                <div v-if="row.publicationDeliveryBatchId" class="mt-5px text-xs text-gray-500">
-                  批次：#{{ row.publicationDeliveryBatchId }}
-                </div>
-                <div v-if="row.publicationDeliveryTime" class="text-xs text-gray-500">
-                  时间：{{ formatDate(row.publicationDeliveryTime) }}
+                <span class="ml-5px text-xs text-gray-500">
+                  共 {{ row.publicationIssueTotalCount || 0 }} 期 / 已发
+                  {{ row.publicationIssueDeliveredCount || 0 }} 期 / 已收
+                  {{ row.publicationIssueReceivedCount || 0 }} 期
+                </span>
+                <div v-if="row.publicationIssues?.length" class="mt-8px">
+                  <div
+                    v-for="issue in row.publicationIssues"
+                    :key="issue.id"
+                    class="mb-4px text-xs text-gray-500"
+                  >
+                    <el-tag
+                      :type="
+                        issue.receiveStatus === PublicationReceiveStatusEnum.RECEIVED.status
+                          ? 'success'
+                          : issue.deliveryStatus === PublicationDeliveryStatusEnum.DELIVERED.status
+                            ? 'warning'
+                            : 'info'
+                      "
+                      size="small"
+                    >
+                      {{
+                        issue.receiveStatus === PublicationReceiveStatusEnum.RECEIVED.status
+                          ? '已收'
+                          : issue.deliveryStatus === PublicationDeliveryStatusEnum.DELIVERED.status
+                            ? '已发'
+                            : '待发'
+                      }}
+                    </el-tag>
+                    第 {{ issue.issueNo }} 期 {{ issue.issueName || '' }}
+                    <span v-if="issue.deliveryBatchId"> / 批次：#{{ issue.deliveryBatchId }}</span>
+                    <span v-if="issue.logisticsNo"> / 物流：{{ issue.logisticsNo }}</span>
+                  </div>
                 </div>
               </template>
               <span v-else>-</span>
@@ -325,7 +343,9 @@ import { computed } from 'vue'
 import { useTagsViewStore } from '@/store/modules/tagsView'
 import {
   DeliveryTypeEnum,
+  PublicationFulfillmentStatusEnum,
   PublicationDeliveryStatusEnum,
+  PublicationReceiveStatusEnum,
   TradeOrderStatusEnum
 } from '@/utils/constants'
 import * as DeliveryPickUpStoreApi from '@/api/mall/trade/delivery/pickUpStore'
@@ -350,6 +370,29 @@ const getUserTypeColor = (type: number) => {
       return '#F56C6C'
   }
   return '#409EFF'
+}
+
+const getPublicationFulfillmentLabel = (status?: number) => {
+  return (
+    Object.values(PublicationFulfillmentStatusEnum).find((item) => item.status === status)?.name ||
+    '-'
+  )
+}
+
+const getPublicationFulfillmentTagType = (status?: number) => {
+  if (status === PublicationFulfillmentStatusEnum.COMPLETED.status) {
+    return 'success'
+  }
+  if (
+    status === PublicationFulfillmentStatusEnum.DELIVERED.status ||
+    status === PublicationFulfillmentStatusEnum.PARTIAL_RECEIVED.status
+  ) {
+    return 'warning'
+  }
+  if (status === PublicationFulfillmentStatusEnum.CANCELED.status) {
+    return 'info'
+  }
+  return 'info'
 }
 
 // 订单详情

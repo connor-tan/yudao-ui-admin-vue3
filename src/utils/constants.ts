@@ -425,6 +425,50 @@ export const PublicationDeliveryStatusEnum = {
 }
 
 /**
+ * 刊物订单期次收货状态
+ */
+export const PublicationReceiveStatusEnum = {
+  UNRECEIVED: {
+    status: 10,
+    name: '待收货'
+  },
+  RECEIVED: {
+    status: 20,
+    name: '已收货'
+  }
+}
+
+/**
+ * 刊物订单项期次履约状态
+ */
+export const PublicationFulfillmentStatusEnum = {
+  UNDELIVERED: {
+    status: 10,
+    name: '待发货'
+  },
+  PARTIAL_DELIVERED: {
+    status: 20,
+    name: '部分发货'
+  },
+  DELIVERED: {
+    status: 30,
+    name: '已发货'
+  },
+  PARTIAL_RECEIVED: {
+    status: 40,
+    name: '部分收货'
+  },
+  COMPLETED: {
+    status: 50,
+    name: '已完成'
+  },
+  CANCELED: {
+    status: 90,
+    name: '已取消'
+  }
+}
+
+/**
  * 刊物发货批次状态
  */
 export const PublicationDeliveryBatchStatusEnum = {
