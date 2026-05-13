@@ -3,14 +3,6 @@ import request from '@/config/axios'
 export const BIZ_SCENE_NORMAL = 'NORMAL'
 export const BIZ_SCENE_PUBLICATION = 'PUBLICATION'
 
-export const PUBLICATION_TARGET_PERIOD_FULL_YEAR = 'FULL_YEAR'
-export const PUBLICATION_TARGET_PERIOD_FIRST_TERM = 'FIRST_TERM'
-export const PUBLICATION_TARGET_PERIOD_SECOND_TERM = 'SECOND_TERM'
-export const PUBLICATION_TARGET_PERIOD_OPTIONS = [
-  { value: PUBLICATION_TARGET_PERIOD_FULL_YEAR, label: '全学年' },
-  { value: PUBLICATION_TARGET_PERIOD_FIRST_TERM, label: '上学期' },
-  { value: PUBLICATION_TARGET_PERIOD_SECOND_TERM, label: '下学期' }
-]
 export const PUBLICATION_ISSUE_MODE_SINGLE = 'SINGLE'
 export const PUBLICATION_ISSUE_MODE_PERIODICAL = 'PERIODICAL'
 export const PUBLICATION_ISSUE_MODE_OPTIONS = [
@@ -39,7 +31,6 @@ export interface PublicationSpuExt {
 }
 
 export interface PublicationSkuExt {
-  targetPeriod?: string
   volumeLabel?: string
   editionLabel?: string
   isbn?: string

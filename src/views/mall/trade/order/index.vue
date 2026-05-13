@@ -57,6 +57,16 @@
           />
         </el-select>
       </el-form-item>
+      <el-form-item label="业务来源" prop="orderSource">
+        <el-select v-model="queryParams.orderSource" class="!w-280px" clearable placeholder="全部">
+          <el-option
+            v-for="dict in getStrDictOptions(DICT_TYPE.TRADE_ORDER_SOURCE)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item label="订单类型" prop="type">
         <el-select v-model="queryParams.type" class="!w-280px" clearable placeholder="全部">
           <el-option
@@ -166,6 +176,30 @@
 
   <!-- 列表 -->
   <ContentWrap>
+    <el-row :gutter="10" class="mb-15px">
+      <el-col :span="1.5">
+        <el-button
+          v-hasPermi="['trade:order:create']"
+          plain
+          type="primary"
+          @click="openManualCreate"
+        >
+          <Icon icon="ep:plus" class="mr-5px" />
+          手动创建
+        </el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          v-hasPermi="['trade:order:import']"
+          plain
+          type="warning"
+          @click="openManualImport"
+        >
+          <Icon icon="ep:upload" class="mr-5px" />
+          批量导入
+        </el-button>
+      </el-col>
+    </el-row>
     <!-- 添加 row-key="id" 解决列数据中的 table#header 数据不刷新的问题  -->
     <el-table v-loading="loading" :data="list" row-key="id">
       <OrderTableColumn :list="list" :pick-up-store-list="pickUpStoreList">
@@ -205,6 +239,18 @@
                     <Icon icon="ep:chat-line-square" />
                     备注
                   </el-dropdown-item>
+                  <el-dropdown-item
+                    v-if="isUnpaidAdminOrder(row)"
+                    divided
+                    command="confirmOfflinePay"
+                  >
+                    <Icon icon="ep:money" />
+                    确认收款
+                  </el-dropdown-item>
+                  <el-dropdown-item v-if="isUnpaidAdminOrder(row)" command="manualCancel">
+                    <Icon icon="ep:circle-close" />
+                    取消订单
+                  </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -224,17 +270,25 @@
   <!-- 各种操作的弹窗 -->
   <OrderDeliveryForm ref="deliveryFormRef" @success="getList" />
   <OrderUpdateRemarkForm ref="updateRemarkForm" @success="getList" />
+  <OrderManualCreateForm
+    ref="manualCreateFormRef"
+    :pick-up-store-list="pickUpStoreList"
+    @success="getList"
+  />
+  <OrderManualImportForm ref="manualImportFormRef" @success="getList" />
 </template>
 
 <script lang="ts" setup>
 import type { FormInstance } from 'element-plus'
 import OrderDeliveryForm from '@/views/mall/trade/order/form/OrderDeliveryForm.vue'
 import OrderUpdateRemarkForm from '@/views/mall/trade/order/form/OrderUpdateRemarkForm.vue'
+import OrderManualCreateForm from '@/views/mall/trade/order/form/OrderManualCreateForm.vue'
+import OrderManualImportForm from '@/views/mall/trade/order/form/OrderManualImportForm.vue'
 import * as TradeOrderApi from '@/api/mall/trade/order'
 import * as PickUpStoreApi from '@/api/mall/trade/delivery/pickUpStore'
 import { DICT_TYPE, getIntDictOptions, getStrDictOptions } from '@/utils/dict'
 import * as DeliveryExpressApi from '@/api/mall/trade/delivery/express'
-import { DeliveryTypeEnum, TradeOrderStatusEnum } from '@/utils/constants'
+import { DeliveryTypeEnum, TradeOrderSourceEnum, TradeOrderStatusEnum } from '@/utils/constants'
 import { OrderTableColumn } from './components'
 
 defineOptions({ name: 'TradeOrder' })
@@ -253,6 +307,7 @@ const queryParams = ref({
   payChannelCode: undefined, // 支付方式
   createTime: undefined, // 创建时间
   terminal: undefined, // 订单来源
+  orderSource: undefined, // 业务来源
   type: undefined, // 订单类型
   deliveryType: undefined, // 配送方式
   logisticsId: undefined, // 快递公司
@@ -311,6 +366,7 @@ const resetQuery = () => {
     payChannelCode: undefined, // 支付方式
     createTime: undefined, // 创建时间
     terminal: undefined, // 订单来源
+    orderSource: undefined, // 业务来源
     type: undefined, // 订单类型
     deliveryType: undefined, // 配送方式
     logisticsId: undefined, // 快递公司
@@ -328,6 +384,8 @@ const openDetail = (id: number) => {
 /** 操作分发 */
 const deliveryFormRef = ref()
 const updateRemarkForm = ref()
+const manualCreateFormRef = ref()
+const manualImportFormRef = ref()
 const getPendingExpressDeliveries = (row: TradeOrderApi.OrderVO) => {
   return (row.deliveries || []).filter(
     (delivery) =>
@@ -335,10 +393,16 @@ const getPendingExpressDeliveries = (row: TradeOrderApi.OrderVO) => {
       delivery.status === TradeOrderStatusEnum.UNDELIVERED.status
   )
 }
-const handleCommand = (command: string, row: TradeOrderApi.OrderVO) => {
+const handleCommand = async (command: string, row: TradeOrderApi.OrderVO) => {
   switch (command) {
     case 'remark':
       updateRemarkForm.value?.open(row)
+      break
+    case 'confirmOfflinePay':
+      await handleConfirmOfflinePay(row)
+      break
+    case 'manualCancel':
+      await handleManualCancel(row)
       break
     case 'delivery': {
       const pendingExpressDeliveries = getPendingExpressDeliveries(row)
@@ -359,6 +423,48 @@ const handleCommand = (command: string, row: TradeOrderApi.OrderVO) => {
       break
     }
   }
+}
+
+const isAdminOrder = (row: TradeOrderApi.OrderVO) =>
+  row.orderSource === TradeOrderSourceEnum.ADMIN_MANUAL ||
+  row.orderSource === TradeOrderSourceEnum.ADMIN_IMPORT
+const isUnpaidAdminOrder = (row: TradeOrderApi.OrderVO) =>
+  isAdminOrder(row) && row.status === TradeOrderStatusEnum.UNPAID.status
+
+const openManualCreate = () => {
+  manualCreateFormRef.value?.open()
+}
+
+const openManualImport = () => {
+  manualImportFormRef.value?.open()
+}
+
+const handleConfirmOfflinePay = async (row: TradeOrderApi.OrderVO) => {
+  if (!row.id) {
+    return
+  }
+  try {
+    await message.confirm('确认该后台订单已线下收款，并生成线下支付单？')
+  } catch {
+    return
+  }
+  await TradeOrderApi.confirmOfflinePay(row.id)
+  message.success('确认收款成功')
+  await getList()
+}
+
+const handleManualCancel = async (row: TradeOrderApi.OrderVO) => {
+  if (!row.id) {
+    return
+  }
+  try {
+    await message.confirm('确认取消该后台订单？')
+  } catch {
+    return
+  }
+  await TradeOrderApi.cancelManualOrder(row.id)
+  message.success('取消成功')
+  await getList()
 }
 
 // 监听路由变化更新列表，解决订单保存/更新后，列表不刷新的问题。

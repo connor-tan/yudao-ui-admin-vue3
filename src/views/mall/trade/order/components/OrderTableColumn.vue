@@ -45,8 +45,14 @@
             >
               <span class="mr-20px">订单号：{{ scope.row.no }} </span>
               <span class="mr-20px">下单时间：{{ formatDate(scope.row.createTime) }}</span>
-              <span>订单来源：</span>
+              <span>下单终端：</span>
               <dict-tag :type="DICT_TYPE.TERMINAL" :value="scope.row.terminal" class="mr-20px" />
+              <span>业务来源：</span>
+              <dict-tag
+                :type="DICT_TYPE.TRADE_ORDER_SOURCE"
+                :value="scope.row.orderSource"
+                class="mr-20px"
+              />
               <span>支付方式：</span>
               <dict-tag
                 v-if="scope.row.payChannelCode"
@@ -131,7 +137,7 @@
               v-if="scope.row.deliveryType === DeliveryTypeEnum.EXPRESS.type"
               class="flex flex-col"
             >
-              <span>买家：{{ scope.row.user?.nickname }}</span>
+              <span>买家：{{ getBuyerName(scope.row) }}</span>
               <span>
                 收货人：{{ scope.row.receiverName }} {{ scope.row.receiverMobile }}
                 {{ scope.row.receiverAreaName }} {{ scope.row.receiverDetailAddress }}
@@ -159,7 +165,7 @@
               v-if="scope.row.deliveryType === DeliveryTypeEnum.STATION.type"
               class="flex flex-col"
             >
-              <span>买家：{{ scope.row.user?.nickname }}</span>
+              <span>买家：{{ getBuyerName(scope.row) }}</span>
               <span>学校：{{ scope.row.items?.[0]?.subscriptionSchoolNameSnapshot || '-' }}</span>
               <span>班级：{{ scope.row.items?.[0]?.subscriptionClassNameSnapshot || '-' }}</span>
             </div>
@@ -167,7 +173,7 @@
               v-if="scope.row.deliveryType === DeliveryTypeEnum.MIXED.type"
               class="flex flex-col"
             >
-              <span>买家：{{ scope.row.user?.nickname }}</span>
+              <span>买家：{{ getBuyerName(scope.row) }}</span>
               <span>混合配送：{{ formatMixedDeliveryText(scope.row) }}</span>
               <span v-if="scope.row.receiverName">
                 快递收件：{{ scope.row.receiverName }} {{ scope.row.receiverMobile }}
@@ -217,6 +223,8 @@ const props = defineProps<{
   list: OrderVO[]
   pickUpStoreList: DeliveryPickUpStoreVO[]
 }>()
+
+const getBuyerName = (order: OrderVO) => order.user?.nickname || (order.userId ? '-' : '后台订单')
 
 const getPickUpDelivery = (order: OrderVO) =>
   order.deliveries?.find((delivery) => delivery.deliveryType === DeliveryTypeEnum.PICK_UP.type)

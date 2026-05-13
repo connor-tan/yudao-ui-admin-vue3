@@ -7,6 +7,7 @@ export interface OrderVO {
   createTime?: string | null // 下单时间
   type?: number | null // 订单类型
   terminal?: number | null // 订单来源
+  orderSource?: string // 业务来源
   userId?: number | null // 用户编号
   userIp?: string // 用户 IP
   userRemark?: string // 用户备注
@@ -179,6 +180,38 @@ export interface ProductPropertiesVO {
   valueName?: string // 属性值的名称
 }
 
+export interface ManualOrderCreateReqVO {
+  items: ManualOrderItemReqVO[]
+  manualOrderPrice?: number
+  deliveryType?: number
+  receiverName?: string
+  receiverMobile?: string
+  receiverAreaId?: number
+  receiverDetailAddress?: string
+  pickUpStoreId?: number
+  remark?: string
+}
+
+export interface ManualOrderItemReqVO {
+  skuId?: number
+  count?: number
+  deliveryType?: number
+  studentId?: number
+  offerSkuId?: number
+  manualUnitPrice?: number
+}
+
+export interface ManualOrderImportRespVO {
+  successCount: number
+  failureCount: number
+  items: {
+    importOrderNo?: string
+    orderId?: number
+    success?: boolean
+    message?: string
+  }[]
+}
+
 /** 交易订单统计 */
 export interface TradeOrderSummaryRespVO {
   /** 订单数量 */
@@ -204,6 +237,31 @@ export const getOrderSummary = async (params: any) => {
 // 查询交易订单详情
 export const getOrder = async (id: number | null) => {
   return await request.get<OrderVO>({ url: `/trade/order/get-detail?id=` + id })
+}
+
+// 手动创建后台订单
+export const createManualOrder = async (data: ManualOrderCreateReqVO) => {
+  return await request.post({ url: `/trade/order/manual-create`, data })
+}
+
+// 下载后台订单导入模板
+export const importManualOrderTemplate = () => {
+  return request.download({ url: `/trade/order/manual-import-template` })
+}
+
+// 批量导入后台订单
+export const importManualOrder = async (formData: FormData) => {
+  return await request.upload({ url: `/trade/order/manual-import`, data: formData })
+}
+
+// 确认后台订单线下收款
+export const confirmOfflinePay = async (id: number) => {
+  return await request.put({ url: `/trade/order/${id}/confirm-offline-pay` })
+}
+
+// 取消后台订单
+export const cancelManualOrder = async (id: number) => {
+  return await request.put({ url: `/trade/order/${id}/manual-cancel` })
 }
 
 // 查询交易订单物流详情

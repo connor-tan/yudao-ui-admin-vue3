@@ -152,11 +152,6 @@
               <div>skuId：{{ row.skuId }}</div>
             </template>
           </el-table-column>
-          <el-table-column align="center" label="目标周期" min-width="100">
-            <template #default="{ row }">
-              {{ getSubscriptionTargetPeriodLabel(row.targetPeriod) }}
-            </template>
-          </el-table-column>
           <el-table-column align="center" label="期次" min-width="140">
             <template #default="{ row }">
               <div>第 {{ row.issueNo }} 期</div>
@@ -428,9 +423,6 @@
       <el-descriptions-item label="刊物 SKU">
         offerSkuId：{{ batchDetail.offerSkuId }} / skuId：{{ batchDetail.skuId }}
       </el-descriptions-item>
-      <el-descriptions-item label="目标周期">
-        {{ getSubscriptionTargetPeriodLabel(batchDetail.targetPeriod) }}
-      </el-descriptions-item>
       <el-descriptions-item label="发货数量">
         {{ batchDetail.totalCount || 0 }} 本 / {{ batchDetail.orderCount || 0 }} 单 /
         {{ batchDetail.studentCount || 0 }} 名学生
@@ -528,7 +520,6 @@
 
 <script setup lang="ts">
 import { dateFormatter, formatDate } from '@/utils/formatTime'
-import { getSubscriptionTargetPeriodLabel } from '@/utils/subscription'
 import { DeliveryTypeEnum, PublicationDeliveryBatchStatusEnum } from '@/utils/constants'
 import { SubscriptionWindowApi, type SubscriptionWindowSimple } from '@/api/subscription/window'
 import { SubscriptionOfferApi, type SubscriptionOffer } from '@/api/subscription/offer'

@@ -183,6 +183,7 @@ export enum DICT_TYPE {
   TRADE_AFTER_SALE_TYPE = 'trade_after_sale_type', // 售后 - 类型
   TRADE_ORDER_TYPE = 'trade_order_type', // 订单 - 类型
   TRADE_ORDER_STATUS = 'trade_order_status', // 订单 - 状态
+  TRADE_ORDER_SOURCE = 'trade_order_source', // 订单 - 业务来源
   TRADE_ORDER_ITEM_AFTER_SALE_STATUS = 'trade_order_item_after_sale_status', // 订单项 - 售后状态
   TRADE_DELIVERY_TYPE = 'trade_delivery_type', // 配送方式
   BROKERAGE_ENABLED_CONDITION = 'brokerage_enabled_condition', // 分佣模式

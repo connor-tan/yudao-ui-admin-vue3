@@ -18,9 +18,6 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="周期" width="100">
-        <template #default="{ row }">{{ getSubscriptionTargetPeriodLabel(row.targetPeriod) }}</template>
-      </el-table-column>
       <el-table-column label="册别" width="100">
         <template #default="{ row }">
           {{ formatPublicationDict(DICT_TYPE.EDU_PUBLICATION_VOLUME, row.volumeLabel) }}
@@ -194,7 +191,6 @@
 
 <script setup lang="ts">
 import { DICT_TYPE, getDictLabel } from '@/utils/dict'
-import { getSubscriptionTargetPeriodLabel } from '@/utils/subscription'
 import { SubscriptionOfferSkuApi, type SubscriptionOfferSku } from '@/api/subscription/offerSku'
 import {
   SubscriptionOfferSkuIssueApi,

@@ -1,14 +1,7 @@
-import {
-  getPublicationTargetPeriodLabel,
-  PUBLICATION_TARGET_PERIOD_OPTIONS
-} from '@/utils/publication'
-
 export const SUBSCRIPTION_SEMESTER_OPTIONS = [
   { label: '上学期', value: 1 },
   { label: '下学期', value: 2 }
 ]
-
-export const SUBSCRIPTION_TARGET_PERIOD_OPTIONS = PUBLICATION_TARGET_PERIOD_OPTIONS
 
 export const SUBSCRIPTION_GRADE_CALC_RULE_OPTIONS = [
   { label: '按目标学年自动解析', value: 'AUTO_TARGET_YEAR_GRADE' },
@@ -36,8 +29,6 @@ export const SUBSCRIPTION_RULE_SCOPE_TYPE_OPTIONS = [
 
 export const getSubscriptionSemesterLabel = (value?: number | null) =>
   SUBSCRIPTION_SEMESTER_OPTIONS.find((item) => item.value === value)?.label || '-'
-
-export const getSubscriptionTargetPeriodLabel = getPublicationTargetPeriodLabel
 
 export const getSubscriptionGradeCalcRuleLabel = (value?: string | null) =>
   value === 'AUTO_TARGET_YEAR_GRADE'

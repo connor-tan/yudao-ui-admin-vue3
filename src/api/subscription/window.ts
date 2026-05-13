@@ -9,7 +9,6 @@ export interface SubscriptionWindow {
   targetYearStart?: number
   targetYearEnd?: number
   targetYearNameSnapshot?: string
-  targetPeriod?: string
   gradePolicyName?: string
   status?: number
   remark?: string
@@ -23,7 +22,6 @@ export interface SubscriptionWindowSimple {
   targetYearStart?: number
   targetYearEnd?: number
   targetYearNameSnapshot?: string
-  targetPeriod?: string
   gradePolicyName?: string
   status?: number
 }

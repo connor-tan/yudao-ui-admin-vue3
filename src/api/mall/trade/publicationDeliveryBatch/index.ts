@@ -26,7 +26,6 @@ export interface PublicationDeliveryCandidateRespVO {
   offerSkuId?: number
   skuId?: number
   productNameSnapshot?: string
-  targetPeriod?: string
   issueId?: number
   issueNo?: number
   issueName?: string
@@ -87,7 +86,6 @@ export interface PublicationDeliveryBatchRespVO {
   offerSkuId?: number
   skuId?: number
   productNameSnapshot?: string
-  targetPeriod?: string
   issueId?: number
   issueNo?: number
   issueName?: string
@@ -141,7 +139,6 @@ export interface PublicationDeliveryCandidateItemRespVO {
   offerSkuId?: number
   skuId?: number
   productNameSnapshot?: string
-  targetPeriod?: string
   studentId?: number
   studentNameSnapshot?: string
   classId?: number

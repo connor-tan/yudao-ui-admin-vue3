@@ -32,21 +32,6 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="目标周期" prop="targetPeriod">
-        <el-select
-          v-model="queryParams.targetPeriod"
-          class="!w-240px"
-          clearable
-          placeholder="请选择目标周期"
-        >
-          <el-option
-            v-for="option in SUBSCRIPTION_TARGET_PERIOD_OPTIONS"
-            :key="option.value"
-            :label="option.label"
-            :value="option.value"
-          />
-        </el-select>
-      </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-select v-model="queryParams.status" class="!w-240px" clearable placeholder="请选择状态">
           <el-option
@@ -92,11 +77,6 @@
       <el-table-column align="center" label="编号" prop="id" width="80" />
       <el-table-column align="center" label="窗口名称" min-width="160" prop="name" />
       <el-table-column align="center" label="目标学年" min-width="140" prop="targetYearNameSnapshot" />
-      <el-table-column align="center" label="目标周期" min-width="100">
-        <template #default="scope">
-          {{ getSubscriptionTargetPeriodLabel(scope.row.targetPeriod) }}
-        </template>
-      </el-table-column>
       <el-table-column align="center" label="年级策略" min-width="180">
         <template #default="scope">
           {{ scope.row.gradePolicyName || '按目标学年自动解析' }}
@@ -178,10 +158,6 @@
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import { dateFormatter } from '@/utils/formatTime'
 import {
-  getSubscriptionTargetPeriodLabel,
-  SUBSCRIPTION_TARGET_PERIOD_OPTIONS
-} from '@/utils/subscription'
-import {
   SubscriptionSupportApi,
   type SubscriptionSupportWindowYearSimple
 } from '@/api/subscription/support'
@@ -208,7 +184,6 @@ const queryParams = reactive({
   pageSize: 10,
   name: undefined as string | undefined,
   targetYearCatalogId: undefined as number | undefined,
-  targetPeriod: undefined as string | undefined,
   status: undefined as number | undefined
 })
 
@@ -218,7 +193,6 @@ const buildWindowQueryParams = () => {
     pageSize: queryParams.pageSize,
     name: queryParams.name,
     targetYearCatalogId: queryParams.targetYearCatalogId,
-    targetPeriod: queryParams.targetPeriod,
     status: queryParams.status
   }
   return params

@@ -294,7 +294,7 @@ const CANDIDATE_STATUS_ALL = 'ALL'
 const candidateStatusOptions = [
   { value: CANDIDATE_STATUS_CAN_ADD, label: '可添加' },
   { value: CANDIDATE_STATUS_ADDED, label: '已添加' },
-  { value: CANDIDATE_STATUS_NO_MATCHED_SKU, label: '无匹配周期 SKU' },
+  { value: CANDIDATE_STATUS_NO_MATCHED_SKU, label: '无匹配 SKU' },
   { value: CANDIDATE_STATUS_DISABLED, label: '不可用' },
   { value: CANDIDATE_STATUS_ALL, label: '全部' }
 ]

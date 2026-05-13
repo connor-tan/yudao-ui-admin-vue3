@@ -3,12 +3,15 @@
     <!-- 订单信息 -->
     <el-descriptions title="订单信息">
       <el-descriptions-item label="订单号: ">{{ formData.no }}</el-descriptions-item>
-      <el-descriptions-item label="买家: ">{{ formData?.user?.nickname }}</el-descriptions-item>
+      <el-descriptions-item label="买家: ">{{ getBuyerName(formData) }}</el-descriptions-item>
       <el-descriptions-item label="订单类型: ">
         <dict-tag :type="DICT_TYPE.TRADE_ORDER_TYPE" :value="formData.type!" />
       </el-descriptions-item>
-      <el-descriptions-item label="订单来源: ">
+      <el-descriptions-item label="下单终端: ">
         <dict-tag :type="DICT_TYPE.TERMINAL" :value="formData.terminal!" />
+      </el-descriptions-item>
+      <el-descriptions-item label="业务来源: ">
+        <dict-tag :type="DICT_TYPE.TRADE_ORDER_SOURCE" :value="formData.orderSource!" />
       </el-descriptions-item>
       <el-descriptions-item label="买家留言: ">{{ formData.userRemark }}</el-descriptions-item>
       <el-descriptions-item label="商家备注: ">{{ formData.remark }}</el-descriptions-item>
@@ -27,12 +30,14 @@
         <dict-tag :type="DICT_TYPE.TRADE_ORDER_STATUS" :value="formData.status!" />
       </el-descriptions-item>
       <el-descriptions-item v-hasPermi="['trade:order:update']" label-class-name="no-colon">
-        <el-button
-          v-if="formData.status! === TradeOrderStatusEnum.UNPAID.status"
-          type="primary"
-          @click="updatePrice"
-        >
+        <el-button v-if="canUpdatePrice" type="primary" @click="updatePrice">
           调整价格
+        </el-button>
+        <el-button v-if="isUnpaidAdminOrder" type="primary" @click="confirmOfflinePay">
+          确认收款
+        </el-button>
+        <el-button v-if="isUnpaidAdminOrder" type="danger" @click="manualCancel">
+          取消订单
         </el-button>
         <el-button type="primary" @click="remark">备注</el-button>
       </el-descriptions-item>
@@ -346,6 +351,7 @@ import {
   PublicationFulfillmentStatusEnum,
   PublicationDeliveryStatusEnum,
   PublicationReceiveStatusEnum,
+  TradeOrderSourceEnum,
   TradeOrderStatusEnum
 } from '@/utils/constants'
 import * as DeliveryPickUpStoreApi from '@/api/mall/trade/delivery/pickUpStore'
@@ -415,6 +421,20 @@ const deliveryMap = computed<Record<number, TradeOrderApi.OrderDeliveryRespVO>>(
   )
 )
 const showOrderUpdateActions = computed(() => checkPermi(['trade:order:update']))
+const isAdminOrder = computed(
+  () =>
+    formData.value.orderSource === TradeOrderSourceEnum.ADMIN_MANUAL ||
+    formData.value.orderSource === TradeOrderSourceEnum.ADMIN_IMPORT
+)
+const isUnpaidAdminOrder = computed(
+  () => isAdminOrder.value && formData.value.status === TradeOrderStatusEnum.UNPAID.status
+)
+const canUpdatePrice = computed(
+  () => formData.value.status === TradeOrderStatusEnum.UNPAID.status && !isAdminOrder.value
+)
+
+const getBuyerName = (order: TradeOrderApi.OrderVO) =>
+  order.user?.nickname || (order.userId ? '-' : '后台订单')
 
 /** 各种操作 */
 const updateRemarkForm = ref<InstanceType<typeof OrderUpdateRemarkForm>>() // 订单备注表单 Ref
@@ -452,6 +472,34 @@ const updateAddress = (delivery?: TradeOrderApi.OrderDeliveryRespVO) => {
 const updatePriceFormRef = ref<InstanceType<typeof OrderUpdatePriceForm>>() // 订单调价表单 Ref
 const updatePrice = () => {
   updatePriceFormRef.value?.open(formData.value)
+}
+
+const confirmOfflinePay = async () => {
+  if (!formData.value.id) {
+    return
+  }
+  try {
+    await message.confirm('确认该后台订单已线下收款，并生成线下支付单？')
+  } catch {
+    return
+  }
+  await TradeOrderApi.confirmOfflinePay(formData.value.id)
+  message.success('确认收款成功')
+  await getDetail()
+}
+
+const manualCancel = async () => {
+  if (!formData.value.id) {
+    return
+  }
+  try {
+    await message.confirm('确认取消该后台订单？')
+  } catch {
+    return
+  }
+  await TradeOrderApi.cancelManualOrder(formData.value.id)
+  message.success('取消成功')
+  await getDetail()
 }
 
 const deliveryExpressLabel = (id?: number | null) => {

@@ -35,16 +35,6 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="目标周期" prop="targetPeriod">
-        <el-select v-model="formData.targetPeriod" class="!w-full" placeholder="请选择目标周期">
-          <el-option
-            v-for="item in SUBSCRIPTION_TARGET_PERIOD_OPTIONS"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
-      </el-form-item>
       <el-form-item label="年级策略">
         <el-alert
           :closable="false"
@@ -76,7 +66,6 @@
 
 <script setup lang="ts">
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
-import { SUBSCRIPTION_TARGET_PERIOD_OPTIONS } from '@/utils/subscription'
 import {
   SubscriptionSupportApi,
   type SubscriptionSupportWindowYearSimple
@@ -104,7 +93,6 @@ const formData = ref<WindowFormData>({
   name: '',
   timeRange: undefined,
   targetYearCatalogId: undefined,
-  targetPeriod: 'FULL_YEAR',
   status: 1,
   remark: ''
 })
@@ -113,7 +101,6 @@ const formRules = reactive({
   name: [{ required: true, message: '窗口名称不能为空', trigger: 'blur' }],
   timeRange: [{ required: true, message: '开放时间不能为空', trigger: 'change' }],
   targetYearCatalogId: [{ required: true, message: '目标学年不能为空', trigger: 'change' }],
-  targetPeriod: [{ required: true, message: '目标周期不能为空', trigger: 'change' }],
   status: [{ required: true, message: '状态不能为空', trigger: 'change' }]
 })
 
@@ -123,7 +110,6 @@ const resetForm = () => {
     name: '',
     timeRange: undefined,
     targetYearCatalogId: undefined,
-    targetPeriod: 'FULL_YEAR',
     status: 1,
     remark: ''
   }
@@ -170,7 +156,6 @@ const submitForm = async () => {
       startTime,
       endTime,
       targetYearCatalogId: formData.value.targetYearCatalogId,
-      targetPeriod: formData.value.targetPeriod,
       status: formData.value.status,
       remark: formData.value.remark
     }

@@ -503,6 +503,15 @@ export const TradeOrderStatusEnum = {
   }
 }
 
+/**
+ * 交易订单 - 业务来源
+ */
+export const TradeOrderSourceEnum = {
+  APP: 'APP',
+  ADMIN_MANUAL: 'ADMIN_MANUAL',
+  ADMIN_IMPORT: 'ADMIN_IMPORT'
+}
+
 // ========== ERP - 企业资源计划 ==========
 
 export const ErpBizType = {

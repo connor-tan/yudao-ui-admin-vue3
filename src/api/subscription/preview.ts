@@ -8,7 +8,6 @@ export interface SubscriptionPreviewSku {
   decisionStatusName?: string
   price?: number
   stock?: number
-  targetPeriod?: string
   volumeLabel?: string
   editionLabel?: string
   isbn?: string
@@ -43,7 +42,6 @@ export interface SubscriptionRulePreviewRespVO {
     id?: number
     name?: string
     targetYearNameSnapshot?: string
-    targetPeriod?: string
   }
   student?: {
     studentId?: number

@@ -20,7 +20,7 @@
       <el-form-item label="刊物 SKU">
         <div class="w-80">
           <div class="mb-12px text-12px text-gray-500">
-            刊物 SKU 负责承载周期、版本和适用年级，同一个刊物 SPU 不再按年级拆分。
+            刊物 SKU 负责承载册别、版本和适用年级，同一个刊物 SPU 不再按年级拆分。
           </div>
           <el-button v-if="!isDetail" type="primary" plain @click="addPublicationSku">
             新增 SKU
@@ -52,19 +52,6 @@
             <template #default="{ row }">
               <template v-if="isDetail">{{ row.barCode || '-' }}</template>
               <el-input v-else v-model="row.barCode" />
-            </template>
-          </el-table-column>
-          <el-table-column label="售卖周期" min-width="120">
-            <template #default="{ row }">
-              <template v-if="isDetail">{{ formatTargetPeriod(row.publicationExt?.targetPeriod) }}</template>
-              <el-select v-else v-model="row.publicationExt.targetPeriod" placeholder="请选择周期">
-                <el-option
-                  v-for="item in ProductSpuApi.PUBLICATION_TARGET_PERIOD_OPTIONS"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
             </template>
           </el-table-column>
           <el-table-column label="册别" min-width="120">
@@ -446,10 +433,6 @@ const validate = async () => {
 }
 defineExpose({ validate })
 
-const formatTargetPeriod = (value?: string) => {
-  return ProductSpuApi.PUBLICATION_TARGET_PERIOD_OPTIONS.find((item) => item.value === value)?.label || '-'
-}
-
 const formatPublicationDict = (dictType: string, value?: string) => {
   if (!value) {
     return '-'
@@ -499,9 +482,6 @@ const validatePublicationSkuList = () => {
   formData.skus.forEach((sku, index) => {
     if (!sku.name) {
       throw new Error(`第 ${index + 1} 行 SKU 名称不能为空`)
-    }
-    if (!sku.publicationExt?.targetPeriod) {
-      throw new Error(`第 ${index + 1} 行售卖周期不能为空`)
     }
     if (!sku.applicableGradeCatalogIds || sku.applicableGradeCatalogIds.length === 0) {
       throw new Error(`第 ${index + 1} 行适用年级不能为空`)
