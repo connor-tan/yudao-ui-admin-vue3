@@ -54,8 +54,24 @@
           <el-option
             v-for="station in stationList"
             :key="station.id"
-            :label="station.stationName"
+            :label="getStationOptionLabel(station)"
             :value="station.id"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="配送仓库" prop="warehouseId">
+        <el-select
+          v-model="queryParams.warehouseId"
+          clearable
+          filterable
+          placeholder="请选择仓库"
+          class="!w-220px"
+        >
+          <el-option
+            v-for="warehouse in warehouseList"
+            :key="warehouse.id"
+            :label="getWarehouseOptionLabel(warehouse)"
+            :value="warehouse.id"
           />
         </el-select>
       </el-form-item>
@@ -158,6 +174,20 @@
           <el-tag v-else type="warning">未绑定</el-tag>
         </template>
       </el-table-column>
+      <el-table-column label="站点区域" align="center" min-width="100px">
+        <template #default="scope">
+          <span v-if="scope.row.stationName">
+            {{ getAreaLastName(scope.row.stationAreaName) || '-' }}
+          </span>
+          <span v-else>-</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="配送仓库" align="center" prop="warehouseName" min-width="140px">
+        <template #default="scope">
+          <span v-if="scope.row.warehouseName">{{ scope.row.warehouseName }}</span>
+          <el-tag v-else type="warning">未配置</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="学校地址" align="center" prop="schoolAddress" />
       <!--      <el-table-column label="学校代码" align="center" prop="code" />-->
       <el-table-column
@@ -222,6 +252,7 @@ import download from '@/utils/download'
 import * as AreaApi from '@/api/system/area'
 import { SchoolApi, School } from '@/api/edu/school'
 import { StationApi, type StationSimple } from '@/api/edu/station'
+import { WarehouseApi, type WarehouseVO } from '@/api/repo/warehouse'
 import { defaultProps } from '@/utils/tree'
 import { DICT_TYPE, getStrDictOptions } from '@/utils/dict'
 import SchoolForm from './SchoolForm.vue'
@@ -240,6 +271,7 @@ const list = ref<School[]>([]) // 列表的数据
 const total = ref(0) // 列表的总页数
 const areaList = ref<AreaApi.AreaNodeVO[]>([])
 const stationList = ref<StationSimple[]>([])
+const warehouseList = ref<WarehouseVO[]>([])
 const searchAreaProps = {
   ...defaultProps,
   checkStrictly: true
@@ -251,6 +283,7 @@ const queryParams = reactive({
   areaId: undefined as number | undefined,
   stageCode: undefined as string | undefined,
   stationId: undefined as number | undefined,
+  warehouseId: undefined as number | undefined,
   stationBound: undefined as boolean | undefined,
   schoolAddress: undefined as string | undefined,
   code: undefined as string | undefined
@@ -269,8 +302,21 @@ const loadStationList = async () => {
   stationList.value = await StationApi.getStationSimpleList()
 }
 
+const loadWarehouseList = async () => {
+  warehouseList.value = await WarehouseApi.getWarehouseSimpleList()
+}
+
 const getAreaLastName = (areaName?: string) => {
   return areaName?.split(' ').filter(Boolean).pop() || areaName || ''
+}
+
+const getStationOptionLabel = (station: StationSimple) => {
+  const areaName = station.areaName?.trim()
+  return areaName ? `${station.stationName}（${areaName}）` : station.stationName
+}
+
+const getWarehouseOptionLabel = (warehouse: WarehouseVO) => {
+  return warehouse.address ? `${warehouse.name}（${warehouse.address}）` : warehouse.name
 }
 
 /** 查询列表 */
@@ -362,6 +408,7 @@ const handleCurrentChange = (row?: School) => {
 onMounted(() => {
   loadAreaList()
   loadStationList()
+  loadWarehouseList()
   getList()
 })
 </script>

@@ -106,5 +106,9 @@ export const SubscriptionOfferApi = {
 
   deleteOffer: async (id: number) => {
     return await request.delete({ url: '/subscription/offer/delete', params: { id } })
+  },
+
+  deleteOfferList: async (ids: number[]) => {
+    return await request.delete({ url: '/subscription/offer/delete-list', params: { ids: ids.join(',') } })
   }
 }

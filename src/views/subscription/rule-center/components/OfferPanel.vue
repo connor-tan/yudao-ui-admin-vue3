@@ -30,6 +30,15 @@
             <Icon class="mr-5px" icon="ep:plus" />
             添加刊物
           </el-button>
+          <el-button
+            :disabled="checkedIds.length === 0"
+            plain
+            type="danger"
+            @click="handleDeleteBatch"
+          >
+            <Icon class="mr-5px" icon="ep:delete" />
+            批量移除
+          </el-button>
           <el-button plain @click="openWindowRuleForm">
             窗口级规则
           </el-button>
@@ -38,7 +47,14 @@
     </ContentWrap>
 
     <ContentWrap>
-      <el-table v-loading="loading" :data="list" :show-overflow-tooltip="true" :stripe="true">
+      <el-table
+        v-loading="loading"
+        :data="list"
+        :show-overflow-tooltip="true"
+        :stripe="true"
+        @selection-change="handleRowCheckboxChange"
+      >
+        <el-table-column type="selection" width="55" />
         <el-table-column label="刊物信息" min-width="280">
           <template #default="{ row }">
             <div class="flex items-center">
@@ -109,6 +125,7 @@ const message = useMessage()
 const loading = ref(false)
 const total = ref(0)
 const list = ref<SubscriptionOffer[]>([])
+const checkedIds = ref<number[]>([])
 const batchFormRef = ref()
 const offerFormRef = ref()
 const skuFormRef = ref()
@@ -121,6 +138,7 @@ const queryParams = reactive({
 })
 
 const getList = async () => {
+  checkedIds.value = []
   if (!props.windowId) {
     list.value = []
     total.value = 0
@@ -155,11 +173,24 @@ const openWindowRuleForm = () => {
   if (props.windowId) ruleFormRef.value.open(props.windowId)
 }
 
+const handleRowCheckboxChange = (rows: SubscriptionOffer[]) => {
+  checkedIds.value = rows.map((row) => row.id!).filter(Boolean)
+}
+
 const handleDelete = async (id?: number) => {
   if (!id) return
   await message.delConfirm()
   await SubscriptionOfferApi.deleteOffer(id)
   message.success('移除成功')
+  await getList()
+}
+
+const handleDeleteBatch = async () => {
+  if (checkedIds.value.length === 0) return
+  await message.delConfirm(`确定移除选中的 ${checkedIds.value.length} 个窗口刊物吗？`)
+  await SubscriptionOfferApi.deleteOfferList(checkedIds.value)
+  checkedIds.value = []
+  message.success('批量移除成功')
   await getList()
 }
 

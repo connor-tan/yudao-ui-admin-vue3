@@ -56,6 +56,10 @@ export interface SchoolSimple {
   schoolName: string
   stationId?: number
   stationName?: string
+  stationAreaId?: number
+  stationAreaName?: string
+  warehouseId?: number
+  warehouseName?: string
   stageCodes?: string[]
 }
 
@@ -97,6 +101,10 @@ export interface School {
   schoolAddress?: string
   stationId?: number
   stationName?: string
+  stationAreaId?: number
+  stationAreaName?: string
+  warehouseId?: number
+  warehouseName?: string
   code?: string
   stageCode?: string
   stageCodes?: string[]

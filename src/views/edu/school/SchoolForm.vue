@@ -41,17 +41,32 @@
       <el-form-item label="归属站点" prop="stationId">
         <el-select
           v-model="formData.stationId"
-          :disabled="!formData.areaId"
           class="w-1/1"
           clearable
           filterable
           placeholder="请选择归属站点"
         >
           <el-option
-            v-for="station in availableStations"
+            v-for="station in stationList"
             :key="station.id"
-            :label="station.stationName"
+            :label="getStationOptionLabel(station)"
             :value="station.id"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="配送仓库" prop="warehouseId">
+        <el-select
+          v-model="formData.warehouseId"
+          class="w-1/1"
+          clearable
+          filterable
+          placeholder="请选择学校配送仓库"
+        >
+          <el-option
+            v-for="warehouse in warehouseList"
+            :key="warehouse.id"
+            :label="getWarehouseOptionLabel(warehouse)"
+            :value="warehouse.id"
           />
         </el-select>
       </el-form-item>
@@ -77,6 +92,7 @@
 <script setup lang="ts">
 import { SchoolApi, School } from '@/api/edu/school'
 import { StationApi, type StationSimple } from '@/api/edu/station'
+import { WarehouseApi, type WarehouseVO } from '@/api/repo/warehouse'
 import * as AreaApi from '@/api/system/area'
 import { defaultProps, findPath } from '@/utils/tree'
 import { DICT_TYPE, getStrDictOptions } from '@/utils/dict'
@@ -94,6 +110,7 @@ const formLoading = ref(false) // 表单的加载中：1）修改时的数据加
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
 const areaList = ref<AreaApi.AreaNodeVO[]>([]) // 地区列表
 const stationList = ref<StationSimple[]>([]) // 站点列表
+const warehouseList = ref<WarehouseVO[]>([]) // 学校配送仓库列表
 const formAreaProps = {
   ...defaultProps,
   checkStrictly: true
@@ -105,6 +122,7 @@ type SchoolFormData = {
   schoolAddress?: string
   schoolAddressDetail?: string
   stationId?: number
+  warehouseId?: number
   code?: string
   stageCodes: string[]
 }
@@ -116,6 +134,7 @@ const formData = ref<SchoolFormData>({
   schoolAddress: undefined,
   schoolAddressDetail: undefined,
   stationId: undefined,
+  warehouseId: undefined,
   code: undefined,
   stageCodes: []
 })
@@ -124,6 +143,7 @@ const formRules = reactive<FormRules<SchoolFormData>>({
   stageCodes: [{ required: true, type: 'array', min: 1, message: '办学学段不能为空', trigger: 'change' }],
   areaId: [{ required: true, message: '学校所在地区不能为空', trigger: 'change' }],
   stationId: [{ required: true, message: '归属站点不能为空', trigger: 'change' }],
+  warehouseId: [{ required: true, message: '学校配送仓库不能为空', trigger: 'change' }],
   schoolAddressDetail: [{ required: true, message: '学校详细地址不能为空', trigger: 'blur' }]
 })
 const formRef = ref() // 表单 Ref
@@ -143,12 +163,15 @@ const getAreaText = (areaId?: number) => {
 }
 
 const schoolAddressPrefix = computed(() => getAreaText(formData.value.areaId))
-const availableStations = computed(() => {
-  if (!formData.value.areaId) {
-    return []
-  }
-  return stationList.value.filter((station) => station.areaId === formData.value.areaId)
-})
+
+const getStationOptionLabel = (station: StationSimple) => {
+  const areaName = station.areaName?.trim()
+  return areaName ? `${station.stationName}（${areaName}）` : station.stationName
+}
+
+const getWarehouseOptionLabel = (warehouse: WarehouseVO) => {
+  return warehouse.address ? `${warehouse.name}（${warehouse.address}）` : warehouse.name
+}
 
 const getSchoolAddressDetail = (schoolAddress?: string, areaId?: number) => {
   const fullAddress = schoolAddress || ''
@@ -173,12 +196,14 @@ const open = async (type: string, id?: number) => {
     if (id) {
       school = await SchoolApi.getSchool(id)
     }
-    const [areas, stations] = await Promise.all([
+    const [areas, stations, warehouses] = await Promise.all([
       AreaApi.getEnabledAreaTree(school?.areaId),
-      StationApi.getStationSimpleList()
+      StationApi.getStationSimpleList(),
+      WarehouseApi.getWarehouseSimpleList()
     ])
     areaList.value = areas
     stationList.value = stations
+    warehouseList.value = warehouses
     if (school) {
       formData.value = {
         id: school.id,
@@ -187,6 +212,7 @@ const open = async (type: string, id?: number) => {
         schoolAddress: school.schoolAddress,
         schoolAddressDetail: getSchoolAddressDetail(school.schoolAddress, school.areaId),
         stationId: school.stationId,
+        warehouseId: school.warehouseId,
         code: school.code,
         stageCodes: school.stageCodes || []
       }
@@ -214,6 +240,7 @@ const submitForm = async () => {
       areaId: formData.value.areaId,
       schoolAddress: `${schoolAddressPrefix.value}${schoolAddressDetail}`,
       stationId: formData.value.stationId,
+      warehouseId: formData.value.warehouseId,
       code: formData.value.code,
       stageCodes: formData.value.stageCodes
     }
@@ -241,22 +268,10 @@ const resetForm = () => {
     schoolAddress: undefined,
     schoolAddressDetail: undefined,
     stationId: undefined,
+    warehouseId: undefined,
     code: undefined,
     stageCodes: []
   }
   formRef.value?.resetFields()
 }
-
-watch(
-  () => formData.value.areaId,
-  (areaId) => {
-    if (!areaId) {
-      formData.value.stationId = undefined
-      return
-    }
-    if (!availableStations.value.some((station) => station.id === formData.value.stationId)) {
-      formData.value.stationId = undefined
-    }
-  }
-)
 </script>

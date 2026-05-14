@@ -160,16 +160,30 @@
 
       <template v-if="hasPickUpDelivery">
         <el-divider content-position="left">自提信息</el-divider>
-        <el-form-item label="自提门店">
-          <el-select v-model="formData.pickUpStoreId" clearable filterable placeholder="请选择">
-            <el-option
-              v-for="item in props.pickUpStoreList"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
-            />
-          </el-select>
-        </el-form-item>
+        <el-row :gutter="16">
+          <el-col v-if="requiresPickUpContact" :span="12">
+            <el-form-item label="联系人">
+              <el-input v-model="formData.receiverName" placeholder="请输入联系人名称" />
+            </el-form-item>
+          </el-col>
+          <el-col v-if="requiresPickUpContact" :span="12">
+            <el-form-item label="联系电话">
+              <el-input v-model="formData.receiverMobile" placeholder="请输入联系电话" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="requiresPickUpContact ? 12 : 24">
+            <el-form-item label="自提门店">
+              <el-select v-model="formData.pickUpStoreId" clearable filterable placeholder="请选择">
+                <el-option
+                  v-for="item in props.pickUpStoreList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </template>
 
       <el-form-item label="商家备注">
@@ -252,6 +266,7 @@ const hasPickUpDelivery = computed(() =>
     (item) => getEffectiveDeliveryType(item) === DeliveryTypeEnum.PICK_UP.type
   )
 )
+const requiresPickUpContact = computed(() => hasPickUpDelivery.value && !hasExpressDelivery.value)
 
 const open = async () => {
   resetForm()
@@ -316,9 +331,15 @@ const validateForm = () => {
       return false
     }
   }
-  if (hasPickUpDelivery.value && !formData.value.pickUpStoreId) {
-    message.error('自提订单请选择自提门店')
-    return false
+  if (hasPickUpDelivery.value) {
+    if (!trimToUndefined(formData.value.receiverName) || !trimToUndefined(formData.value.receiverMobile)) {
+      message.error('自提订单请填写联系人和联系电话')
+      return false
+    }
+    if (!formData.value.pickUpStoreId) {
+      message.error('自提订单请选择自提门店')
+      return false
+    }
   }
   return true
 }

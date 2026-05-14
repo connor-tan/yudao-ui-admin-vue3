@@ -5,7 +5,7 @@ export interface PublicationDeliveryCandidatePageReqVO {
   pageSize?: number
   deliveryType?: number
   schoolId?: number
-  stationId?: number
+  warehouseId?: number
   windowId?: number
   offerId?: number
   offerSkuId?: number
@@ -18,14 +18,18 @@ export interface PublicationDeliveryCandidateRespVO {
   deliveryType?: number
   schoolId?: number
   schoolNameSnapshot?: string
-  stationId?: number
-  stationNameSnapshot?: string
+  warehouseId?: number
+  warehouseNameSnapshot?: string
   windowId?: number
   windowNameSnapshot?: string
   offerId?: number
   offerSkuId?: number
   skuId?: number
   productNameSnapshot?: string
+  productSkuName?: string
+  volumeLabel?: string
+  editionLabel?: string
+  isbn?: string
   issueId?: number
   issueNo?: number
   issueName?: string
@@ -38,7 +42,7 @@ export interface PublicationDeliveryCandidateRespVO {
 export interface PublicationDeliveryBatchCreateReqVO {
   deliveryType: number
   schoolId: number
-  stationId?: number
+  warehouseId?: number
   windowId: number
   offerId: number
   offerSkuId: number
@@ -61,7 +65,7 @@ export interface PublicationDeliveryBatchPageReqVO {
   batchNo?: string
   deliveryType?: number
   schoolId?: number
-  stationId?: number
+  warehouseId?: number
   windowId?: number
   offerId?: number
   offerSkuId?: number
@@ -78,8 +82,8 @@ export interface PublicationDeliveryBatchRespVO {
   deliveryType?: number
   schoolId?: number
   schoolNameSnapshot?: string
-  stationId?: number
-  stationNameSnapshot?: string
+  warehouseId?: number
+  warehouseNameSnapshot?: string
   windowId?: number
   windowNameSnapshot?: string
   offerId?: number
@@ -131,8 +135,8 @@ export interface PublicationDeliveryCandidateItemRespVO {
   count?: number
   schoolId?: number
   schoolNameSnapshot?: string
-  stationId?: number
-  stationNameSnapshot?: string
+  warehouseId?: number
+  warehouseNameSnapshot?: string
   windowId?: number
   windowNameSnapshot?: string
   offerId?: number

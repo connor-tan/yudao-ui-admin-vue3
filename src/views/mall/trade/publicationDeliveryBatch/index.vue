@@ -99,18 +99,18 @@
               />
             </el-select>
           </el-form-item>
-          <el-form-item label="站点" prop="stationId">
+          <el-form-item label="仓库" prop="warehouseId">
             <el-select
-              v-model="candidateQueryParams.stationId"
+              v-model="candidateQueryParams.warehouseId"
               class="!w-240px"
               clearable
               filterable
-              placeholder="请选择站点"
+              placeholder="请选择仓库"
             >
               <el-option
-                v-for="item in stationList"
+                v-for="item in warehouseList"
                 :key="item.id"
-                :label="item.stationName"
+                :label="item.name"
                 :value="item.id"
               />
             </el-select>
@@ -137,7 +137,7 @@
           <el-table-column align="center" label="配送方式" width="110">
             <template #default="{ row }">{{ formatDeliveryType(row.deliveryType) }}</template>
           </el-table-column>
-          <el-table-column align="center" label="站点" min-width="140" prop="stationNameSnapshot" />
+          <el-table-column align="center" label="仓库" min-width="140" prop="warehouseNameSnapshot" />
           <el-table-column align="center" label="学校" min-width="160" prop="schoolNameSnapshot" />
           <el-table-column
             align="center"
@@ -146,10 +146,23 @@
             prop="windowNameSnapshot"
           />
           <el-table-column align="center" label="刊物" min-width="200" prop="productNameSnapshot" />
-          <el-table-column align="center" label="刊物 SKU" min-width="140">
+          <el-table-column align="left" label="刊物 SKU" min-width="280">
             <template #default="{ row }">
-              <div>offerSkuId：{{ row.offerSkuId }}</div>
-              <div>skuId：{{ row.skuId }}</div>
+              <div class="font-500 leading-5">{{ formatCandidateSkuName(row) }}</div>
+              <div v-if="buildCandidateSkuMeta(row).length" class="mt-4px flex flex-wrap gap-4px">
+                <el-tag
+                  v-for="item in buildCandidateSkuMeta(row)"
+                  :key="item.label"
+                  effect="plain"
+                  size="small"
+                  type="info"
+                >
+                  {{ item.label }}：{{ item.value }}
+                </el-tag>
+              </div>
+              <div class="mt-4px text-xs text-gray-500">
+                窗口SKU #{{ row.offerSkuId || '-' }} / 商品SKU #{{ row.skuId || '-' }}
+              </div>
             </template>
           </el-table-column>
           <el-table-column align="center" label="期次" min-width="140">
@@ -292,18 +305,18 @@
               />
             </el-select>
           </el-form-item>
-          <el-form-item label="站点" prop="stationId">
+          <el-form-item label="仓库" prop="warehouseId">
             <el-select
-              v-model="batchQueryParams.stationId"
+              v-model="batchQueryParams.warehouseId"
               class="!w-240px"
               clearable
               filterable
-              placeholder="请选择站点"
+              placeholder="请选择仓库"
             >
               <el-option
-                v-for="item in stationList"
+                v-for="item in warehouseList"
                 :key="item.id"
-                :label="item.stationName"
+                :label="item.name"
                 :value="item.id"
               />
             </el-select>
@@ -342,7 +355,7 @@
           <el-table-column align="center" label="配送方式" width="110">
             <template #default="{ row }">{{ formatDeliveryType(row.deliveryType) }}</template>
           </el-table-column>
-          <el-table-column align="center" label="站点" min-width="140" prop="stationNameSnapshot" />
+          <el-table-column align="center" label="仓库" min-width="140" prop="warehouseNameSnapshot" />
           <el-table-column align="center" label="学校" min-width="160" prop="schoolNameSnapshot" />
           <el-table-column
             align="center"
@@ -410,8 +423,8 @@
       <el-descriptions-item label="期次">
         第 {{ batchDetail.issueNo }} 期 {{ batchDetail.issueName || '' }}
       </el-descriptions-item>
-      <el-descriptions-item label="站点">{{
-        batchDetail.stationNameSnapshot || '-'
+      <el-descriptions-item label="仓库">{{
+        batchDetail.warehouseNameSnapshot || '-'
       }}</el-descriptions-item>
       <el-descriptions-item label="学校">{{ batchDetail.schoolNameSnapshot }}</el-descriptions-item>
       <el-descriptions-item label="订刊窗口">{{
@@ -520,12 +533,13 @@
 
 <script setup lang="ts">
 import { dateFormatter, formatDate } from '@/utils/formatTime'
+import { DICT_TYPE, getDictLabel } from '@/utils/dict'
 import { DeliveryTypeEnum, PublicationDeliveryBatchStatusEnum } from '@/utils/constants'
 import { SubscriptionWindowApi, type SubscriptionWindowSimple } from '@/api/subscription/window'
 import { SubscriptionOfferApi, type SubscriptionOffer } from '@/api/subscription/offer'
 import { SubscriptionOfferSkuApi, type SubscriptionOfferSku } from '@/api/subscription/offerSku'
 import { SchoolApi, type SchoolSimple } from '@/api/edu/school'
-import { StationApi, type StationSimple } from '@/api/edu/station'
+import { WarehouseApi, type WarehouseVO } from '@/api/repo/warehouse'
 import * as DeliveryExpressApi from '@/api/mall/trade/delivery/express'
 import {
   PublicationDeliveryBatchApi,
@@ -542,14 +556,14 @@ const activeTab = ref('candidate')
 
 const windowList = ref<SubscriptionWindowSimple[]>([])
 const schoolList = ref<SchoolSimple[]>([])
-const stationList = ref<StationSimple[]>([])
+const warehouseList = ref<WarehouseVO[]>([])
 const candidateOfferList = ref<SubscriptionOffer[]>([])
 const candidateOfferSkuList = ref<SubscriptionOfferSku[]>([])
 const batchOfferList = ref<SubscriptionOffer[]>([])
 const batchOfferSkuList = ref<SubscriptionOfferSku[]>([])
 const deliveryExpressList = ref<DeliveryExpressApi.DeliveryExpressVO[]>([])
 const publicationDeliveryTypeOptions = [
-  { value: DeliveryTypeEnum.STATION.type, label: '站点配送' },
+  { value: DeliveryTypeEnum.SCHOOL.type, label: '学校配送' },
   { value: DeliveryTypeEnum.EXPRESS.type, label: '快递配送' }
 ]
 const PUBLICATION_EXPRESS_BATCH_ITEM_LIMIT = 500
@@ -563,7 +577,7 @@ const candidateQueryParams = reactive({
   pageSize: 10,
   deliveryType: undefined as number | undefined,
   schoolId: undefined as number | undefined,
-  stationId: undefined as number | undefined,
+  warehouseId: undefined as number | undefined,
   windowId: undefined as number | undefined,
   offerId: undefined as number | undefined,
   offerSkuId: undefined as number | undefined,
@@ -582,7 +596,7 @@ const batchQueryParams = reactive({
   batchNo: undefined as string | undefined,
   deliveryType: undefined as number | undefined,
   schoolId: undefined as number | undefined,
-  stationId: undefined as number | undefined,
+  warehouseId: undefined as number | undefined,
   windowId: undefined as number | undefined,
   offerId: undefined as number | undefined,
   offerSkuId: undefined as number | undefined,
@@ -606,8 +620,8 @@ const getBatchStatusLabel = (status?: number) => {
 }
 
 const formatDeliveryType = (deliveryType?: number) => {
-  if (deliveryType === DeliveryTypeEnum.STATION.type) {
-    return '站点配送'
+  if (deliveryType === DeliveryTypeEnum.SCHOOL.type) {
+    return '学校配送'
   }
   if (deliveryType === DeliveryTypeEnum.EXPRESS.type) {
     return '快递配送'
@@ -620,6 +634,40 @@ const deliveryExpressLabel = (id?: number) => {
     return ''
   }
   return deliveryExpressList.value.find((item) => item.id === id)?.name || ''
+}
+
+const formatPublicationDict = (dictType: string, value?: string) => {
+  if (!value) {
+    return ''
+  }
+  return getDictLabel(dictType, value) || value
+}
+
+const formatCandidateSkuName = (row: PublicationDeliveryCandidateRespVO) => {
+  if (row.productSkuName) {
+    return row.productSkuName
+  }
+  if (row.productNameSnapshot) {
+    return row.productNameSnapshot
+  }
+  return row.skuId ? `SKU #${row.skuId}` : '-'
+}
+
+const buildCandidateSkuMeta = (row: PublicationDeliveryCandidateRespVO) => {
+  return [
+    {
+      label: '卷期',
+      value: formatPublicationDict(DICT_TYPE.EDU_PUBLICATION_VOLUME, row.volumeLabel)
+    },
+    {
+      label: '版别',
+      value: formatPublicationDict(DICT_TYPE.EDU_PUBLICATION_EDITION, row.editionLabel)
+    },
+    {
+      label: 'ISBN',
+      value: row.isbn || ''
+    }
+  ].filter((item) => item.value)
 }
 
 const loadWindowList = async () => {
@@ -763,8 +811,8 @@ const handleCreateAndDeliver = async (row: PublicationDeliveryCandidateRespVO) =
   }
   if (
     !row.schoolId ||
-    row.deliveryType !== DeliveryTypeEnum.STATION.type ||
-    !row.stationId ||
+    row.deliveryType !== DeliveryTypeEnum.SCHOOL.type ||
+    !row.warehouseId ||
     !row.windowId ||
     !row.offerId ||
     !row.offerSkuId ||
@@ -776,7 +824,7 @@ const handleCreateAndDeliver = async (row: PublicationDeliveryCandidateRespVO) =
   }
   try {
     await message.confirm(
-      `确认发货 ${row.stationNameSnapshot || '-'} / ${row.productNameSnapshot || '-'}，数量 ${
+      `确认发货 ${row.warehouseNameSnapshot || '-'} / ${row.productNameSnapshot || '-'}，数量 ${
         row.totalCount || 0
       } 本？`
     )
@@ -786,7 +834,7 @@ const handleCreateAndDeliver = async (row: PublicationDeliveryCandidateRespVO) =
   await PublicationDeliveryBatchApi.createAndDeliver({
     deliveryType: row.deliveryType!,
     schoolId: row.schoolId!,
-    stationId: row.stationId,
+    warehouseId: row.warehouseId,
     windowId: row.windowId!,
     offerId: row.offerId!,
     offerSkuId: row.offerSkuId!,
@@ -803,7 +851,7 @@ const buildCandidateReq = (
 ): PublicationDeliveryCandidatePageReqVO => ({
   deliveryType: row.deliveryType,
   schoolId: row.schoolId,
-  stationId: row.stationId,
+  warehouseId: row.warehouseId,
   windowId: row.windowId,
   offerId: row.offerId,
   offerSkuId: row.offerSkuId,
@@ -927,8 +975,8 @@ onMounted(async () => {
     SchoolApi.getSchoolSimpleList().then((data) => {
       schoolList.value = data
     }),
-    StationApi.getStationSimpleList().then((data) => {
-      stationList.value = data
+    WarehouseApi.getWarehouseSimpleList().then((data) => {
+      warehouseList.value = data
     }),
     getCandidateList(),
     getBatchList(),

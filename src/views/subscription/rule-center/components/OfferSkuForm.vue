@@ -16,6 +16,9 @@
           <div v-if="row.issueMode === ProductSpuApi.PUBLICATION_ISSUE_MODE_PERIODICAL" class="text-xs text-gray-500">
             {{ row.issueCount || 0 }} 期
           </div>
+          <div v-if="row.issueMode === ProductSpuApi.PUBLICATION_ISSUE_MODE_PERIODICAL" class="text-xs text-gray-400">
+            模板 {{ row.issueTemplateCount || 0 }} 期
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="册别" width="100">
@@ -114,6 +117,14 @@
       <el-form-item>
         <el-button :loading="issueSubmitLoading" plain type="primary" @click="handleGenerateIssues">
           批量生成
+        </el-button>
+        <el-button
+          :disabled="!hasDefaultTemplate(currentIssueOfferSku)"
+          :loading="issueSubmitLoading"
+          plain
+          @click="handleApplyDefaultTemplate"
+        >
+          应用商品默认模板
         </el-button>
       </el-form-item>
     </el-form>
@@ -288,7 +299,16 @@ const submitForm = async () => {
   if (!offerId.value) return
   submitLoading.value = true
   try {
-    await SubscriptionOfferSkuApi.batchUpdateOfferSku({ offerId: offerId.value, skus: list.value })
+    const skus = list.value.map((item) => ({
+      id: item.id,
+      offerId: item.offerId,
+      productSkuId: item.productSkuId,
+      maxQuantityPerStudent: item.maxQuantityPerStudent,
+      sort: item.sort,
+      status: item.status,
+      remark: item.remark
+    }))
+    await SubscriptionOfferSkuApi.batchUpdateOfferSku({ offerId: offerId.value, skus })
     message.success('保存成功')
     dialogVisible.value = false
     emit('success')
@@ -320,10 +340,12 @@ const openIssueDialog = async (row: SubscriptionOfferSku) => {
 }
 
 const resetIssueForm = () => {
+  const nextIssueNo = Math.max(0, ...(issueList.value || []).map((item) => item.issueNo || 0)) + 1
+  const nextSort = Math.max(0, ...(issueList.value || []).map((item) => item.sort || 0)) + 1
   Object.assign(issueForm, createIssueForm(), {
     offerSkuId: currentIssueOfferSku.value?.id,
-    issueNo: (issueList.value?.length || 0) + 1,
-    sort: (issueList.value?.length || 0) + 1
+    issueNo: nextIssueNo,
+    sort: nextSort
   })
   issueFormRef.value?.clearValidate?.()
 }
@@ -375,6 +397,40 @@ const handleGenerateIssues = async () => {
     issueSubmitLoading.value = false
   }
 }
+
+const handleApplyDefaultTemplate = async () => {
+  if (!currentIssueOfferSku.value?.id) {
+    return
+  }
+  if (!hasDefaultTemplate(currentIssueOfferSku.value)) {
+    message.warning('商品 SKU 未配置默认期次模板')
+    return
+  }
+  let overwrite = false
+  if (issueList.value.length > 0) {
+    try {
+      await message.confirm('当前窗口 SKU 已存在期次计划，应用商品默认模板会覆盖现有期次，是否继续？')
+      overwrite = true
+    } catch {
+      return
+    }
+  }
+  issueSubmitLoading.value = true
+  try {
+    const count = await SubscriptionOfferSkuIssueApi.applyDefaultTemplate({
+      offerSkuId: currentIssueOfferSku.value.id,
+      overwrite
+    })
+    message.success(`应用完成，生成 ${count || 0} 条期次`)
+    await getIssueList()
+    resetIssueForm()
+    await getList()
+  } finally {
+    issueSubmitLoading.value = false
+  }
+}
+
+const hasDefaultTemplate = (offerSku?: SubscriptionOfferSku) => (offerSku?.issueTemplateCount || 0) > 0
 
 const handleDeleteIssue = async (id?: number) => {
   if (!id) {

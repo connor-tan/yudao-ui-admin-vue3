@@ -20,9 +20,9 @@
           </el-checkbox>
         </el-checkbox-group>
       </el-form-item>
-      <el-form-item v-if="isPublicationScene" label="站点说明">
+      <el-form-item v-if="isPublicationScene" label="学校配送">
         <div class="w-80 text-13px text-gray-500">
-          站点配送按学生学校绑定站点履约；混合配送只在订单中按配送组自动聚合，不在商品中配置。
+          学校配送按学生学校绑定仓库履约，由仓库统一配送到学校；混合配送只在订单中按配送组自动聚合，不在商品中配置。
         </div>
       </el-form-item>
       <el-form-item
@@ -74,7 +74,7 @@ const isPublicationScene = computed(() => formData.bizScene === ProductSpuApi.BI
 const isNormalScene = computed(() => formData.bizScene === ProductSpuApi.BIZ_SCENE_NORMAL)
 const allowedDeliveryTypeValues = computed(() => {
   if (isPublicationScene.value) {
-    return [DeliveryTypeEnum.EXPRESS.type, DeliveryTypeEnum.STATION.type]
+    return [DeliveryTypeEnum.EXPRESS.type, DeliveryTypeEnum.SCHOOL.type]
   }
   if (isNormalScene.value) {
     return [DeliveryTypeEnum.EXPRESS.type, DeliveryTypeEnum.PICK_UP.type]

@@ -25,6 +25,11 @@ export interface SubscriptionOfferSkuIssueGenerateReqVO {
   deliveryIntervalDays?: number
 }
 
+export interface SubscriptionOfferSkuIssueApplyDefaultTemplateReqVO {
+  offerSkuId?: number
+  overwrite?: boolean
+}
+
 export const SubscriptionOfferSkuIssueApi = {
   getIssueList: async (offerSkuId: number) => {
     return await request.get<SubscriptionOfferSkuIssue[]>({
@@ -43,6 +48,13 @@ export const SubscriptionOfferSkuIssueApi = {
 
   generateIssues: async (data: SubscriptionOfferSkuIssueGenerateReqVO) => {
     return await request.post<number>({ url: '/subscription/offer-sku-issue/generate', data })
+  },
+
+  applyDefaultTemplate: async (data: SubscriptionOfferSkuIssueApplyDefaultTemplateReqVO) => {
+    return await request.post<number>({
+      url: '/subscription/offer-sku-issue/apply-default-template',
+      data
+    })
   },
 
   deleteIssue: async (id: number) => {

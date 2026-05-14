@@ -12,6 +12,7 @@ export interface SubscriptionOfferSku {
   isbn?: string
   issueMode?: string
   issueCount?: number
+  issueTemplateCount?: number
   applicableGradeCatalogIds?: number[]
   applicableGradeNames?: string[]
   sort?: number

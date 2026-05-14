@@ -162,7 +162,7 @@
               </span>
             </div>
             <div
-              v-if="scope.row.deliveryType === DeliveryTypeEnum.STATION.type"
+              v-if="scope.row.deliveryType === DeliveryTypeEnum.SCHOOL.type"
               class="flex flex-col"
             >
               <span>买家：{{ getBuyerName(scope.row) }}</span>
@@ -235,7 +235,7 @@ const formatMixedDeliveryText = (order: OrderVO) =>
     .filter((deliveryType, index, list) => deliveryType != null && list.indexOf(deliveryType) === index)
     .map((deliveryType) => {
       if (deliveryType === DeliveryTypeEnum.EXPRESS.type) return '快递'
-      if (deliveryType === DeliveryTypeEnum.STATION.type) return '学校站点'
+      if (deliveryType === DeliveryTypeEnum.SCHOOL.type) return '学校配送'
       if (deliveryType === DeliveryTypeEnum.PICK_UP.type) return '用户自提'
       return '其他'
     })

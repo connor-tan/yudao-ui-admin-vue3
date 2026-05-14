@@ -400,9 +400,9 @@ export const DeliveryTypeEnum = {
     type: 2,
     name: '到店自提'
   },
-  STATION: {
+  SCHOOL: {
     type: 3,
-    name: '站点配送'
+    name: '学校配送'
   },
   MIXED: {
     type: 4,

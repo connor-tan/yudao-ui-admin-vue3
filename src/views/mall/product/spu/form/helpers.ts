@@ -35,6 +35,7 @@ export const createPublicationSku = (): Sku => ({
     isbn: '',
     remark: ''
   },
+  issueTemplates: [],
   applicableGradeCatalogIds: []
 })
 

@@ -37,6 +37,18 @@ export interface PublicationSkuExt {
   remark?: string
 }
 
+export interface PublicationSkuIssueTemplate {
+  id?: number
+  skuId?: number
+  issueNo?: number
+  issueName?: string
+  publishOffsetDays?: number
+  deliveryOffsetDays?: number
+  sort?: number
+  status?: number
+  remark?: string
+}
+
 export interface Sku {
   id?: number // 商品 SKU 编号
   name?: string // 商品 SKU 名称
@@ -55,6 +67,7 @@ export interface Sku {
   secondBrokeragePrice?: number | string // 二级分销的佣金
   salesCount?: number // 商品销量
   publicationExt?: PublicationSkuExt
+  issueTemplates?: PublicationSkuIssueTemplate[]
   applicableGradeCatalogIds?: number[]
   applicableGradeNames?: string[]
 }

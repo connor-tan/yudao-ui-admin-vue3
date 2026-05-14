@@ -166,9 +166,10 @@ export interface OrderDeliveryRespVO {
   pickUpVerifyCode?: string
   schoolId?: number | null
   schoolNameSnapshot?: string
-  stationId?: number | null
-  stationNameSnapshot?: string
-  stationAddressSnapshot?: string
+  schoolAddressSnapshot?: string
+  warehouseId?: number | null
+  warehouseNameSnapshot?: string
+  warehouseAddressSnapshot?: string
   contactName?: string
   contactMobile?: string
 }

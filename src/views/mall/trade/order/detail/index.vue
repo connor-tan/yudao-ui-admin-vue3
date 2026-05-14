@@ -169,10 +169,10 @@
                   {{ row.logisticsNo || '' }}
                 </div>
               </template>
-              <template v-else-if="row.deliveryType === DeliveryTypeEnum.STATION.type">
-                <div>学校：{{ row.schoolNameSnapshot }}</div>
-                <div>站点：{{ row.stationNameSnapshot }}</div>
-                <div>地址：{{ row.stationAddressSnapshot || '-' }}</div>
+              <template v-else-if="row.deliveryType === DeliveryTypeEnum.SCHOOL.type">
+                <div>学校：{{ row.schoolNameSnapshot || '-' }}</div>
+                <div>学校地址：{{ row.schoolAddressSnapshot || '-' }}</div>
+                <div>履约仓库：{{ row.warehouseNameSnapshot || '-' }}</div>
                 <div>联系人：{{ row.contactName || '-' }} {{ row.contactMobile || '' }}</div>
               </template>
               <template v-else-if="row.deliveryType === DeliveryTypeEnum.PICK_UP.type">
