@@ -20,7 +20,7 @@
       <el-form-item label="刊物 SKU">
         <div class="w-80">
           <div class="mb-12px text-12px text-gray-500">
-            刊物 SKU 负责承载册别、版本和适用年级，同一个刊物 SPU 不再按年级拆分。
+            刊物 SKU 负责承载 ISBN、适用年级、期次、价格库存等信息。
           </div>
           <el-button v-if="!isDetail" type="primary" plain @click="addPublicationSku">
             新增 SKU
@@ -52,48 +52,6 @@
             <template #default="{ row }">
               <template v-if="isDetail">{{ row.barCode || '-' }}</template>
               <el-input v-else v-model="row.barCode" />
-            </template>
-          </el-table-column>
-          <el-table-column label="册别" min-width="120">
-            <template #default="{ row }">
-              <template v-if="isDetail">
-                {{ formatPublicationDict(DICT_TYPE.EDU_PUBLICATION_VOLUME, row.publicationExt?.volumeLabel) }}
-              </template>
-              <el-select
-                v-else
-                v-model="row.publicationExt.volumeLabel"
-                clearable
-                filterable
-                placeholder="请选择册别"
-              >
-                <el-option
-                  v-for="item in getStrDictOptions(DICT_TYPE.EDU_PUBLICATION_VOLUME)"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </template>
-          </el-table-column>
-          <el-table-column label="版本" min-width="140">
-            <template #default="{ row }">
-              <template v-if="isDetail">
-                {{ formatPublicationDict(DICT_TYPE.EDU_PUBLICATION_EDITION, row.publicationExt?.editionLabel) }}
-              </template>
-              <el-select
-                v-else
-                v-model="row.publicationExt.editionLabel"
-                clearable
-                filterable
-                placeholder="请选择版本"
-              >
-                <el-option
-                  v-for="item in getStrDictOptions(DICT_TYPE.EDU_PUBLICATION_EDITION)"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
             </template>
           </el-table-column>
           <el-table-column :label="isbnColumnLabel" min-width="160">
@@ -418,7 +376,7 @@ import type { Sku, Spu } from '@/api/mall/product/spu'
 import * as ProductSpuApi from '@/api/mall/product/spu'
 import * as PublicationTypeApi from '@/api/edu/publicationType'
 import { SchoolApi } from '@/api/edu/school'
-import { DICT_TYPE, getDictLabel, getStrDictOptions } from '@/utils/dict'
+import { DICT_TYPE } from '@/utils/dict'
 import { createImageViewer } from '@/components/ImageViewer'
 import { createNormalSku, createPublicationSku } from './helpers'
 
@@ -556,6 +514,20 @@ watch(
 )
 
 watch(
+  () => [
+    props.propFormData?.publicationExt?.issueMode,
+    props.propFormData?.publicationExt?.issueCycle
+  ],
+  ([issueMode, issueCycle]) => {
+    formData.publicationExt = {
+      ...(formData.publicationExt || {}),
+      issueMode,
+      issueCycle
+    }
+  }
+)
+
+watch(
   () => formData.publicationExt?.issueMode,
   (issueMode) => {
     if (issueMode === ProductSpuApi.PUBLICATION_ISSUE_MODE_PERIODICAL) {
@@ -605,13 +577,6 @@ const validate = async () => {
   }
 }
 defineExpose({ validate })
-
-const formatPublicationDict = (dictType: string, value?: string) => {
-  if (!value) {
-    return '-'
-  }
-  return getDictLabel(dictType, value) || value
-}
 
 const imagePreview = (imgUrl: string) => {
   createImageViewer({

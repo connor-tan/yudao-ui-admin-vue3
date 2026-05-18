@@ -8,8 +8,6 @@ export interface SubscriptionPreviewSku {
   decisionStatusName?: string
   price?: number
   stock?: number
-  volumeLabel?: string
-  editionLabel?: string
   isbn?: string
   applicableGradeCatalogIds?: number[]
   applicableGradeNames?: string[]

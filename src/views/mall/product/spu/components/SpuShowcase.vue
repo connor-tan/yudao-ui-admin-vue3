@@ -52,6 +52,7 @@ const canAdd = computed(() => {
 
 // 商品列表
 const productSpus = ref<ProductSpuApi.Spu[]>([])
+const emit = defineEmits(['update:modelValue', 'change'])
 
 watch(
   () => props.modelValue,
@@ -70,7 +71,10 @@ watch(
     }
     // 只有商品发生变化之后，才去查询商品
     if (productSpus.value.length === 0 || productSpus.value.some((spu) => !ids.includes(spu.id!))) {
-      productSpus.value = await ProductSpuApi.getSpuDetailList(ids)
+      productSpus.value = (await ProductSpuApi.getSpuDetailList(ids)) || []
+      syncValidSpuIds(ids)
+    } else {
+      syncValidSpuIds(ids)
     }
   },
   { immediate: true }
@@ -102,7 +106,6 @@ const handleRemoveSpu = (index: number) => {
   productSpus.value.splice(index, 1)
   emitSpuChange()
 }
-const emit = defineEmits(['update:modelValue', 'change'])
 const emitSpuChange = () => {
   if (props.limit === 1) {
     const spu = productSpus.value.length > 0 ? productSpus.value[0] : null
@@ -115,6 +118,27 @@ const emitSpuChange = () => {
     )
     emit('change', productSpus.value)
   }
+}
+
+const syncValidSpuIds = (oldIds: number[]) => {
+  const validIds = productSpus.value.map((spu) => spu.id).filter((id): id is number => !!id)
+  if (props.limit === 1) {
+    const nextValue = validIds[0] || 0
+    if (props.modelValue !== nextValue) {
+      emit('update:modelValue', nextValue)
+    }
+    return
+  }
+  if (!isSameIds(oldIds, validIds)) {
+    emit('update:modelValue', validIds)
+  }
+}
+
+const isSameIds = (left: number[], right: number[]) => {
+  if (left.length !== right.length) {
+    return false
+  }
+  return left.every((id, index) => id === right[index])
 }
 </script>
 

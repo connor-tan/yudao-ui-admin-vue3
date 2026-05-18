@@ -72,13 +72,20 @@
           </el-form-item>
         </el-tab-pane>
         <!-- 分销 -->
-        <el-tab-pane label="分销" v-if="false">
+        <el-tab-pane label="分销">
           <el-form-item label="分佣启用" prop="brokerageEnabled">
-            <el-switch v-model="formData.brokerageEnabled" style="user-select: none" />
+            <el-switch
+              v-model="formData.brokerageEnabled"
+              style="user-select: none"
+              @change="handleBrokerageEnabledChange"
+            />
             <el-text class="w-full" size="small" type="info"> 商城是否开启分销模式</el-text>
           </el-form-item>
           <el-form-item label="分佣模式" prop="brokerageEnabledCondition">
-            <el-radio-group v-model="formData.brokerageEnabledCondition">
+            <el-radio-group
+              v-model="formData.brokerageEnabledCondition"
+              :disabled="!formData.brokerageEnabled"
+            >
               <el-radio
                 v-for="dict in getIntDictOptions(DICT_TYPE.BROKERAGE_ENABLED_CONDITION)"
                 :key="dict.value"
@@ -95,7 +102,10 @@
             </el-text>
           </el-form-item>
           <el-form-item label="分销关系绑定" prop="brokerageBindMode">
-            <el-radio-group v-model="formData.brokerageBindMode">
+            <el-radio-group
+              v-model="formData.brokerageBindMode"
+              :disabled="!formData.brokerageEnabled"
+            >
               <el-radio
                 v-for="dict in getIntDictOptions(DICT_TYPE.BROKERAGE_BIND_MODE)"
                 :key="dict.value"
@@ -112,7 +122,12 @@
             </el-text>
           </el-form-item>
           <el-form-item label="分销海报图">
-            <UploadImgs v-model="formData.brokeragePosterUrls" height="125px" width="75px" />
+            <UploadImgs
+              v-model="formData.brokeragePosterUrls"
+              :disabled="!formData.brokerageEnabled"
+              height="125px"
+              width="75px"
+            />
             <el-text class="w-full" size="small" type="info">
               个人中心分销海报图片，建议尺寸 600x1000
             </el-text>
@@ -122,6 +137,7 @@
               v-model="formData.brokerageFirstPercent"
               :max="100"
               :min="0"
+              :disabled="!formData.brokerageEnabled"
               class="!w-xs"
               placeholder="请输入一级返佣比例"
             />
@@ -134,6 +150,7 @@
               v-model="formData.brokerageSecondPercent"
               :max="100"
               :min="0"
+              :disabled="!formData.brokerageEnabled"
               class="!w-xs"
               placeholder="请输入二级返佣比例"
             />
@@ -145,6 +162,7 @@
             <el-input-number
               v-model="formData.brokerageFrozenDays"
               :min="0"
+              :disabled="!formData.brokerageEnabled"
               class="!w-xs"
               placeholder="请输入佣金冻结天数"
             />
@@ -157,6 +175,7 @@
               v-model="formData.brokerageWithdrawMinPrice"
               :min="0"
               :precision="2"
+              :disabled="!formData.brokerageEnabled"
               class="!w-xs"
               placeholder="请输入提现最低金额"
             />
@@ -169,6 +188,7 @@
               v-model="formData.brokerageWithdrawFeePercent"
               :max="100"
               :min="0"
+              :disabled="!formData.brokerageEnabled"
               class="!w-xs"
               placeholder="请输入提现手续费"
             />
@@ -178,7 +198,10 @@
             </el-text>
           </el-form-item>
           <el-form-item label="提现方式" prop="brokerageWithdrawTypes">
-            <el-checkbox-group v-model="formData.brokerageWithdrawTypes">
+            <el-checkbox-group
+              v-model="formData.brokerageWithdrawTypes"
+              :disabled="!formData.brokerageEnabled"
+            >
               <el-checkbox
                 v-for="dict in getIntDictOptions(DICT_TYPE.BROKERAGE_WITHDRAW_TYPE)"
                 :key="dict.value"
@@ -208,6 +231,19 @@ defineOptions({ name: 'TradeConfig' })
 
 const message = useMessage() // 消息弹窗
 
+const DEFAULT_BROKERAGE_ENABLED_CONDITION = 2
+const DEFAULT_BROKERAGE_BIND_MODE = 1
+const BROKERAGE_FIELD_PROPS = [
+  'brokerageEnabledCondition',
+  'brokerageBindMode',
+  'brokerageFirstPercent',
+  'brokerageSecondPercent',
+  'brokerageWithdrawMinPrice',
+  'brokerageWithdrawFeePercent',
+  'brokerageFrozenDays',
+  'brokerageWithdrawTypes'
+]
+
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formRef = ref()
 const createFormData = (): ConfigApi.ConfigVO => ({
@@ -218,8 +254,8 @@ const createFormData = (): ConfigApi.ConfigVO => ({
   deliveryExpressFreePrice: 0,
   deliveryPickUpEnabled: false,
   brokerageEnabled: false,
-  brokerageEnabledCondition: undefined,
-  brokerageBindMode: undefined,
+  brokerageEnabledCondition: DEFAULT_BROKERAGE_ENABLED_CONDITION,
+  brokerageBindMode: DEFAULT_BROKERAGE_BIND_MODE,
   brokeragePosterUrls: [],
   brokerageFirstPercent: 0,
   brokerageSecondPercent: 0,
@@ -229,25 +265,42 @@ const createFormData = (): ConfigApi.ConfigVO => ({
   brokerageWithdrawTypes: []
 })
 const formData = ref<ConfigApi.ConfigVO>(createFormData())
+const validateBrokerageRequired = (
+  message: string,
+  value: unknown,
+  callback: (error?: Error) => void
+) => {
+  if (!formData.value.brokerageEnabled) {
+    callback()
+    return
+  }
+  const empty = Array.isArray(value)
+    ? value.length === 0
+    : value === undefined || value === null || value === ''
+  callback(empty ? new Error(message) : undefined)
+}
+const brokerageRequiredRule = (message: string, trigger: 'blur' | 'change' = 'blur') => ({
+  validator: (_rule: unknown, value: unknown, callback: (error?: Error) => void) =>
+    validateBrokerageRequired(message, value, callback),
+  trigger
+})
 const formRules = reactive({
   deliveryExpressFreePrice: [{ required: true, message: '满额包邮不能为空', trigger: 'blur' }],
-  brokerageEnabledCondition: [{ required: true, message: '分佣模式不能为空', trigger: 'blur' }],
-  brokerageBindMode: [{ required: true, message: '分销关系绑定模式不能为空', trigger: 'blur' }],
-  brokerageFirstPercent: [{ required: true, message: '一级返佣比例不能为空', trigger: 'blur' }],
-  brokerageSecondPercent: [{ required: true, message: '二级返佣比例不能为空', trigger: 'blur' }],
-  brokerageWithdrawMinPrice: [
-    { required: true, message: '用户提现最低金额不能为空', trigger: 'blur' }
-  ],
-  brokerageWithdrawFeePercent: [{ required: true, message: '提现手续费不能为空', trigger: 'blur' }],
-  brokerageFrozenDays: [{ required: true, message: '佣金冻结时间不能为空', trigger: 'blur' }],
-  brokerageWithdrawTypes: [
-    {
-      required: true,
-      message: '提现方式不能为空',
-      trigger: 'change'
-    }
-  ]
+  brokerageEnabledCondition: [brokerageRequiredRule('分佣模式不能为空', 'change')],
+  brokerageBindMode: [brokerageRequiredRule('分销关系绑定模式不能为空', 'change')],
+  brokerageFirstPercent: [brokerageRequiredRule('一级返佣比例不能为空')],
+  brokerageSecondPercent: [brokerageRequiredRule('二级返佣比例不能为空')],
+  brokerageWithdrawMinPrice: [brokerageRequiredRule('用户提现最低金额不能为空')],
+  brokerageWithdrawFeePercent: [brokerageRequiredRule('提现手续费不能为空')],
+  brokerageFrozenDays: [brokerageRequiredRule('佣金冻结时间不能为空')],
+  brokerageWithdrawTypes: [brokerageRequiredRule('提现方式不能为空', 'change')]
 })
+
+const handleBrokerageEnabledChange = () => {
+  if (!formData.value.brokerageEnabled) {
+    formRef.value?.clearValidate(BROKERAGE_FIELD_PROPS)
+  }
+}
 
 const submitForm = async () => {
   if (formLoading.value) return
@@ -275,10 +328,12 @@ const getConfig = async () => {
   try {
     const data = await ConfigApi.getTradeConfig()
     if (data != null) {
-      formData.value = data
+      formData.value = { ...createFormData(), ...data }
+      formData.value.brokeragePosterUrls = data.brokeragePosterUrls ?? []
+      formData.value.brokerageWithdrawTypes = data.brokerageWithdrawTypes ?? []
       // 金额缩小
-      formData.value.deliveryExpressFreePrice = data.deliveryExpressFreePrice / 100
-      formData.value.brokerageWithdrawMinPrice = data.brokerageWithdrawMinPrice / 100
+      formData.value.deliveryExpressFreePrice = (data.deliveryExpressFreePrice ?? 0) / 100
+      formData.value.brokerageWithdrawMinPrice = (data.brokerageWithdrawMinPrice ?? 0) / 100
     }
   } finally {
     formLoading.value = false

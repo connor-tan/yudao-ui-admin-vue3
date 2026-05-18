@@ -533,7 +533,6 @@
 
 <script setup lang="ts">
 import { dateFormatter, formatDate } from '@/utils/formatTime'
-import { DICT_TYPE, getDictLabel } from '@/utils/dict'
 import { DeliveryTypeEnum, PublicationDeliveryBatchStatusEnum } from '@/utils/constants'
 import { SubscriptionWindowApi, type SubscriptionWindowSimple } from '@/api/subscription/window'
 import { SubscriptionOfferApi, type SubscriptionOffer } from '@/api/subscription/offer'
@@ -636,13 +635,6 @@ const deliveryExpressLabel = (id?: number) => {
   return deliveryExpressList.value.find((item) => item.id === id)?.name || ''
 }
 
-const formatPublicationDict = (dictType: string, value?: string) => {
-  if (!value) {
-    return ''
-  }
-  return getDictLabel(dictType, value) || value
-}
-
 const formatCandidateSkuName = (row: PublicationDeliveryCandidateRespVO) => {
   if (row.productSkuName) {
     return row.productSkuName
@@ -655,14 +647,6 @@ const formatCandidateSkuName = (row: PublicationDeliveryCandidateRespVO) => {
 
 const buildCandidateSkuMeta = (row: PublicationDeliveryCandidateRespVO) => {
   return [
-    {
-      label: '卷期',
-      value: formatPublicationDict(DICT_TYPE.EDU_PUBLICATION_VOLUME, row.volumeLabel)
-    },
-    {
-      label: '版别',
-      value: formatPublicationDict(DICT_TYPE.EDU_PUBLICATION_EDITION, row.editionLabel)
-    },
     {
       label: 'ISBN',
       value: row.isbn || ''

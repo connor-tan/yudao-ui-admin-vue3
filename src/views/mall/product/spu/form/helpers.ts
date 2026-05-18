@@ -30,8 +30,6 @@ export const createNormalSku = (): Sku => ({
 export const createPublicationSku = (): Sku => ({
   ...createNormalSku(),
   publicationExt: {
-    volumeLabel: '',
-    editionLabel: '',
     isbn: '',
     remark: ''
   },

@@ -93,16 +93,6 @@
                     {{ sku.applicableGradeNames?.join('、') || '-' }}
                   </template>
                 </el-table-column>
-                <el-table-column align="center" label="册别" width="90">
-                  <template #default="{ row: sku }">
-                    {{ formatPublicationDict(DICT_TYPE.EDU_PUBLICATION_VOLUME, sku.volumeLabel) }}
-                  </template>
-                </el-table-column>
-                <el-table-column align="center" label="版本" width="100">
-                  <template #default="{ row: sku }">
-                    {{ formatPublicationDict(DICT_TYPE.EDU_PUBLICATION_EDITION, sku.editionLabel) }}
-                  </template>
-                </el-table-column>
                 <el-table-column align="center" label="价格" width="100">
                   <template #default="{ row: sku }">¥ {{ fenToYuan(sku.price || 0) }}</template>
                 </el-table-column>
@@ -124,7 +114,6 @@
 
 <script setup lang="ts">
 import { fenToYuan } from '@/utils'
-import { DICT_TYPE, getDictLabel } from '@/utils/dict'
 import { StudentApi, type Student } from '@/api/edu/student'
 import { SubscriptionPreviewApi, type SubscriptionRulePreviewRespVO } from '@/api/subscription/preview'
 import { getSubscriptionGradeResolveSourceLabel } from '@/utils/subscription'
@@ -139,13 +128,6 @@ const studentId = ref<number>()
 type StudentOption = Student & { id: number }
 const studentList = ref<StudentOption[]>([])
 const previewData = ref<SubscriptionRulePreviewRespVO>()
-
-const formatPublicationDict = (dictType: string, value?: string) => {
-  if (!value) {
-    return '-'
-  }
-  return getDictLabel(dictType, value) || value
-}
 
 const buildStudentOptionLabel = (item: Student) => {
   const meta = [item.currentSchoolName, item.studentCode].filter(Boolean).join(' / ')

@@ -260,7 +260,5 @@ export enum DICT_TYPE {
 
   EDU_STAGE = 'edu_stage',
   EDU_GRADE = 'edu_grade',
-  EDU_CYCLE = 'edu_cycle',
-  EDU_PUBLICATION_VOLUME = 'edu_publication_volume',
-  EDU_PUBLICATION_EDITION = 'edu_publication_edition'
+  EDU_CYCLE = 'edu_cycle'
 }

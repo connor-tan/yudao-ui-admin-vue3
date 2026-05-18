@@ -119,7 +119,6 @@ const formData = ref<StationFormData>({
 const formRules = reactive<FormRules<StationFormData>>({
   stationName: [required],
   areaId: [required],
-  stationAddressDetail: [required],
   sort: [required],
   status: [required]
 })
@@ -210,7 +209,7 @@ const submitForm = async () => {
   if (!valid) return
   formLoading.value = true
   try {
-    const stationAddressDetail = formData.value.stationAddressDetail || ''
+    const stationAddressDetail = formData.value.stationAddressDetail?.trim()
     const areaId = isAreaLocked.value ? originalAreaId.value : formData.value.areaId
     const data: Station = {
       id: formData.value.id,
@@ -218,7 +217,7 @@ const submitForm = async () => {
       areaId,
       contactName: formData.value.contactName,
       contactMobile: formData.value.contactMobile,
-      stationAddress: `${getAreaText(areaId)}${stationAddressDetail}`,
+      stationAddress: stationAddressDetail ? `${getAreaText(areaId)}${stationAddressDetail}` : undefined,
       sort: formData.value.sort,
       status: formData.value.status,
       remark: formData.value.remark

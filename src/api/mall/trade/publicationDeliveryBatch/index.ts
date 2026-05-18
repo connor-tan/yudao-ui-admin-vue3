@@ -27,8 +27,6 @@ export interface PublicationDeliveryCandidateRespVO {
   skuId?: number
   productNameSnapshot?: string
   productSkuName?: string
-  volumeLabel?: string
-  editionLabel?: string
   isbn?: string
   issueId?: number
   issueNo?: number

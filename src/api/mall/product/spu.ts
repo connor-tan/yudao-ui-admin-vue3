@@ -31,8 +31,6 @@ export interface PublicationSpuExt {
 }
 
 export interface PublicationSkuExt {
-  volumeLabel?: string
-  editionLabel?: string
   isbn?: string
   remark?: string
 }

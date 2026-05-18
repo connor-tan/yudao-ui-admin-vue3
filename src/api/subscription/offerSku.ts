@@ -7,8 +7,6 @@ export interface SubscriptionOfferSku {
   productSkuName?: string
   price?: number
   stock?: number
-  volumeLabel?: string
-  editionLabel?: string
   isbn?: string
   issueMode?: string
   issueCount?: number

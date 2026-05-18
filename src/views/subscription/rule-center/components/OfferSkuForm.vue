@@ -21,16 +21,6 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="册别" width="100">
-        <template #default="{ row }">
-          {{ formatPublicationDict(DICT_TYPE.EDU_PUBLICATION_VOLUME, row.volumeLabel) }}
-        </template>
-      </el-table-column>
-      <el-table-column label="版本" width="120">
-        <template #default="{ row }">
-          {{ formatPublicationDict(DICT_TYPE.EDU_PUBLICATION_EDITION, row.editionLabel) }}
-        </template>
-      </el-table-column>
       <el-table-column label="适用年级" min-width="160" prop="applicableGradeNames" />
       <el-table-column align="center" label="限购" width="120">
         <template #default="{ row }">
@@ -201,7 +191,6 @@
 </template>
 
 <script setup lang="ts">
-import { DICT_TYPE, getDictLabel } from '@/utils/dict'
 import { SubscriptionOfferSkuApi, type SubscriptionOfferSku } from '@/api/subscription/offerSku'
 import {
   SubscriptionOfferSkuIssueApi,
@@ -249,13 +238,6 @@ const generateForm = reactive({
   firstDeliveryDate: undefined as string | undefined,
   deliveryIntervalDays: 30
 })
-
-const formatPublicationDict = (dictType: string, value?: string) => {
-  if (!value) {
-    return '-'
-  }
-  return getDictLabel(dictType, value) || value
-}
 
 const formatIssueMode = (issueMode?: string) => {
   return (
