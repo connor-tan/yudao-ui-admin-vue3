@@ -58,6 +58,11 @@ export interface PublicationDeliveryCandidateGroupRespVO {
 export interface PublicationDeliveryCandidateChildReqVO
   extends PublicationDeliveryCandidatePageReqVO {}
 
+export interface PublicationDeliveryCandidateChildPageRespVO {
+  list?: PublicationDeliveryCandidateRespVO[]
+  total?: number
+}
+
 export interface PublicationDeliveryBatchCreateReqVO {
   deliveryType: number
   schoolId: number
@@ -197,6 +202,13 @@ export const PublicationDeliveryBatchApi = {
   getCandidateChildList: async (params: PublicationDeliveryCandidateChildReqVO) => {
     return await request.get<PublicationDeliveryCandidateRespVO[]>({
       url: '/trade/publication-delivery-batch/candidate-child-list',
+      params
+    })
+  },
+
+  getCandidateChildPage: async (params: PublicationDeliveryCandidateChildReqVO) => {
+    return await request.get<PublicationDeliveryCandidateChildPageRespVO>({
+      url: '/trade/publication-delivery-batch/candidate-child-page',
       params
     })
   },

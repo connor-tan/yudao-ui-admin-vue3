@@ -17,7 +17,10 @@
           :num="item.count"
           :picUrl="item.picUrl"
           :price="item.price"
-          :skuText="item.properties.map((property: any) => property.valueName).join(' ')"
+          :skuText="formatSkuText(item.properties)"
+          :detail-id="getMessageContent.id"
+          detail-route-name="TradeOrderDetail"
+          :show-stats="false"
           :spu-id="item.spuId"
           :title="item.spuName"
         />
@@ -53,6 +56,13 @@ const props = defineProps<{
 const getMessageContent = computed(() =>
   typeof props.message !== 'undefined' ? jsonParse(props!.message!.content) : props.order
 )
+
+const formatSkuText = (properties?: Array<{ valueName?: string }> | null) => {
+  if (!Array.isArray(properties)) {
+    return ''
+  }
+  return properties.map((property) => property.valueName).filter(Boolean).join(' ')
+}
 
 /** 查看订单详情 */
 const openDetail = (id: number) => {

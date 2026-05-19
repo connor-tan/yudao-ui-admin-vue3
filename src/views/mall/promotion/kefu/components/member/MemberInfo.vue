@@ -25,7 +25,7 @@
       </div>
     </el-header>
     <el-main class="kefu-content p-10px!">
-      <div v-if="!isEmpty(conversation)" v-loading="loading">
+      <div v-if="hasConversation" v-loading="loading">
         <!-- 基本信息 -->
         <UserBasicInfo v-if="activeTab === '会员信息'" :user="user" mode="kefu">
           <template #header>
@@ -40,7 +40,7 @@
           <UserAccountInfo :column="1" :user="user" :wallet="wallet" />
         </el-card>
       </div>
-      <div v-show="!isEmpty(conversation)">
+      <div v-show="hasConversation">
         <el-scrollbar ref="scrollbarRef" always @scroll="handleScroll">
           <!-- 最近浏览 -->
           <ProductBrowsingHistory v-if="activeTab === '最近浏览'" ref="productBrowsingHistoryRef" />
@@ -48,7 +48,7 @@
           <OrderBrowsingHistory v-if="activeTab === '交易订单'" ref="orderBrowsingHistoryRef" />
         </el-scrollbar>
       </div>
-      <el-empty v-show="isEmpty(conversation)" description="请选择左侧的一个会话后开始" />
+      <el-empty v-show="!hasConversation" description="请选择左侧的一个会话后开始" />
     </el-main>
   </el-container>
 </template>
@@ -57,7 +57,6 @@
 import ProductBrowsingHistory from './ProductBrowsingHistory.vue'
 import OrderBrowsingHistory from './OrderBrowsingHistory.vue'
 import { KeFuConversationRespVO } from '@/api/mall/promotion/kefu/conversation'
-import { isEmpty } from '@/utils/is'
 import { debounce } from 'lodash-es'
 import { ElScrollbar as ElScrollbarType } from 'element-plus/es/components/scrollbar/index'
 import { CardTitle } from '@/components/Card'
@@ -70,12 +69,14 @@ defineOptions({ name: 'MemberBrowsingHistory' })
 
 const activeTab = ref('会员信息')
 const tabActivation = computed(() => (tab: string) => activeTab.value === tab)
+const conversation = ref<KeFuConversationRespVO>({} as KeFuConversationRespVO) // 用户会话
+const hasConversation = computed(() => !!conversation.value?.id && !!conversation.value?.userId)
 
 /** tab 切换 */
 const productBrowsingHistoryRef = ref<InstanceType<typeof ProductBrowsingHistory>>()
 const orderBrowsingHistoryRef = ref<InstanceType<typeof OrderBrowsingHistory>>()
 const handleClick = async (tab: string) => {
-  if (isEmpty(conversation)) {
+  if (!hasConversation.value) {
     return
   }
   activeTab.value = tab
@@ -85,6 +86,9 @@ const handleClick = async (tab: string) => {
 
 /** 获得历史数据 */
 const getHistoryList = async () => {
+  if (!hasConversation.value) {
+    return
+  }
   switch (activeTab.value) {
     case '会员信息':
       await getUserData()
@@ -103,6 +107,9 @@ const getHistoryList = async () => {
 
 /** 加载下一页数据 */
 const loadMore = async () => {
+  if (!hasConversation.value) {
+    return
+  }
   switch (activeTab.value) {
     case '会员信息':
       break
@@ -118,7 +125,6 @@ const loadMore = async () => {
 }
 
 /** 浏览历史初始化 */
-const conversation = ref<KeFuConversationRespVO>({} as KeFuConversationRespVO) // 用户会话
 const initHistory = async (val: KeFuConversationRespVO) => {
   activeTab.value = '会员信息'
   conversation.value = val
@@ -131,8 +137,11 @@ defineExpose({ initHistory })
 const scrollbarRef = ref<InstanceType<typeof ElScrollbarType>>()
 const handleScroll = debounce(() => {
   const wrap = scrollbarRef.value?.wrapRef
+  if (!wrap) {
+    return
+  }
   // 触底重置
-  if (Math.abs(wrap!.scrollHeight - wrap!.clientHeight - wrap!.scrollTop) < 1) {
+  if (Math.abs(wrap.scrollHeight - wrap.clientHeight - wrap.scrollTop) < 1) {
     loadMore()
   }
 }, 200)
@@ -157,6 +166,10 @@ const getUserWallet = async () => {
 const loading = ref(true) // 加载中
 const user = ref<UserApi.UserVO>({} as UserApi.UserVO)
 const getUserData = async () => {
+  if (!conversation.value.userId) {
+    user.value = {} as UserApi.UserVO
+    return
+  }
   loading.value = true
   try {
     user.value = await UserApi.getUser(conversation.value.userId)

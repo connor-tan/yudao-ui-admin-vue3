@@ -1,5 +1,5 @@
 <template>
-  <div class="product-warp" style="cursor: pointer" @click.stop="openDetail(spuId)">
+  <div class="product-warp" style="cursor: pointer" @click.stop="openDetail">
     <!-- 左侧商品图片-->
     <div class="product-warp-left mr-24px">
       <el-image
@@ -15,9 +15,13 @@
     <!-- 右侧商品信息 -->
     <div class="product-warp-right">
       <div class="description">{{ title }}</div>
-      <div class="my-5px">
+      <div v-if="showStats" class="my-5px">
         <span class="mr-20px">库存: {{ stock || 0 }}</span>
         <span>销量: {{ salesCount || 0 }}</span>
+      </div>
+      <div v-else class="my-5px">
+        <span v-if="skuText" class="mr-20px">{{ skuText }}</span>
+        <span>数量: {{ num || 0 }}</span>
       </div>
       <div class="flex justify-between items-center">
         <span class="price">￥{{ fenToYuan(price) }}</span>
@@ -33,7 +37,7 @@ import { fenToYuan } from '@/utils'
 const { push } = useRouter()
 
 defineOptions({ name: 'ProductItem' })
-defineProps({
+const props = defineProps({
   spuId: {
     type: Number,
     default: 0
@@ -57,12 +61,36 @@ defineProps({
   stock: {
     type: [String, Number],
     default: ''
+  },
+  num: {
+    type: [String, Number],
+    default: ''
+  },
+  skuText: {
+    type: String,
+    default: ''
+  },
+  showStats: {
+    type: Boolean,
+    default: true
+  },
+  detailRouteName: {
+    type: String,
+    default: 'ProductSpuDetail'
+  },
+  detailId: {
+    type: Number,
+    default: undefined
   }
 })
 
-/** 查看商品详情 */
-const openDetail = (spuId: number) => {
-  push({ name: 'ProductSpuDetail', params: { id: spuId } })
+/** 查看详情 */
+const openDetail = () => {
+  const id = props.detailId || props.spuId
+  if (!id) {
+    return
+  }
+  push({ name: props.detailRouteName, params: { id } })
 }
 </script>
 

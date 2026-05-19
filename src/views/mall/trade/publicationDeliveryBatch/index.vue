@@ -202,6 +202,17 @@
                   </template>
                 </el-table-column>
               </el-table>
+              <div
+                v-if="candidateChildTotalMap[getCandidateGroupKey(row)] > 0"
+                class="flex justify-end"
+              >
+                <Pagination
+                  v-model:limit="candidateChildPageSizeMap[getCandidateGroupKey(row)]"
+                  v-model:page="candidateChildPageNoMap[getCandidateGroupKey(row)]"
+                  :total="candidateChildTotalMap[getCandidateGroupKey(row)] || 0"
+                  @pagination="loadCandidateChildPage(row, true)"
+                />
+              </div>
             </template>
           </el-table-column>
           <el-table-column align="center" label="配送方式" width="110">
@@ -611,6 +622,7 @@ const publicationDeliveryTypeOptions = [
   { value: DeliveryTypeEnum.EXPRESS.type, label: '快递配送' }
 ]
 const PUBLICATION_EXPRESS_BATCH_ITEM_LIMIT = 500
+const DEFAULT_CANDIDATE_CHILD_PAGE_SIZE = 10
 
 const candidateLoading = ref(false)
 const candidateTotal = ref(0)
@@ -618,6 +630,9 @@ const candidateList = ref<PublicationDeliveryCandidateGroupRespVO[]>([])
 const candidateTableRef = ref()
 const candidateChildMap = ref<Record<string, PublicationDeliveryCandidateRespVO[]>>({})
 const candidateChildLoadingMap = ref<Record<string, boolean>>({})
+const candidateChildTotalMap = ref<Record<string, number>>({})
+const candidateChildPageNoMap = ref<Record<string, number>>({})
+const candidateChildPageSizeMap = ref<Record<string, number>>({})
 const candidateQueryFormRef = ref()
 const candidateQueryParams = reactive({
   pageNo: 1,
@@ -806,6 +821,9 @@ const getCandidateList = async () => {
 const clearCandidateChildCache = () => {
   candidateChildMap.value = {}
   candidateChildLoadingMap.value = {}
+  candidateChildTotalMap.value = {}
+  candidateChildPageNoMap.value = {}
+  candidateChildPageSizeMap.value = {}
 }
 
 const handleCandidateQuery = async () => {
@@ -865,19 +883,31 @@ const buildCandidateGroupReq = (
   issueNo: candidateQueryParams.issueNo
 })
 
-const loadCandidateChildList = async (
+const ensureCandidateChildPageState = (key: string) => {
+  candidateChildPageNoMap.value[key] = candidateChildPageNoMap.value[key] || 1
+  candidateChildPageSizeMap.value[key] =
+    candidateChildPageSizeMap.value[key] || DEFAULT_CANDIDATE_CHILD_PAGE_SIZE
+  candidateChildTotalMap.value[key] = candidateChildTotalMap.value[key] || 0
+}
+
+const loadCandidateChildPage = async (
   row: PublicationDeliveryCandidateGroupRespVO,
   force = false
 ) => {
   const key = getCandidateGroupKey(row)
+  ensureCandidateChildPageState(key)
   if (!force && candidateChildMap.value[key]) {
     return
   }
   candidateChildLoadingMap.value[key] = true
   try {
-    candidateChildMap.value[key] = await PublicationDeliveryBatchApi.getCandidateChildList(
-      buildCandidateGroupReq(row)
-    )
+    const data = await PublicationDeliveryBatchApi.getCandidateChildPage({
+      ...buildCandidateGroupReq(row),
+      pageNo: candidateChildPageNoMap.value[key],
+      pageSize: candidateChildPageSizeMap.value[key]
+    })
+    candidateChildMap.value[key] = data.list || []
+    candidateChildTotalMap.value[key] = data.total || 0
   } finally {
     candidateChildLoadingMap.value[key] = false
   }
@@ -889,12 +919,12 @@ const handleCandidateGroupExpandChange = async (
 ) => {
   const expanded = expandedRows.some((item) => getCandidateGroupKey(item) === getCandidateGroupKey(row))
   if (expanded) {
-    await loadCandidateChildList(row)
+    await loadCandidateChildPage(row)
   }
 }
 
 const expandCandidateGroup = async (row: PublicationDeliveryCandidateGroupRespVO) => {
-  await loadCandidateChildList(row)
+  await loadCandidateChildPage(row)
   candidateTableRef.value?.toggleRowExpansion(row, true)
 }
 
