@@ -3,7 +3,11 @@
   <el-form ref="formRef" :model="formData" :rules="rules" label-width="120px" :disabled="isDetail">
     <!--富文本编辑器组件-->
     <el-form-item label="商品详情" prop="description">
-      <Editor :readonly="isDetail" v-model:modelValue="formData.description" />
+      <Editor
+        v-if="activeName === 'description'"
+        v-model:modelValue="formData.description"
+        :readonly="isDetail"
+      />
     </el-form-item>
   </el-form>
 </template>

@@ -18,6 +18,7 @@
               clearable
               placeholder="请选择班级"
               class="!w-full"
+              @change="(classId) => handleClassChange(row, classId)"
             >
               <el-option
                 v-for="schoolClass in classOptions"
@@ -36,7 +37,8 @@
               v-model="row.startDate"
               type="date"
               value-format="YYYY-MM-DD"
-              placeholder="请选择入班日期"
+              placeholder="选择班级后自动带出"
+              disabled
               class="!w-full"
             />
           </el-form-item>
@@ -104,11 +106,29 @@ const formatClassLabel = (schoolClass: SchoolClassSimple) => {
   return schoolClass.className
 }
 
+const findClassOption = (classId?: number) => {
+  return classOptions.value.find((item) => item.id === classId)
+}
+
+const fillClassStartDate = (row: StudentClass) => {
+  const schoolClass = findClassOption(row.classId)
+  row.startDate = schoolClass?.schoolYearStartDate
+}
+
+const handleClassChange = (row: StudentClass, classId?: number) => {
+  row.classId = classId
+  fillClassStartDate(row)
+}
+
 const syncClassValue = () => {
   const validClassIds = new Set(classOptions.value.map((item) => item.id))
   formData.value = formData.value.map((item) => ({
     ...item,
-    classId: item.classId && validClassIds.has(item.classId) ? item.classId : undefined
+    classId: item.classId && validClassIds.has(item.classId) ? item.classId : undefined,
+    startDate:
+      item.classId && validClassIds.has(item.classId)
+        ? findClassOption(item.classId)?.schoolYearStartDate
+        : undefined
   }))
 }
 
@@ -140,6 +160,9 @@ watch(
     try {
       formLoading.value = true
       formData.value = await StudentApi.getStudentClassListByStudentId(val)
+      if (classOptions.value.length > 0) {
+        syncClassValue()
+      }
     } finally {
       formLoading.value = false
     }

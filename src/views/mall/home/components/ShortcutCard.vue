@@ -36,7 +36,7 @@ const menuList = [
     name: '商品管理',
     icon: 'fluent-mdl2:product',
     bgColor: 'bg-orange-400',
-    routerName: 'ProductSpu'
+    routerName: 'ProductCenter'
   },
   { name: '订单管理', icon: 'ep:list', bgColor: 'bg-yellow-500', routerName: 'TradeOrder' },
   {

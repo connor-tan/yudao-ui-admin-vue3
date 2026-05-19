@@ -154,6 +154,7 @@ type CashierOrder = {
 
 const id = ref<number>() // 支付单号
 const returnUrl = ref<string | undefined>(undefined) // 支付完的回调地址
+const hideWallet = ref(false)
 const loading = ref(false) // 支付信息的 loading
 const payOrder = ref<CashierOrder>({}) // 支付信息
 const channelsAlipay = [
@@ -210,7 +211,7 @@ const channelsWechat = [
     code: 'wx_bar'
   }
 ]
-const channelsMock = [
+const channelsMockBase = [
   {
     name: '钱包支付',
     icon: svg_wallet,
@@ -222,6 +223,11 @@ const channelsMock = [
     code: 'mock'
   }
 ]
+const channelsMock = computed(() =>
+  hideWallet.value
+    ? channelsMockBase.filter((channel) => channel.code !== PayChannelEnum.WALLET.code)
+    : channelsMockBase
+)
 
 const submitLoading = ref(false) // 提交支付的 loading
 const interval = ref<any>(undefined) // 定时任务，轮询是否完成支付
@@ -475,6 +481,10 @@ onMounted(() => {
   if (queryReturnUrl) {
     returnUrl.value = decodeURIComponent(queryReturnUrl)
   }
+  const queryHideWallet = Array.isArray(route.query.hideWallet)
+    ? route.query.hideWallet[0]
+    : route.query.hideWallet
+  hideWallet.value = queryHideWallet === '1' || queryHideWallet === 'true'
   getDetail()
 })
 

@@ -128,64 +128,107 @@
         </el-form>
 
         <el-table
+          ref="candidateTableRef"
           v-loading="candidateLoading"
           :data="candidateList"
+          :row-key="getCandidateGroupKey"
           :show-overflow-tooltip="true"
           :stripe="true"
           class="mt-20px"
+          @expand-change="handleCandidateGroupExpandChange"
         >
+          <el-table-column type="expand" width="48">
+            <template #default="{ row }">
+              <el-table
+                v-loading="candidateChildLoadingMap[getCandidateGroupKey(row)]"
+                :data="candidateChildMap[getCandidateGroupKey(row)] || []"
+                :show-overflow-tooltip="true"
+                :stripe="true"
+                border
+                class="my-10px"
+              >
+                <el-table-column align="center" label="刊物" min-width="200" prop="productNameSnapshot" />
+                <el-table-column align="left" label="刊物 SKU" min-width="280">
+                  <template #default="childScope">
+                    <div class="font-500 leading-5">
+                      {{ formatCandidateSkuName(childScope.row) }}
+                    </div>
+                    <div
+                      v-if="buildCandidateSkuMeta(childScope.row).length"
+                      class="mt-4px flex flex-wrap gap-4px"
+                    >
+                      <el-tag
+                        v-for="item in buildCandidateSkuMeta(childScope.row)"
+                        :key="item.label"
+                        effect="plain"
+                        size="small"
+                        type="info"
+                      >
+                        {{ item.label }}：{{ item.value }}
+                      </el-tag>
+                    </div>
+                    <div class="mt-4px text-xs text-gray-500">
+                      窗口SKU #{{ childScope.row.offerSkuId || '-' }} / 商品SKU #{{
+                        childScope.row.skuId || '-'
+                      }}
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column align="center" label="期次" min-width="140">
+                  <template #default="childScope">
+                    <div>第 {{ childScope.row.issueNo }} 期</div>
+                    <div class="text-xs text-gray-500">{{ childScope.row.issueName || '-' }}</div>
+                  </template>
+                </el-table-column>
+                <el-table-column
+                  align="center"
+                  label="计划配送"
+                  min-width="120"
+                  prop="plannedDeliveryDate"
+                />
+                <el-table-column align="center" label="待发数量" prop="totalCount" width="100" />
+                <el-table-column align="center" label="订单数" prop="orderCount" width="90" />
+                <el-table-column align="center" label="学生数" prop="studentCount" width="90" />
+                <el-table-column align="center" fixed="right" label="操作" width="120">
+                  <template #default="childScope">
+                    <el-button
+                      v-hasPermi="['trade:publication-delivery-batch:create']"
+                      link
+                      type="primary"
+                      @click="handleCreateAndDeliver(childScope.row)"
+                    >
+                      确认发货
+                    </el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </template>
+          </el-table-column>
           <el-table-column align="center" label="配送方式" width="110">
             <template #default="{ row }">{{ formatDeliveryType(row.deliveryType) }}</template>
           </el-table-column>
-          <el-table-column align="center" label="仓库" min-width="140" prop="warehouseNameSnapshot" />
           <el-table-column align="center" label="学校" min-width="160" prop="schoolNameSnapshot" />
+          <el-table-column align="center" label="仓库" min-width="140" prop="warehouseNameSnapshot" />
           <el-table-column
             align="center"
             label="订刊窗口"
             min-width="160"
             prop="windowNameSnapshot"
           />
-          <el-table-column align="center" label="刊物" min-width="200" prop="productNameSnapshot" />
-          <el-table-column align="left" label="刊物 SKU" min-width="280">
-            <template #default="{ row }">
-              <div class="font-500 leading-5">{{ formatCandidateSkuName(row) }}</div>
-              <div v-if="buildCandidateSkuMeta(row).length" class="mt-4px flex flex-wrap gap-4px">
-                <el-tag
-                  v-for="item in buildCandidateSkuMeta(row)"
-                  :key="item.label"
-                  effect="plain"
-                  size="small"
-                  type="info"
-                >
-                  {{ item.label }}：{{ item.value }}
-                </el-tag>
-              </div>
-              <div class="mt-4px text-xs text-gray-500">
-                窗口SKU #{{ row.offerSkuId || '-' }} / 商品SKU #{{ row.skuId || '-' }}
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="期次" min-width="140">
-            <template #default="{ row }">
-              <div>第 {{ row.issueNo }} 期</div>
-              <div class="text-xs text-gray-500">{{ row.issueName || '-' }}</div>
-              <div v-if="row.plannedDeliveryDate" class="text-xs text-gray-500">
-                配送：{{ row.plannedDeliveryDate }}
-              </div>
-            </template>
-          </el-table-column>
+          <el-table-column align="center" label="刊物数" prop="publicationGroupCount" width="100" />
+          <el-table-column align="center" label="期次数" prop="issueGroupCount" width="100" />
           <el-table-column align="center" label="待发数量" prop="totalCount" width="100" />
           <el-table-column align="center" label="订单数" prop="orderCount" width="100" />
           <el-table-column align="center" label="学生数" prop="studentCount" width="100" />
-          <el-table-column align="center" fixed="right" label="操作" width="120">
+          <el-table-column align="center" fixed="right" label="操作" width="130">
             <template #default="{ row }">
               <el-button
                 v-hasPermi="['trade:publication-delivery-batch:create']"
                 link
                 type="primary"
-                @click="handleCreateAndDeliver(row)"
+                @click="handleCreateGroupAndDeliver(row)"
               >
-                确认发货
+                {{ row.deliveryType === DeliveryTypeEnum.EXPRESS.type ? '展开录入' : '全部发货' }}
               </el-button>
             </template>
           </el-table-column>
@@ -355,8 +398,8 @@
           <el-table-column align="center" label="配送方式" width="110">
             <template #default="{ row }">{{ formatDeliveryType(row.deliveryType) }}</template>
           </el-table-column>
-          <el-table-column align="center" label="仓库" min-width="140" prop="warehouseNameSnapshot" />
           <el-table-column align="center" label="学校" min-width="160" prop="schoolNameSnapshot" />
+          <el-table-column align="center" label="仓库" min-width="140" prop="warehouseNameSnapshot" />
           <el-table-column
             align="center"
             label="订刊窗口"
@@ -474,6 +517,7 @@
 
   <Dialog v-model="expressDialogVisible" title="刊物快递期次发货" width="1080px">
     <el-descriptions v-if="expressCandidate" :column="3" border class="mb-20px">
+      <el-descriptions-item label="学校">{{ expressCandidate.schoolNameSnapshot || '-' }}</el-descriptions-item>
       <el-descriptions-item label="刊物">{{ expressCandidate.productNameSnapshot }}</el-descriptions-item>
       <el-descriptions-item label="期次">
         第 {{ expressCandidate.issueNo }} 期 {{ expressCandidate.issueName || '' }}
@@ -543,6 +587,7 @@ import * as DeliveryExpressApi from '@/api/mall/trade/delivery/express'
 import {
   PublicationDeliveryBatchApi,
   type PublicationDeliveryBatchRespVO,
+  type PublicationDeliveryCandidateGroupRespVO,
   type PublicationDeliveryCandidateItemRespVO,
   type PublicationDeliveryCandidatePageReqVO,
   type PublicationDeliveryCandidateRespVO
@@ -569,7 +614,10 @@ const PUBLICATION_EXPRESS_BATCH_ITEM_LIMIT = 500
 
 const candidateLoading = ref(false)
 const candidateTotal = ref(0)
-const candidateList = ref<PublicationDeliveryCandidateRespVO[]>([])
+const candidateList = ref<PublicationDeliveryCandidateGroupRespVO[]>([])
+const candidateTableRef = ref()
+const candidateChildMap = ref<Record<string, PublicationDeliveryCandidateRespVO[]>>({})
+const candidateChildLoadingMap = ref<Record<string, boolean>>({})
 const candidateQueryFormRef = ref()
 const candidateQueryParams = reactive({
   pageNo: 1,
@@ -633,6 +681,15 @@ const deliveryExpressLabel = (id?: number) => {
     return ''
   }
   return deliveryExpressList.value.find((item) => item.id === id)?.name || ''
+}
+
+const getCandidateGroupKey = (row: PublicationDeliveryCandidateGroupRespVO) => {
+  return [
+    row.deliveryType || 0,
+    row.schoolId || 0,
+    row.warehouseId || 0,
+    row.windowId || 0
+  ].join('_')
 }
 
 const formatCandidateSkuName = (row: PublicationDeliveryCandidateRespVO) => {
@@ -737,12 +794,18 @@ const handleBatchOfferSkuChange = () => {
 const getCandidateList = async () => {
   candidateLoading.value = true
   try {
-    const data = await PublicationDeliveryBatchApi.getCandidatePage(candidateQueryParams)
+    const data = await PublicationDeliveryBatchApi.getCandidateGroupPage(candidateQueryParams)
     candidateList.value = data.list || []
     candidateTotal.value = data.total || 0
+    clearCandidateChildCache()
   } finally {
     candidateLoading.value = false
   }
+}
+
+const clearCandidateChildCache = () => {
+  candidateChildMap.value = {}
+  candidateChildLoadingMap.value = {}
 }
 
 const handleCandidateQuery = async () => {
@@ -788,6 +851,84 @@ const resetBatchQuery = async () => {
   await getBatchList()
 }
 
+const buildCandidateGroupReq = (
+  row: PublicationDeliveryCandidateGroupRespVO
+): PublicationDeliveryCandidatePageReqVO => ({
+  deliveryType: row.deliveryType,
+  schoolId: row.schoolId,
+  warehouseId: row.warehouseId,
+  windowId: row.windowId,
+  offerId: candidateQueryParams.offerId,
+  offerSkuId: candidateQueryParams.offerSkuId,
+  skuId: candidateQueryParams.skuId,
+  issueId: candidateQueryParams.issueId,
+  issueNo: candidateQueryParams.issueNo
+})
+
+const loadCandidateChildList = async (
+  row: PublicationDeliveryCandidateGroupRespVO,
+  force = false
+) => {
+  const key = getCandidateGroupKey(row)
+  if (!force && candidateChildMap.value[key]) {
+    return
+  }
+  candidateChildLoadingMap.value[key] = true
+  try {
+    candidateChildMap.value[key] = await PublicationDeliveryBatchApi.getCandidateChildList(
+      buildCandidateGroupReq(row)
+    )
+  } finally {
+    candidateChildLoadingMap.value[key] = false
+  }
+}
+
+const handleCandidateGroupExpandChange = async (
+  row: PublicationDeliveryCandidateGroupRespVO,
+  expandedRows: PublicationDeliveryCandidateGroupRespVO[]
+) => {
+  const expanded = expandedRows.some((item) => getCandidateGroupKey(item) === getCandidateGroupKey(row))
+  if (expanded) {
+    await loadCandidateChildList(row)
+  }
+}
+
+const expandCandidateGroup = async (row: PublicationDeliveryCandidateGroupRespVO) => {
+  await loadCandidateChildList(row)
+  candidateTableRef.value?.toggleRowExpansion(row, true)
+}
+
+const handleCreateGroupAndDeliver = async (row: PublicationDeliveryCandidateGroupRespVO) => {
+  if (row.deliveryType === DeliveryTypeEnum.EXPRESS.type) {
+    await expandCandidateGroup(row)
+    message.info('快递刊物请在子表中逐个刊物期次录入物流后发货')
+    return
+  }
+  if (
+    row.deliveryType !== DeliveryTypeEnum.SCHOOL.type ||
+    !row.schoolId ||
+    !row.warehouseId ||
+    !row.windowId
+  ) {
+    message.error('待发货主表数据不完整')
+    return
+  }
+  try {
+    await message.confirm(
+      `确认发货 ${row.schoolNameSnapshot || '-'} / ${row.warehouseNameSnapshot || '-'} / ${
+        row.windowNameSnapshot || '-'
+      } 下 ${row.issueGroupCount || 0} 个刊物期次，数量 ${row.totalCount || 0} 本？`
+    )
+  } catch {
+    return
+  }
+  const result = await PublicationDeliveryBatchApi.createGroupAndDeliver(buildCandidateGroupReq(row))
+  message.success(
+    `发货成功，已创建 ${result.batchCount || 0} 个批次，数量 ${result.totalCount || 0} 本`
+  )
+  await Promise.all([getCandidateList(), getBatchList()])
+}
+
 const handleCreateAndDeliver = async (row: PublicationDeliveryCandidateRespVO) => {
   if (row.deliveryType === DeliveryTypeEnum.EXPRESS.type) {
     await openExpressDelivery(row)
@@ -808,9 +949,9 @@ const handleCreateAndDeliver = async (row: PublicationDeliveryCandidateRespVO) =
   }
   try {
     await message.confirm(
-      `确认发货 ${row.warehouseNameSnapshot || '-'} / ${row.productNameSnapshot || '-'}，数量 ${
-        row.totalCount || 0
-      } 本？`
+      `确认发货 ${row.schoolNameSnapshot || '-'} / ${row.warehouseNameSnapshot || '-'} / ${
+        row.productNameSnapshot || '-'
+      }，数量 ${row.totalCount || 0} 本？`
     )
   } catch {
     return

@@ -88,9 +88,9 @@ export const component = {
     spuIds: [],
     style: {
       bgType: 'color',
-      bgColor: '',
-      marginLeft: 8,
-      marginRight: 8,
+      bgColor: '#fff',
+      paddingLeft: 8,
+      paddingRight: 8,
       marginBottom: 8
     } as ComponentStyle
   }

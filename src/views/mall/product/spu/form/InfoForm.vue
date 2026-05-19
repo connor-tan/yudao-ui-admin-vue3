@@ -57,7 +57,7 @@
     <el-form-item label="商品简介" prop="introduction">
       <el-input
         v-model="formData.introduction"
-        :autosize="{ minRows: 2, maxRows: 2 }"
+        :autosize="{ minRows: 2, maxRows: 8 }"
         :clearable="true"
         :show-word-limit="true"
         class="w-80!"
@@ -106,7 +106,12 @@
             :value="item.id as number"
           />
         </el-select>
-        <el-button :icon="RefreshRight" class="ml-1" size="small" @click="refreshPublicationTypeList" />
+        <el-button
+          :icon="RefreshRight"
+          class="ml-1"
+          size="small"
+          @click="refreshPublicationTypeList"
+        />
       </el-form-item>
       <el-form-item v-if="selectedPublicationType" label="标识规则">
         <div class="w-80">
@@ -133,7 +138,11 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item v-if="isPublicationPeriodical" label="出刊周期" prop="publicationExt.issueCycle">
+      <el-form-item
+        v-if="isPublicationPeriodical"
+        label="出刊周期"
+        prop="publicationExt.issueCycle"
+      >
         <el-select
           v-model="formData.publicationExt!.issueCycle"
           class="w-80!"
@@ -148,7 +157,11 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item v-if="selectedPublicationType" :required="requiresTitleIdentifierRule" label="刊物标识">
+      <el-form-item
+        v-if="selectedPublicationType"
+        :required="requiresTitleIdentifierRule"
+        label="刊物标识"
+      >
         <div class="w-80 text-12px text-gray-500">
           {{
             requiresTitleIdentifierRule
@@ -198,11 +211,7 @@ import { BrandVO } from '@/api/mall/product/brand'
 import * as PublicationPublisherApi from '@/api/edu/publicationPublisher'
 import * as PublicationTypeApi from '@/api/edu/publicationType'
 import { RefreshRight } from '@element-plus/icons-vue'
-import {
-  createNormalSku,
-  createPublicationSku,
-  createPublicationSpuExt
-} from './helpers'
+import { createNormalSku, createPublicationSku, createPublicationSpuExt } from './helpers'
 
 defineOptions({ name: 'ProductSpuInfoForm' })
 
@@ -216,6 +225,7 @@ const props = defineProps({
     type: Object as PropType<Spu>,
     default: () => ({})
   },
+  activeName: propTypes.string.def(''),
   isDetail: propTypes.bool.def(false)
 })
 
@@ -247,7 +257,9 @@ const categoryCascaderProps = {
   multiple: true,
   emitPath: false
 }
-const sceneCategoryList = computed<any[]>(() => filterCategoryTreeByScene(categoryList.value, formData.bizScene))
+const sceneCategoryList = computed<any[]>(() =>
+  filterCategoryTreeByScene(categoryList.value, formData.bizScene)
+)
 const selectedPublicationType = computed(() =>
   publicationTypeList.value.find((item) => item.id === formData.publicationExt?.publicationTypeId)
 )
@@ -255,7 +267,9 @@ const requiresTitleIdentifierRule = computed(() =>
   PublicationTypeApi.requiresTitleIdentifier(selectedPublicationType.value?.identifierRule)
 )
 const publicationTypeIdentifierHint = computed(() =>
-  PublicationTypeApi.getPublicationTypeIdentifierRuleHint(selectedPublicationType.value?.identifierRule)
+  PublicationTypeApi.getPublicationTypeIdentifierRuleHint(
+    selectedPublicationType.value?.identifierRule
+  )
 )
 
 const validateBrand = (_rule, value, callback) => {
@@ -505,7 +519,10 @@ const handleCategoryChange = () => {
   syncSceneStateToParent()
 }
 
-const filterCategoryTreeByScene = (categories: CategoryVO[] = [], bizScene?: string): CategoryVO[] => {
+const filterCategoryTreeByScene = (
+  categories: CategoryVO[] = [],
+  bizScene?: string
+): CategoryVO[] => {
   if (!bizScene) {
     return []
   }

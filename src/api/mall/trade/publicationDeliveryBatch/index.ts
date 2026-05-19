@@ -37,6 +37,27 @@ export interface PublicationDeliveryCandidateRespVO {
   studentCount?: number
 }
 
+export interface PublicationDeliveryCandidateGroupPageReqVO
+  extends PublicationDeliveryCandidatePageReqVO {}
+
+export interface PublicationDeliveryCandidateGroupRespVO {
+  deliveryType?: number
+  schoolId?: number
+  schoolNameSnapshot?: string
+  warehouseId?: number
+  warehouseNameSnapshot?: string
+  windowId?: number
+  windowNameSnapshot?: string
+  totalCount?: number
+  orderCount?: number
+  studentCount?: number
+  publicationGroupCount?: number
+  issueGroupCount?: number
+}
+
+export interface PublicationDeliveryCandidateChildReqVO
+  extends PublicationDeliveryCandidatePageReqVO {}
+
 export interface PublicationDeliveryBatchCreateReqVO {
   deliveryType: number
   schoolId: number
@@ -49,6 +70,17 @@ export interface PublicationDeliveryBatchCreateReqVO {
   issueNo: number
   expressItems?: PublicationDeliveryBatchExpressItemReqVO[]
   remark?: string
+}
+
+export interface PublicationDeliveryBatchGroupCreateReqVO
+  extends PublicationDeliveryCandidatePageReqVO {
+  remark?: string
+}
+
+export interface PublicationDeliveryBatchGroupCreateRespVO {
+  batchCount?: number
+  batchIds?: number[]
+  totalCount?: number
 }
 
 export interface PublicationDeliveryBatchExpressItemReqVO {
@@ -158,6 +190,17 @@ export const PublicationDeliveryBatchApi = {
     return await request.get({ url: '/trade/publication-delivery-batch/candidate-page', params })
   },
 
+  getCandidateGroupPage: async (params: PublicationDeliveryCandidateGroupPageReqVO) => {
+    return await request.get({ url: '/trade/publication-delivery-batch/candidate-group-page', params })
+  },
+
+  getCandidateChildList: async (params: PublicationDeliveryCandidateChildReqVO) => {
+    return await request.get<PublicationDeliveryCandidateRespVO[]>({
+      url: '/trade/publication-delivery-batch/candidate-child-list',
+      params
+    })
+  },
+
   getCandidateItemList: async (params: PublicationDeliveryCandidatePageReqVO) => {
     return await request.get<PublicationDeliveryCandidateItemRespVO[]>({
       url: '/trade/publication-delivery-batch/candidate-item-list',
@@ -168,6 +211,13 @@ export const PublicationDeliveryBatchApi = {
   createAndDeliver: async (data: PublicationDeliveryBatchCreateReqVO) => {
     return await request.post<number>({
       url: '/trade/publication-delivery-batch/create-and-deliver',
+      data
+    })
+  },
+
+  createGroupAndDeliver: async (data: PublicationDeliveryBatchGroupCreateReqVO) => {
+    return await request.post<PublicationDeliveryBatchGroupCreateRespVO>({
+      url: '/trade/publication-delivery-batch/create-group-and-deliver',
       data
     })
   },

@@ -76,22 +76,31 @@ const style = computed(() => {
   if (!componentStyle) {
     return {}
   }
+  const isProductCard = props.component.id === 'ProductCard'
+  const marginLeft = componentStyle.marginLeft || 0
+  const marginRight = componentStyle.marginRight || 0
+  const defaultBackground = props.component.id === 'ProductCard' ? '#fff' : ''
+  const background =
+    componentStyle.bgType === 'color'
+      ? componentStyle.bgColor || defaultBackground
+      : componentStyle.bgImg
+        ? `url(${componentStyle.bgImg})`
+        : defaultBackground
   return {
     marginTop: `${componentStyle.marginTop || 0}px`,
     marginBottom: `${componentStyle.marginBottom || 0}px`,
-    marginLeft: `${componentStyle.marginLeft || 0}px`,
-    marginRight: `${componentStyle.marginRight || 0}px`,
+    marginLeft: `${isProductCard ? 0 : marginLeft}px`,
+    marginRight: `${isProductCard ? 0 : marginRight}px`,
     paddingTop: `${componentStyle.paddingTop || 0}px`,
-    paddingRight: `${componentStyle.paddingRight || 0}px`,
+    paddingRight: `${(componentStyle.paddingRight || 0) + (isProductCard ? marginRight : 0)}px`,
     paddingBottom: `${componentStyle.paddingBottom || 0}px`,
-    paddingLeft: `${componentStyle.paddingLeft || 0}px`,
+    paddingLeft: `${(componentStyle.paddingLeft || 0) + (isProductCard ? marginLeft : 0)}px`,
     borderTopLeftRadius: `${componentStyle.borderTopLeftRadius || 0}px`,
     borderTopRightRadius: `${componentStyle.borderTopRightRadius || 0}px`,
     borderBottomRightRadius: `${componentStyle.borderBottomRightRadius || 0}px`,
     borderBottomLeftRadius: `${componentStyle.borderBottomLeftRadius || 0}px`,
     overflow: 'hidden',
-    background:
-      componentStyle.bgType === 'color' ? componentStyle.bgColor : `url(${componentStyle.bgImg})`
+    background
   }
 })
 

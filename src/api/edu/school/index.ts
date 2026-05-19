@@ -71,6 +71,7 @@ export interface SchoolClass {
   schoolGradeId?: number
   schoolYearId?: number
   schoolYearName?: string
+  schoolYearStartDate?: string
   stage?: string
   gradeNo?: string
   gradeName?: string
@@ -90,6 +91,7 @@ export interface SchoolClassSimple {
   gradeName?: string
   aliasName?: string
   schoolYearName?: string
+  schoolYearStartDate?: string
 }
 
 /** 学校信息 */

@@ -213,6 +213,42 @@ export interface ManualOrderImportRespVO {
   }[]
 }
 
+export interface AdminOnlineAddressRespVO {
+  id?: number
+  name?: string
+  mobile?: string
+  areaId?: number
+  areaName?: string
+  detailAddress?: string
+  defaultStatus?: boolean
+}
+
+export interface AdminOnlineOrderItemReqVO {
+  offerSkuId?: number
+  skuId?: number
+  count?: number
+}
+
+export interface AdminOnlineSettlementReqVO {
+  studentId?: number
+  deliveryType?: number
+  items: AdminOnlineOrderItemReqVO[]
+  addressId?: number
+  receiverName?: string
+  receiverMobile?: string
+  receiverAreaId?: number
+  receiverDetailAddress?: string
+}
+
+export interface AdminOnlineCreateReqVO extends AdminOnlineSettlementReqVO {
+  remark?: string
+}
+
+export interface AdminOnlineCreateRespVO {
+  id: number
+  payOrderId: number
+}
+
 /** 交易订单统计 */
 export interface TradeOrderSummaryRespVO {
   /** 订单数量 */
@@ -258,6 +294,27 @@ export const importManualOrder = async (formData: FormData) => {
 // 确认后台订单线下收款
 export const confirmOfflinePay = async (id: number) => {
   return await request.put({ url: `/trade/order/${id}/confirm-offline-pay` })
+}
+
+// 获得后台在线下单学生家长地址列表
+export const getAdminOnlineAddressList = async (studentId: number) => {
+  return await request.get<AdminOnlineAddressRespVO[]>({
+    url: `/trade/order/admin-online/address-list`,
+    params: { studentId }
+  })
+}
+
+// 后台在线订刊下单结算
+export const settlementAdminOnlineOrder = async (data: AdminOnlineSettlementReqVO) => {
+  return await request.post({ url: `/trade/order/admin-online/settlement`, data })
+}
+
+// 后台在线订刊下单创建
+export const createAdminOnlineOrder = async (data: AdminOnlineCreateReqVO) => {
+  return await request.post<AdminOnlineCreateRespVO>({
+    url: `/trade/order/admin-online/create`,
+    data
+  })
 }
 
 // 取消后台订单

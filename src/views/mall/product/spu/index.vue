@@ -1,6 +1,10 @@
 <!-- 商品中心 - 商品列表  -->
 <template>
-  <doc-alert v-if="false" title="【商品】商品 SPU 与 SKU" url="https://doc.iocoder.cn/mall/product-spu-sku/" />
+  <doc-alert
+    v-if="false"
+    title="【商品】商品 SPU 与 SKU"
+    url="https://doc.iocoder.cn/mall/product-spu-sku/"
+  />
 
   <!-- 搜索工作栏 -->
   <ContentWrap>
@@ -322,7 +326,7 @@ const getList = async () => {
 
 /** 切换 Tab */
 const handleTabClick = (tab: TabsPaneContext) => {
-  queryParams.value.tabType = tab.paneName as number
+  queryParams.value.tabType = Number(tab.paneName)
   getList()
 }
 
@@ -444,11 +448,27 @@ const categoryCascaderProps = {
   emitPath: false
 }
 const formatCategoryNames = (row: ProductSpuApi.Spu) => {
-  return (row.categories || []).map((item) => item.name).filter(Boolean).join('、') || '-'
+  return (
+    (row.categories || [])
+      .map((item) => item.name)
+      .filter(Boolean)
+      .join('、') || '-'
+  )
+}
+
+const parseTabType = (tabType: unknown) => {
+  const rawValue = Array.isArray(tabType) ? tabType[0] : tabType
+  const value = Number(rawValue)
+  return tabsData.value.some((item) => item.type === value) ? value : 0
+}
+
+const syncTabTypeFromRoute = () => {
+  queryParams.value.tabType = parseTabType(route.query.tabType)
 }
 
 /** 激活时 */
 onActivated(() => {
+  syncTabTypeFromRoute()
   getList()
 })
 
@@ -469,8 +489,16 @@ watch(
       return
     }
     const values = Array.isArray(categoryIds) ? categoryIds : [categoryIds]
-    queryParams.value.categoryIds = values.map((item) => Number(item)).filter((item) => !Number.isNaN(item))
+    queryParams.value.categoryIds = values
+      .map((item) => Number(item))
+      .filter((item) => !Number.isNaN(item))
   },
+  { immediate: true }
+)
+
+watch(
+  () => route.query.tabType,
+  () => syncTabTypeFromRoute(),
   { immediate: true }
 )
 </script>

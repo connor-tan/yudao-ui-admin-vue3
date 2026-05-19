@@ -181,6 +181,17 @@
         <el-button
           v-hasPermi="['trade:order:create']"
           plain
+          type="success"
+          @click="openAdminOnlineCreate"
+        >
+          <Icon icon="ep:shopping-cart" class="mr-5px" />
+          在线下单
+        </el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          v-hasPermi="['trade:order:create']"
+          plain
           type="primary"
           @click="openManualCreate"
         >
@@ -270,6 +281,7 @@
   <!-- 各种操作的弹窗 -->
   <OrderDeliveryForm ref="deliveryFormRef" @success="getList" />
   <OrderUpdateRemarkForm ref="updateRemarkForm" @success="getList" />
+  <OrderAdminOnlineCreateForm ref="adminOnlineCreateFormRef" @success="getList" />
   <OrderManualCreateForm
     ref="manualCreateFormRef"
     :pick-up-store-list="pickUpStoreList"
@@ -282,6 +294,7 @@
 import type { FormInstance } from 'element-plus'
 import OrderDeliveryForm from '@/views/mall/trade/order/form/OrderDeliveryForm.vue'
 import OrderUpdateRemarkForm from '@/views/mall/trade/order/form/OrderUpdateRemarkForm.vue'
+import OrderAdminOnlineCreateForm from '@/views/mall/trade/order/form/OrderAdminOnlineCreateForm.vue'
 import OrderManualCreateForm from '@/views/mall/trade/order/form/OrderManualCreateForm.vue'
 import OrderManualImportForm from '@/views/mall/trade/order/form/OrderManualImportForm.vue'
 import * as TradeOrderApi from '@/api/mall/trade/order'
@@ -384,6 +397,7 @@ const openDetail = (id: number) => {
 /** 操作分发 */
 const deliveryFormRef = ref()
 const updateRemarkForm = ref()
+const adminOnlineCreateFormRef = ref()
 const manualCreateFormRef = ref()
 const manualImportFormRef = ref()
 const getPendingExpressDeliveries = (row: TradeOrderApi.OrderVO) => {
@@ -433,6 +447,10 @@ const isUnpaidAdminOrder = (row: TradeOrderApi.OrderVO) =>
 
 const openManualCreate = () => {
   manualCreateFormRef.value?.open()
+}
+
+const openAdminOnlineCreate = () => {
+  adminOnlineCreateFormRef.value?.open()
 }
 
 const openManualImport = () => {

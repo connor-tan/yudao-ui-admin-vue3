@@ -44,6 +44,7 @@ const props = defineProps({
     type: Object as PropType<Spu>,
     default: () => {}
   },
+  activeName: propTypes.string.def(''),
   isDetail: propTypes.bool.def(false) // 是否作为详情组件
 })
 

@@ -103,6 +103,11 @@ const formData = ref<ProductSpuApi.Spu>({
   publicationExt: createPublicationSpuExt()
 })
 
+const formatAmountForInput = (amount: number | string | undefined): number => {
+  const value = Number(formatToFraction(amount))
+  return Number.isFinite(value) ? value : 0
+}
+
 /** 获得详情 */
 const getDetail = async () => {
   if ('ProductSpuDetail' === name) {
@@ -122,11 +127,11 @@ const getDetail = async () => {
           item.secondBrokeragePrice = floatToFixed2(item.secondBrokeragePrice)
         } else {
           // 回显价格分转元
-          item.price = formatToFraction(item.price)
-          item.marketPrice = formatToFraction(item.marketPrice)
-          item.costPrice = formatToFraction(item.costPrice)
-          item.firstBrokeragePrice = formatToFraction(item.firstBrokeragePrice)
-          item.secondBrokeragePrice = formatToFraction(item.secondBrokeragePrice)
+          item.price = formatAmountForInput(item.price)
+          item.marketPrice = formatAmountForInput(item.marketPrice)
+          item.costPrice = formatAmountForInput(item.costPrice)
+          item.firstBrokeragePrice = formatAmountForInput(item.firstBrokeragePrice)
+          item.secondBrokeragePrice = formatAmountForInput(item.secondBrokeragePrice)
         }
       })
       formData.value = res

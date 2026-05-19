@@ -11,11 +11,7 @@
     <template v-else>
       <el-form-item label="配送方式" prop="deliveryTypes">
         <el-checkbox-group v-model="formData.deliveryTypes" class="w-80">
-          <el-checkbox
-            v-for="dict in deliveryTypeOptions"
-            :key="dict.value"
-            :value="dict.value"
-          >
+          <el-checkbox v-for="dict in deliveryTypeOptions" :key="dict.value" :value="dict.value">
             {{ dict.label }}
           </el-checkbox>
         </el-checkbox-group>
@@ -61,6 +57,7 @@ const props = defineProps({
     type: Object as PropType<Spu>,
     default: () => {}
   },
+  activeName: propTypes.string.def(''),
   isDetail: propTypes.bool.def(false) // 是否作为详情组件
 })
 const formRef = ref() // 表单 Ref
@@ -152,7 +149,9 @@ const validate = async () => {
 defineExpose({ validate })
 
 /** 初始化 */
-const deliveryTemplateList = ref<Awaited<ReturnType<typeof ExpressTemplateApi.getSimpleTemplateList>>>([]) // 运费模版
+const deliveryTemplateList = ref<
+  Awaited<ReturnType<typeof ExpressTemplateApi.getSimpleTemplateList>>
+>([]) // 运费模版
 onMounted(async () => {
   deliveryTemplateList.value = await ExpressTemplateApi.getSimpleTemplateList()
 })

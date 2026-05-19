@@ -5,19 +5,19 @@
       <el-descriptions-item label="订单号: ">{{ formData.no }}</el-descriptions-item>
       <el-descriptions-item label="买家: ">{{ getBuyerName(formData) }}</el-descriptions-item>
       <el-descriptions-item label="订单类型: ">
-        <dict-tag :type="DICT_TYPE.TRADE_ORDER_TYPE" :value="formData.type!" />
+        <dict-tag :type="DICT_TYPE.TRADE_ORDER_TYPE" :value="formData.type ?? ''" />
       </el-descriptions-item>
       <el-descriptions-item label="下单终端: ">
-        <dict-tag :type="DICT_TYPE.TERMINAL" :value="formData.terminal!" />
+        <dict-tag :type="DICT_TYPE.TERMINAL" :value="formData.terminal ?? ''" />
       </el-descriptions-item>
       <el-descriptions-item label="业务来源: ">
-        <dict-tag :type="DICT_TYPE.TRADE_ORDER_SOURCE" :value="formData.orderSource!" />
+        <dict-tag :type="DICT_TYPE.TRADE_ORDER_SOURCE" :value="formData.orderSource ?? ''" />
       </el-descriptions-item>
       <el-descriptions-item label="买家留言: ">{{ formData.userRemark }}</el-descriptions-item>
       <el-descriptions-item label="商家备注: ">{{ formData.remark }}</el-descriptions-item>
       <el-descriptions-item label="支付单号: ">{{ formData.payOrderId }}</el-descriptions-item>
       <el-descriptions-item label="付款方式: ">
-        <dict-tag :type="DICT_TYPE.PAY_CHANNEL_CODE" :value="formData.payChannelCode!" />
+        <dict-tag :type="DICT_TYPE.PAY_CHANNEL_CODE" :value="formData.payChannelCode ?? ''" />
       </el-descriptions-item>
       <el-descriptions-item v-if="formData.brokerageUser" label="推广用户: ">
         {{ formData.brokerageUser?.nickname }}
@@ -27,12 +27,10 @@
     <!-- 订单状态 -->
     <el-descriptions :column="1" title="订单状态">
       <el-descriptions-item label="订单状态: ">
-        <dict-tag :type="DICT_TYPE.TRADE_ORDER_STATUS" :value="formData.status!" />
+        <dict-tag :type="DICT_TYPE.TRADE_ORDER_STATUS" :value="formData.status ?? ''" />
       </el-descriptions-item>
       <el-descriptions-item v-hasPermi="['trade:order:update']" label-class-name="no-colon">
-        <el-button v-if="canUpdatePrice" type="primary" @click="updatePrice">
-          调整价格
-        </el-button>
+        <el-button v-if="canUpdatePrice" type="primary" @click="updatePrice"> 调整价格 </el-button>
         <el-button v-if="isUnpaidAdminOrder" type="primary" @click="confirmOfflinePay">
           确认收款
         </el-button>
@@ -135,7 +133,7 @@
             <template #default="{ row }">
               <dict-tag
                 :type="DICT_TYPE.TRADE_ORDER_ITEM_AFTER_SALE_STATUS"
-                :value="row.afterSaleStatus"
+                :value="row.afterSaleStatus ?? ''"
               />
             </template>
           </el-table-column>
@@ -151,12 +149,12 @@
           </el-table-column>
           <el-table-column label="配送方式" min-width="120">
             <template #default="{ row }">
-              <dict-tag :type="DICT_TYPE.TRADE_DELIVERY_TYPE" :value="row.deliveryType" />
+              <dict-tag :type="DICT_TYPE.TRADE_DELIVERY_TYPE" :value="row.deliveryType ?? ''" />
             </template>
           </el-table-column>
           <el-table-column label="配送状态" min-width="120">
             <template #default="{ row }">
-              <dict-tag :type="DICT_TYPE.TRADE_ORDER_STATUS" :value="row.status" />
+              <dict-tag :type="DICT_TYPE.TRADE_ORDER_STATUS" :value="row.status ?? ''" />
             </template>
           </el-table-column>
           <el-table-column label="配送信息" min-width="320">
@@ -256,7 +254,7 @@
     <!-- 物流信息 -->
     <el-descriptions v-if="!hasDeliveries" :column="4" title="收货信息">
       <el-descriptions-item label="配送方式: ">
-        <dict-tag :type="DICT_TYPE.TRADE_DELIVERY_TYPE" :value="formData.deliveryType!" />
+        <dict-tag :type="DICT_TYPE.TRADE_DELIVERY_TYPE" :value="formData.deliveryType ?? ''" />
       </el-descriptions-item>
       <el-descriptions-item label="收货人: ">{{ formData.receiverName }}</el-descriptions-item>
       <el-descriptions-item label="联系电话: ">{{ formData.receiverMobile }}</el-descriptions-item>
@@ -264,12 +262,7 @@
       <div v-if="formData.deliveryType === DeliveryTypeEnum.EXPRESS.type">
         <el-descriptions-item v-if="formData.receiverDetailAddress" label="收货地址: ">
           {{ formData.receiverAreaName }} {{ formData.receiverDetailAddress }}
-          <el-link
-            v-clipboard:copy="formData.receiverAreaName + ' ' + formData.receiverDetailAddress"
-            v-clipboard:success="clipboardSuccess"
-            icon="ep:document-copy"
-            type="primary"
-          />
+          <el-link icon="ep:document-copy" type="primary" @click="copyReceiverAddress" />
         </el-descriptions-item>
         <el-descriptions-item v-if="formData.logisticsId" label="物流公司: ">
           {{ deliveryExpressList.find((item) => item.id === formData.logisticsId)?.name }}
@@ -344,6 +337,7 @@ import OrderDeliveryForm from '@/views/mall/trade/order/form/OrderDeliveryForm.v
 import OrderUpdateAddressForm from '@/views/mall/trade/order/form/OrderUpdateAddressForm.vue'
 import OrderUpdatePriceForm from '@/views/mall/trade/order/form/OrderUpdatePriceForm.vue'
 import * as DeliveryExpressApi from '@/api/mall/trade/delivery/express'
+import { useClipboard } from '@vueuse/core'
 import { computed } from 'vue'
 import { useTagsViewStore } from '@/store/modules/tagsView'
 import {
@@ -426,11 +420,17 @@ const isAdminOrder = computed(
     formData.value.orderSource === TradeOrderSourceEnum.ADMIN_MANUAL ||
     formData.value.orderSource === TradeOrderSourceEnum.ADMIN_IMPORT
 )
+const isAdminOnlineOrder = computed(
+  () => formData.value.orderSource === TradeOrderSourceEnum.ADMIN_ONLINE
+)
 const isUnpaidAdminOrder = computed(
   () => isAdminOrder.value && formData.value.status === TradeOrderStatusEnum.UNPAID.status
 )
 const canUpdatePrice = computed(
-  () => formData.value.status === TradeOrderStatusEnum.UNPAID.status && !isAdminOrder.value
+  () =>
+    formData.value.status === TradeOrderStatusEnum.UNPAID.status &&
+    !isAdminOrder.value &&
+    !isAdminOnlineOrder.value
 )
 
 const getBuyerName = (order: TradeOrderApi.OrderVO) =>
@@ -537,9 +537,27 @@ const close = () => {
   push({ name: 'TradeOrder' })
 }
 
-/** 复制 */
-const clipboardSuccess = () => {
-  message.success('复制成功')
+/** 复制收货地址 */
+const { copy, copied, isSupported } = useClipboard({ legacy: true })
+const copyReceiverAddress = async () => {
+  if (!unref(isSupported)) {
+    message.error('当前浏览器不支持复制')
+    return
+  }
+  try {
+    await copy(
+      [formData.value.receiverAreaName, formData.value.receiverDetailAddress]
+        .filter(Boolean)
+        .join(' ')
+    )
+    if (unref(copied)) {
+      message.success('复制成功')
+    } else {
+      message.error('复制失败，请手动复制')
+    }
+  } catch {
+    message.error('复制失败，请手动复制')
+  }
 }
 
 /** 初始化 **/

@@ -57,7 +57,11 @@
           <el-table-column :label="isbnColumnLabel" min-width="160">
             <template #default="{ row }">
               <template v-if="isDetail">{{ row.publicationExt?.isbn || '-' }}</template>
-              <el-input v-else v-model="row.publicationExt.isbn" :placeholder="isbnInputPlaceholder" />
+              <el-input
+                v-else
+                v-model="row.publicationExt.isbn"
+                :placeholder="isbnInputPlaceholder"
+              />
             </template>
           </el-table-column>
           <el-table-column label="适用年级" min-width="220">
@@ -171,7 +175,11 @@
           </el-table-column>
         </el-table>
       </el-form-item>
-      <el-form-item v-if="selectedPublicationType" :required="requiresSkuIsbnRule" label="ISBN 要求">
+      <el-form-item
+        v-if="selectedPublicationType"
+        :required="requiresSkuIsbnRule"
+        label="ISBN 要求"
+      >
         <div class="w-80">
           <el-alert
             :closable="false"
@@ -242,13 +250,27 @@
   >
     <el-form v-if="!isDetail" :inline="true" :model="templateGenerateForm" label-width="92px">
       <el-form-item label="起始期号">
-        <el-input-number v-model="templateGenerateForm.startIssueNo" :min="1" :step="1" class="!w-120px" />
+        <el-input-number
+          v-model="templateGenerateForm.startIssueNo"
+          :min="1"
+          :step="1"
+          class="!w-120px"
+        />
       </el-form-item>
       <el-form-item label="生成期数">
-        <el-input-number v-model="templateGenerateForm.issueCount" :min="1" :step="1" class="!w-120px" />
+        <el-input-number
+          v-model="templateGenerateForm.issueCount"
+          :min="1"
+          :step="1"
+          class="!w-120px"
+        />
       </el-form-item>
       <el-form-item label="名称前缀">
-        <el-input v-model="templateGenerateForm.issueNamePrefix" class="!w-120px" placeholder="第" />
+        <el-input
+          v-model="templateGenerateForm.issueNamePrefix"
+          class="!w-120px"
+          placeholder="第"
+        />
       </el-form-item>
       <el-form-item label="首发偏移">
         <el-input-number
@@ -412,6 +434,7 @@ const props = defineProps({
     type: Object as PropType<Spu>,
     default: () => ({})
   },
+  activeName: propTypes.string.def(''),
   isDetail: propTypes.bool.def(false)
 })
 const attributesAddFormRef = ref()
@@ -571,7 +594,9 @@ const validate = async () => {
       skus
     })
   } catch (e) {
-    message.error(e instanceof Error && e.message ? e.message : '【库存价格】不完善，请填写相关信息')
+    message.error(
+      e instanceof Error && e.message ? e.message : '【库存价格】不完善，请填写相关信息'
+    )
     emit('update:activeName', 'sku')
     throw e
   }
@@ -622,7 +647,8 @@ const openTemplateDialog = (row: Sku) => {
   templateDialogVisible.value = true
 }
 
-const formatOffset = (value?: number) => (value === undefined || value === null ? '-' : `${value} 天`)
+const formatOffset = (value?: number) =>
+  value === undefined || value === null ? '-' : `${value} 天`
 
 const formatIssueName = (prefix: string | undefined, issueNo: number) => {
   if (!prefix || prefix === '第') {
@@ -648,7 +674,8 @@ const generateTemplateRows = async () => {
       publishOffsetDays:
         templateGenerateForm.firstPublishOffsetDays + i * templateGenerateForm.publishIntervalDays,
       deliveryOffsetDays:
-        templateGenerateForm.firstDeliveryOffsetDays + i * templateGenerateForm.deliveryIntervalDays,
+        templateGenerateForm.firstDeliveryOffsetDays +
+        i * templateGenerateForm.deliveryIntervalDays,
       sort: issueNo,
       status: 0,
       remark: ''

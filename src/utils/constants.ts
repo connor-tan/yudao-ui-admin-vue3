@@ -509,7 +509,8 @@ export const TradeOrderStatusEnum = {
 export const TradeOrderSourceEnum = {
   APP: 'APP',
   ADMIN_MANUAL: 'ADMIN_MANUAL',
-  ADMIN_IMPORT: 'ADMIN_IMPORT'
+  ADMIN_IMPORT: 'ADMIN_IMPORT',
+  ADMIN_ONLINE: 'ADMIN_ONLINE'
 }
 
 // ========== ERP - 企业资源计划 ==========
