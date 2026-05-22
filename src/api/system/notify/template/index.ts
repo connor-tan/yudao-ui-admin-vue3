@@ -7,7 +7,8 @@ export interface NotifyTemplateVO {
   code: string
   content: string
   type?: number
-  params: string
+  params: string[]
+  receiverUserIds: number[]
   status: number
   remark: string
 }

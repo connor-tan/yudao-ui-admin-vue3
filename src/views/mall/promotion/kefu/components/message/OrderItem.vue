@@ -44,6 +44,7 @@ import { fenToYuan, jsonParse } from '@/utils'
 import { KeFuMessageRespVO } from '@/api/mall/promotion/kefu/message'
 import { isObject } from '@/utils/is'
 import ProductItem from '@/views/mall/promotion/kefu/components/message/ProductItem.vue'
+import { DeliveryTypeEnum } from '@/utils/constants'
 
 const { push } = useRouter()
 
@@ -98,11 +99,8 @@ function formatOrderStatus(order: any) {
   if (order.status === 0) {
     return '待付款'
   }
-  if (order.status === 10 && order.deliveryType === 1) {
-    return '待发货'
-  }
-  if (order.status === 10 && order.deliveryType === 2) {
-    return '待核销'
+  if (order.status === 10) {
+    return order.deliveryType === DeliveryTypeEnum.PICK_UP.type ? '待核销' : '待发货'
   }
   if (order.status === 20) {
     return '待收货'

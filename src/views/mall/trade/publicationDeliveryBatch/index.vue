@@ -647,6 +647,7 @@ const candidateQueryParams = reactive({
   issueId: undefined as number | undefined,
   issueNo: undefined as number | undefined
 })
+const candidateAppliedQueryParams = ref<PublicationDeliveryCandidatePageReqVO>({})
 
 const batchLoading = ref(false)
 const batchTotal = ref(0)
@@ -806,12 +807,18 @@ const handleBatchOfferSkuChange = () => {
   batchQueryParams.skuId = offerSku?.productSkuId
 }
 
+const cloneCandidateQueryParams = (): PublicationDeliveryCandidatePageReqVO => ({
+  ...candidateQueryParams
+})
+
 const getCandidateList = async () => {
+  const queryParams = cloneCandidateQueryParams()
   candidateLoading.value = true
   try {
-    const data = await PublicationDeliveryBatchApi.getCandidateGroupPage(candidateQueryParams)
+    const data = await PublicationDeliveryBatchApi.getCandidateGroupPage(queryParams)
     candidateList.value = data.list || []
     candidateTotal.value = data.total || 0
+    candidateAppliedQueryParams.value = queryParams
     clearCandidateChildCache()
   } finally {
     candidateLoading.value = false
@@ -871,17 +878,20 @@ const resetBatchQuery = async () => {
 
 const buildCandidateGroupReq = (
   row: PublicationDeliveryCandidateGroupRespVO
-): PublicationDeliveryCandidatePageReqVO => ({
-  deliveryType: row.deliveryType,
-  schoolId: row.schoolId,
-  warehouseId: row.warehouseId,
-  windowId: row.windowId,
-  offerId: candidateQueryParams.offerId,
-  offerSkuId: candidateQueryParams.offerSkuId,
-  skuId: candidateQueryParams.skuId,
-  issueId: candidateQueryParams.issueId,
-  issueNo: candidateQueryParams.issueNo
-})
+): PublicationDeliveryCandidatePageReqVO => {
+  const queryParams = candidateAppliedQueryParams.value
+  return {
+    deliveryType: row.deliveryType,
+    schoolId: row.schoolId,
+    warehouseId: row.warehouseId,
+    windowId: row.windowId,
+    offerId: queryParams.offerId,
+    offerSkuId: queryParams.offerSkuId,
+    skuId: queryParams.skuId,
+    issueId: queryParams.issueId,
+    issueNo: queryParams.issueNo
+  }
+}
 
 const ensureCandidateChildPageState = (key: string) => {
   candidateChildPageNoMap.value[key] = candidateChildPageNoMap.value[key] || 1

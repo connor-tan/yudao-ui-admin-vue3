@@ -29,6 +29,22 @@
           />
         </el-select>
       </el-form-item>
+      <el-form-item label="默认接收人" prop="receiverUserIds">
+        <el-select
+          v-model="formData.receiverUserIds"
+          multiple
+          filterable
+          clearable
+          placeholder="请选择默认接收人"
+        >
+          <el-option
+            v-for="item in userOptions"
+            :key="item.id"
+            :label="item.nickname"
+            :value="item.id"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item label="开启状态" prop="status">
         <el-radio-group v-model="formData.status">
           <el-radio
@@ -53,6 +69,7 @@
 <script lang="ts" setup>
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import * as NotifyTemplateApi from '@/api/system/notify/template'
+import * as UserApi from '@/api/system/user'
 import { CommonStatusEnum } from '@/utils/constants'
 const message = useMessage() // 消息弹窗
 
@@ -67,7 +84,8 @@ const formData = ref<NotifyTemplateApi.NotifyTemplateVO>({
   code: '',
   content: '',
   type: undefined,
-  params: '',
+  params: [],
+  receiverUserIds: [],
   status: CommonStatusEnum.ENABLE,
   remark: ''
 })
@@ -80,6 +98,7 @@ const formRules = reactive({
   content: [{ required: true, message: '模板内容不能为空', trigger: 'blur' }]
 })
 const formRef = ref() // 表单 Ref
+const userOptions = ref<UserApi.UserVO[]>([])
 
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {
@@ -87,17 +106,26 @@ const open = async (type: string, id?: number) => {
   dialogTitle.value = type
   formType.value = type
   resetForm()
+  await loadUserOptions()
   // 修改时，设置数据
   if (id) {
     formLoading.value = true
     try {
       formData.value = await NotifyTemplateApi.getNotifyTemplate(id)
+      formData.value.receiverUserIds = formData.value.receiverUserIds || []
     } finally {
       formLoading.value = false
     }
   }
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
+
+const loadUserOptions = async () => {
+  if (userOptions.value.length > 0) {
+    return
+  }
+  userOptions.value = await UserApi.getSimpleUserList()
+}
 
 /** 提交表单 */
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
@@ -132,7 +160,8 @@ const resetForm = () => {
     code: '',
     content: '',
     type: undefined,
-    params: '',
+    params: [],
+    receiverUserIds: [],
     status: CommonStatusEnum.ENABLE,
     remark: ''
   }

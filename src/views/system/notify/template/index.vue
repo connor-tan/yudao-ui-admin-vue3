@@ -103,6 +103,16 @@
       </el-table-column>
       <el-table-column label="发送人名称" align="center" prop="nickname" />
       <el-table-column
+        label="默认接收人"
+        align="center"
+        min-width="160"
+        :show-overflow-tooltip="true"
+      >
+        <template #default="scope">
+          {{ formatReceiverNames(scope.row.receiverUserIds) }}
+        </template>
+      </el-table-column>
+      <el-table-column
         label="模板内容"
         align="center"
         prop="content"
@@ -169,6 +179,7 @@
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import { dateFormatter } from '@/utils/formatTime'
 import * as NotifyTemplateApi from '@/api/system/notify/template'
+import * as UserApi from '@/api/system/user'
 import NotifyTemplateForm from './NotifyTemplateForm.vue'
 import NotifyTemplateSendForm from './NotifyTemplateSendForm.vue'
 
@@ -180,6 +191,8 @@ const { t } = useI18n() // 国际化
 const loading = ref(false) // 列表的加载中
 const total = ref(0) // 列表的总页数
 const list = ref([]) // 列表的数据
+const userList = ref<UserApi.UserVO[]>([]) // 用户列表
+const userMap = computed(() => new Map(userList.value.map((user) => [user.id, user.nickname])))
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
@@ -200,6 +213,17 @@ const getList = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const getUserList = async () => {
+  userList.value = await UserApi.getSimpleUserList()
+}
+
+const formatReceiverNames = (receiverUserIds?: number[]) => {
+  if (!receiverUserIds || receiverUserIds.length === 0) {
+    return '-'
+  }
+  return receiverUserIds.map((id) => userMap.value.get(id) || id).join('、')
 }
 
 /** 搜索按钮操作 */
@@ -260,6 +284,7 @@ const openSendForm = (row: NotifyTemplateApi.NotifyTemplateVO) => {
 
 /** 初始化 **/
 onMounted(() => {
+  getUserList()
   getList()
 })
 </script>
