@@ -32,6 +32,8 @@ export interface Student {
   parentMobile?: string
   currentSchoolId?: number
   currentSchoolName?: string
+  currentClassId?: number
+  currentClassName?: string
   entryYear?: number
   studentCode?: number
   status?: number

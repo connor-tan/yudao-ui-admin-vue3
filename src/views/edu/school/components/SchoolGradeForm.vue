@@ -32,6 +32,9 @@
           />
         </el-select>
       </el-form-item>
+      <el-form-item label="最大班号" prop="maxClassNo">
+        <el-input-number v-model="formData.maxClassNo" :min="0" :max="99" :step="1" />
+      </el-form-item>
     </el-form>
     <template #footer>
       <el-button :disabled="formLoading" type="primary" @click="submitForm">确 定</el-button>
@@ -58,12 +61,14 @@ const formData = ref<SchoolGrade & { stage?: string }>({
   id: undefined,
   schoolId: undefined,
   gradeCatalogId: undefined,
-  stage: undefined
+  stage: undefined,
+  maxClassNo: 0
 })
 const formRules = reactive({
   schoolId: [{ required: true, message: '学校ID不能为空', trigger: 'blur' }],
   stage: [{ required: true, message: '年级阶段不能为空', trigger: 'change' }],
-  gradeCatalogId: [{ required: true, message: '年级标识不能为空', trigger: 'change' }]
+  gradeCatalogId: [{ required: true, message: '年级标识不能为空', trigger: 'change' }],
+  maxClassNo: [{ required: true, message: '最大班号不能为空', trigger: 'change' }]
 })
 const formRef = ref()
 
@@ -111,7 +116,8 @@ const open = async (type: string, id?: number, schoolId?: number, schoolStageCod
         id: schoolGrade.id,
         schoolId: schoolGrade.schoolId,
         gradeCatalogId: schoolGrade.gradeCatalogId,
-        stage: schoolGrade.stage
+        stage: schoolGrade.stage,
+        maxClassNo: schoolGrade.maxClassNo ?? 0
       }
     }
   } finally {
@@ -128,7 +134,8 @@ const submitForm = async () => {
     const data: SchoolGrade = {
       id: formData.value.id,
       schoolId: formData.value.schoolId,
-      gradeCatalogId: formData.value.gradeCatalogId
+      gradeCatalogId: formData.value.gradeCatalogId,
+      maxClassNo: formData.value.maxClassNo
     }
     if (formType.value === 'create') {
       await SchoolApi.createSchoolGrade(data)
@@ -149,7 +156,8 @@ const resetForm = () => {
     id: undefined,
     schoolId: undefined,
     gradeCatalogId: undefined,
-    stage: undefined
+    stage: undefined,
+    maxClassNo: 0
   }
   formRef.value?.resetFields()
 }

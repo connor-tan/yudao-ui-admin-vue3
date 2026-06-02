@@ -17,6 +17,7 @@ export interface SchoolGrade {
   gradeNo?: string
   gradeName?: string
   aliasName?: string
+  maxClassNo?: number
   createTime?: string
 }
 
@@ -27,6 +28,7 @@ export interface SchoolGradeSimple {
   gradeNo: string
   gradeName: string
   aliasName?: string
+  maxClassNo?: number
 }
 
 /** 学年信息 */

@@ -43,6 +43,7 @@
           filterable
           clearable
           placeholder="请选择学校"
+          @change="handleQuerySchoolChange"
           class="!w-240px"
         >
           <el-option
@@ -50,6 +51,24 @@
             :key="school.id"
             :label="school.schoolName"
             :value="school.id"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="当前班级" prop="currentClassId">
+        <el-select
+          v-model="queryParams.currentClassId"
+          filterable
+          clearable
+          :disabled="!queryParams.currentSchoolId"
+          placeholder="请选择班级"
+          class="!w-240px"
+          @visible-change="(visible) => visible && loadCurrentClassList()"
+        >
+          <el-option
+            v-for="item in currentClassList"
+            :key="item.id"
+            :label="item.className"
+            :value="item.id"
           />
         </el-select>
       </el-form-item>
@@ -154,6 +173,7 @@
         </template>
       </el-table-column>
       <el-table-column label="学校" align="center" prop="currentSchoolName" min-width="180" />
+      <el-table-column label="当前班级" align="center" prop="currentClassName" min-width="160" />
       <el-table-column label="入学年" align="center" prop="entryYear" />
       <el-table-column label="学号" align="center" prop="studentCode" />
       <el-table-column label="状态" align="center">
@@ -207,7 +227,7 @@ import { isEmpty } from '@/utils/is'
 import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { getStudentStatusLabel, STUDENT_STATUS_OPTIONS, StudentApi, Student } from '@/api/edu/student'
-import { SchoolApi, type SchoolSimple } from '@/api/edu/school'
+import { SchoolApi, type SchoolClassSimple, type SchoolSimple } from '@/api/edu/school'
 import { getUserPage, type UserVO } from '@/api/member/user'
 import StudentForm from './StudentForm.vue'
 import StudentClassList from './components/StudentClassList.vue'
@@ -228,6 +248,7 @@ const loading = ref(true) // 列表的加载中
 const list = ref<Student[]>([]) // 列表的数据
 const total = ref(0) // 列表的总页数
 const schoolList = ref<SchoolSimple[]>([])
+const currentClassList = ref<SchoolClassSimple[]>([])
 const parentOptions = ref<ParentOption[]>([])
 const parentLoading = ref(false)
 const queryParams = reactive({
@@ -236,6 +257,7 @@ const queryParams = reactive({
   studentName: undefined,
   belongTo: undefined,
   currentSchoolId: undefined,
+  currentClassId: undefined,
   entryYear: undefined,
   studentCode: undefined,
   status: undefined,
@@ -250,6 +272,20 @@ const loadSchoolList = async () => {
     return
   }
   schoolList.value = await SchoolApi.getSchoolSimpleList()
+}
+
+const loadCurrentClassList = async () => {
+  if (!queryParams.currentSchoolId) {
+    currentClassList.value = []
+    return
+  }
+  currentClassList.value = await SchoolApi.getSchoolClassSimpleList(queryParams.currentSchoolId)
+}
+
+const handleQuerySchoolChange = async () => {
+  queryParams.currentClassId = undefined
+  currentClassList.value = []
+  await loadCurrentClassList()
 }
 
 const formatParentLabel = (parent: ParentOption) => {

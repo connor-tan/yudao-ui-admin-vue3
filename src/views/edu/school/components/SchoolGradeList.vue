@@ -39,6 +39,7 @@
           {{ formatGradeName(scope.row.gradeName, scope.row.aliasName) }}
         </template>
       </el-table-column>
+      <el-table-column label="最大班号" align="center" prop="maxClassNo" width="100" />
       <el-table-column
         label="创建时间"
         align="center"
