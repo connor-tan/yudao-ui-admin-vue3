@@ -103,7 +103,6 @@
         <el-table-column label="单价" width="90">
           <template #default="{ row }">{{ fenToYuan(row.price) }}</template>
         </el-table-column>
-        <el-table-column label="库存" width="80" prop="stock" />
         <el-table-column label="可购" width="80" prop="remainingQuantity" />
         <el-table-column label="数量" width="130">
           <template #default="{ row }">
@@ -432,9 +431,8 @@ const isSelectedPublication = (row: PublicationRow) =>
   selectedPublications.value.some((item) => item.rowKey === row.rowKey)
 
 const getPublicationMaxCount = (row: PublicationRow) => {
-  const stock = row.stock ?? 0
   const remaining = row.remainingQuantity ?? 0
-  return Math.max(0, Math.min(stock, remaining))
+  return Math.max(0, remaining)
 }
 
 const handlePublicationSelectionChange = (rows: PublicationRow[]) => {

@@ -89,7 +89,10 @@
             已售{{ (spu.salesCount || 0) + (spu.virtualSalesCount || 0) }}件
           </span>
           <!-- 库存 -->
-          <span v-if="property.fields.stock.show" :style="{ color: property.fields.stock.color }">
+          <span
+            v-if="property.fields.stock.show && !isPublicationSpu(spu)"
+            :style="{ color: property.fields.stock.color }"
+          >
             库存{{ spu.stock || 0 }}
           </span>
         </div>
@@ -128,6 +131,8 @@ defineOptions({ name: 'ProductCard' })
 const props = defineProps<{ property: ProductCardProperty }>()
 // 商品列表
 const spuList = ref<ProductSpuApi.Spu[]>([])
+const isPublicationSpu = (spu: ProductSpuApi.Spu) =>
+  spu.bizScene === ProductSpuApi.BIZ_SCENE_PUBLICATION
 watch(
   () => props.property.spuIds,
   async () => {

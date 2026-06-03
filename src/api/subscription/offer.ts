@@ -33,7 +33,6 @@ export interface SubscriptionOfferAvailable {
   categoryNames?: string[]
   picUrl?: string
   price?: number
-  stock?: number
   publisherId?: number
   publisherName?: string
   publicationTypeId?: number

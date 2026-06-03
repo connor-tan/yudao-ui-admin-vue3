@@ -84,7 +84,7 @@
   <ContentWrap>
     <el-tabs v-model="queryParams.tabType" @tab-click="handleTabClick">
       <el-tab-pane
-        v-for="item in tabsData"
+        v-for="item in visibleTabsData"
         :key="item.type"
         :label="item.name + '(' + item.count + ')'"
         :name="item.type"
@@ -165,7 +165,12 @@
         <template #default="{ row }"> ¥ {{ fenToYuan(row.price) }}</template>
       </el-table-column>
       <el-table-column align="center" label="销量" min-width="90" prop="salesCount" />
-      <el-table-column align="center" label="库存" min-width="90" prop="stock" />
+      <el-table-column v-if="!isPublicationList" align="center" label="库存" min-width="90">
+        <template #default="{ row }">
+          <span v-if="row.bizScene === ProductSpuApi.BIZ_SCENE_PUBLICATION">-</span>
+          <span v-else>{{ row.stock }}</span>
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="排序" min-width="70" prop="sort" />
       <el-table-column align="center" label="销售状态" min-width="80">
         <template #default="{ row }">
@@ -293,7 +298,6 @@ const tabsData = ref([
     count: 0
   }
 ])
-
 const queryParams = ref<{
   pageNo: number
   pageSize: number
@@ -310,6 +314,12 @@ const queryParams = ref<{
   categoryIds: [],
   createTime: undefined
 }) // 查询参数
+const isPublicationList = computed(
+  () => queryParams.value.bizScene === ProductSpuApi.BIZ_SCENE_PUBLICATION
+)
+const visibleTabsData = computed(() =>
+  tabsData.value.filter((item) => !isPublicationList.value || ![2, 3].includes(item.type))
+)
 const queryFormRef = ref() // 搜索的表单Ref
 
 /** 查询列表 */
@@ -332,7 +342,7 @@ const handleTabClick = (tab: TabsPaneContext) => {
 
 /** 获得每个 Tab 的数量 */
 const getTabsCount = async () => {
-  const res = await ProductSpuApi.getTabsCount()
+  const res = await ProductSpuApi.getTabsCount({ bizScene: queryParams.value.bizScene })
   for (let objName in res) {
     tabsData.value[Number(objName)].count = res[objName]
   }
@@ -459,15 +469,22 @@ const formatCategoryNames = (row: ProductSpuApi.Spu) => {
 const parseTabType = (tabType: unknown) => {
   const rawValue = Array.isArray(tabType) ? tabType[0] : tabType
   const value = Number(rawValue)
-  return tabsData.value.some((item) => item.type === value) ? value : 0
+  return visibleTabsData.value.some((item) => item.type === value) ? value : 0
 }
 
 const syncTabTypeFromRoute = () => {
   queryParams.value.tabType = parseTabType(route.query.tabType)
 }
 
+const syncBizSceneFromRoute = () => {
+  const rawValue = Array.isArray(route.query.bizScene) ? route.query.bizScene[0] : route.query.bizScene
+  queryParams.value.bizScene = typeof rawValue === 'string' && rawValue ? rawValue : undefined
+  queryParams.value.tabType = parseTabType(route.query.tabType)
+}
+
 /** 激活时 */
 onActivated(() => {
+  syncBizSceneFromRoute()
   syncTabTypeFromRoute()
   getList()
 })
@@ -480,6 +497,16 @@ onMounted(async () => {
   })
   categoryList.value = handleTree(data, 'id', 'parentId')
 })
+
+watch(
+  () => route.query.bizScene,
+  () => {
+    syncBizSceneFromRoute()
+    getTabsCount()
+    getList()
+  },
+  { immediate: true }
+)
 
 watch(
   () => route.query.categoryIds,

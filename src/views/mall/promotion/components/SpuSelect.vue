@@ -69,7 +69,7 @@
             />
           </template>
         </el-table-column>
-        <el-table-column type="selection" width="55" />
+        <el-table-column :selectable="isSpuSelectable" type="selection" width="55" />
         <el-table-column key="id" align="center" label="商品编号" prop="id" />
         <el-table-column label="商品图" min-width="80">
           <template #default="{ row }">
@@ -93,7 +93,12 @@
           </template>
         </el-table-column>
         <el-table-column align="center" label="销量" min-width="90" prop="salesCount" />
-        <el-table-column align="center" label="库存" min-width="90" prop="stock" />
+        <el-table-column align="center" label="库存" min-width="90">
+          <template #default="{ row }">
+            <span v-if="row.bizScene === ProductSpuApi.BIZ_SCENE_PUBLICATION">-</span>
+            <span v-else>{{ row.stock }}</span>
+          </template>
+        </el-table-column>
         <el-table-column align="center" label="排序" min-width="70" prop="sort" />
         <el-table-column
           :formatter="dateFormatter"
@@ -164,6 +169,8 @@ const getRowKey = (row: ProductSpuApi.Spu) => String(row.id ?? '')
 //============ 商品选择相关 ============
 const selectedSpuId = ref<number>(0) // 选中的商品 spuId
 const selectedSkuIds = ref<number[]>([]) // 选中的商品 skuIds
+const isSpuSelectable = (row: ProductSpuApi.Spu) =>
+  !props.isSelectSku || row.bizScene !== ProductSpuApi.BIZ_SCENE_PUBLICATION
 const selectSku = (val: ProductSpuApi.Sku[]) => {
   const skuTable = skuListRef.value?.getSkuTableRef()
   if (selectedSpuId.value === 0) {

@@ -7,7 +7,6 @@ export interface SubscriptionPreviewSku {
   decisionStatus?: string
   decisionStatusName?: string
   price?: number
-  stock?: number
   isbn?: string
   applicableGradeCatalogIds?: number[]
   applicableGradeNames?: string[]

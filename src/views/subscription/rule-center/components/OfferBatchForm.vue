@@ -197,7 +197,6 @@
         <el-table-column align="center" label="价格" width="100">
           <template #default="{ row }">¥ {{ fenToYuan(row.price || 0) }}</template>
         </el-table-column>
-        <el-table-column align="center" label="库存" width="90" prop="stock" />
       </el-table>
       <Pagination
         v-model:limit="queryParams.pageSize"

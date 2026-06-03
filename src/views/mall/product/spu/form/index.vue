@@ -9,7 +9,7 @@
           :propFormData="formData"
         />
       </el-tab-pane>
-      <el-tab-pane label="价格库存" name="sku">
+      <el-tab-pane :label="skuTabLabel" name="sku">
         <SkuForm
           ref="skuRef"
           v-model:activeName="activeName"
@@ -102,6 +102,9 @@ const formData = ref<ProductSpuApi.Spu>({
   virtualSalesCount: 0, // 虚拟销量
   publicationExt: createPublicationSpuExt()
 })
+const skuTabLabel = computed(() =>
+  formData.value.bizScene === ProductSpuApi.BIZ_SCENE_PUBLICATION ? '刊物 SKU' : '价格库存'
+)
 
 const formatAmountForInput = (amount: number | string | undefined): number => {
   const value = Number(formatToFraction(amount))
@@ -162,6 +165,8 @@ const submitForm = async () => {
     deepCopyFormData.skus!.forEach((item) => {
       if (deepCopyFormData.bizScene !== ProductSpuApi.BIZ_SCENE_PUBLICATION) {
         item.name = deepCopyFormData.name
+      } else {
+        item.stock = 0
       }
       // sku相关价格元转分
       item.price = convertToInteger(item.price)

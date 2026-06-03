@@ -28,7 +28,12 @@
       </template>
     </el-table-column>
     <el-table-column align="center" label="销量" min-width="90" prop="salesCount" />
-    <el-table-column align="center" label="库存" min-width="90" prop="stock" />
+    <el-table-column align="center" label="库存" min-width="90">
+      <template #default="{ row }">
+        <span v-if="row.bizScene === BIZ_SCENE_PUBLICATION">-</span>
+        <span v-else>{{ row.stock }}</span>
+      </template>
+    </el-table-column>
     <el-table-column
       v-if="spuData.length > 1 && deletable"
       align="center"
@@ -44,7 +49,7 @@
 <script generic="T extends Spu" lang="ts" setup>
 import { formatToFraction } from '@/utils'
 import { createImageViewer } from '@/components/ImageViewer'
-import { Spu } from '@/api/mall/product/spu'
+import { BIZ_SCENE_PUBLICATION, Spu } from '@/api/mall/product/spu'
 import { RuleConfig, SkuList } from '@/views/mall/product/spu/components'
 import { SpuProperty } from '@/views/mall/promotion/components/index'
 

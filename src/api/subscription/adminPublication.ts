@@ -44,7 +44,6 @@ export interface AdminSubscriptionPublicationOfferSku {
   productSkuId?: number
   productSkuName?: string
   price?: number
-  stock?: number
   purchasable?: boolean
   maxQuantityPerStudent?: number
   orderedQuantity?: number

@@ -1,4 +1,4 @@
-<!-- 商品发布 - 库存价格 -->
+<!-- 商品发布 - 规格信息 -->
 <template>
   <el-form
     ref="formRef"
@@ -20,7 +20,7 @@
       <el-form-item label="刊物 SKU">
         <div class="w-80">
           <div class="mb-12px text-12px text-gray-500">
-            刊物 SKU 负责承载 ISBN、适用年级、期次、价格库存等信息。
+            刊物 SKU 负责承载 ISBN、适用年级、期次、价格等信息。
           </div>
           <el-button v-if="!isDetail" type="primary" plain @click="addPublicationSku">
             新增 SKU
@@ -137,18 +137,6 @@
                 :min="0"
                 :precision="2"
                 :step="0.1"
-                class="w-100%"
-                controls-position="right"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column label="库存" min-width="120">
-            <template #default="{ row }">
-              <template v-if="isDetail">{{ row.stock }}</template>
-              <el-input-number
-                v-else
-                v-model="row.stock"
-                :min="0"
                 class="w-100%"
                 controls-position="right"
               />
@@ -583,6 +571,11 @@ const validate = async () => {
       await unref(formRef).validate()
     }
     const skus = cloneDeep(formData.skus || [])
+    if (isPublicationScene.value) {
+      skus.forEach((sku) => {
+        sku.stock = 0
+      })
+    }
     if (isPublicationScene.value && !isPeriodicalPublication.value) {
       skus.forEach((sku) => {
         sku.issueTemplates = []
@@ -595,7 +588,7 @@ const validate = async () => {
     })
   } catch (e) {
     message.error(
-      e instanceof Error && e.message ? e.message : '【库存价格】不完善，请填写相关信息'
+      e instanceof Error && e.message ? e.message : '【规格信息】不完善，请填写相关信息'
     )
     emit('update:activeName', 'sku')
     throw e

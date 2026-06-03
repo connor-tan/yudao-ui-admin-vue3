@@ -6,7 +6,6 @@ export interface SubscriptionOfferSku {
   productSkuId?: number
   productSkuName?: string
   price?: number
-  stock?: number
   isbn?: string
   issueMode?: string
   issueCount?: number

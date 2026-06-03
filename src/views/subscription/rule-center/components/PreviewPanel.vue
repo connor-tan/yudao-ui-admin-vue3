@@ -96,7 +96,6 @@
                 <el-table-column align="center" label="价格" width="100">
                   <template #default="{ row: sku }">¥ {{ fenToYuan(sku.price || 0) }}</template>
                 </el-table-column>
-                <el-table-column align="center" label="库存" width="90" prop="stock" />
                 <el-table-column align="center" label="年级突破" width="100">
                   <template #default="{ row: sku }">
                     <el-tag v-if="sku.gradeApplicabilityOverride" type="warning">是</el-tag>
