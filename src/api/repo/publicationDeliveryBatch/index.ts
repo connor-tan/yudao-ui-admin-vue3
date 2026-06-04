@@ -200,55 +200,55 @@ export interface PublicationDeliveryCandidateItemRespVO {
 
 export const PublicationDeliveryBatchApi = {
   getCandidatePage: async (params: PublicationDeliveryCandidatePageReqVO) => {
-    return await request.get({ url: '/trade/publication-delivery-batch/candidate-page', params })
+    return await request.get({ url: '/repo/publication-delivery-batch/candidate-page', params })
   },
 
   getCandidateGroupPage: async (params: PublicationDeliveryCandidateGroupPageReqVO) => {
-    return await request.get({ url: '/trade/publication-delivery-batch/candidate-group-page', params })
+    return await request.get({ url: '/repo/publication-delivery-batch/candidate-group-page', params })
   },
 
   getCandidateChildList: async (params: PublicationDeliveryCandidateChildReqVO) => {
     return await request.get<PublicationDeliveryCandidateRespVO[]>({
-      url: '/trade/publication-delivery-batch/candidate-child-list',
+      url: '/repo/publication-delivery-batch/candidate-child-list',
       params
     })
   },
 
   getCandidateChildPage: async (params: PublicationDeliveryCandidateChildReqVO) => {
     return await request.get<PublicationDeliveryCandidateChildPageRespVO>({
-      url: '/trade/publication-delivery-batch/candidate-child-page',
+      url: '/repo/publication-delivery-batch/candidate-child-page',
       params
     })
   },
 
   getCandidateItemList: async (params: PublicationDeliveryCandidatePageReqVO) => {
     return await request.get<PublicationDeliveryCandidateItemRespVO[]>({
-      url: '/trade/publication-delivery-batch/candidate-item-list',
+      url: '/repo/publication-delivery-batch/candidate-item-list',
       params
     })
   },
 
   createAndDeliver: async (data: PublicationDeliveryBatchCreateReqVO) => {
     return await request.post<number>({
-      url: '/trade/publication-delivery-batch/create-and-deliver',
+      url: '/repo/publication-delivery-batch/create-and-deliver',
       data
     })
   },
 
   createGroupAndDeliver: async (data: PublicationDeliveryBatchGroupCreateReqVO) => {
     return await request.post<PublicationDeliveryBatchGroupCreateRespVO>({
-      url: '/trade/publication-delivery-batch/create-group-and-deliver',
+      url: '/repo/publication-delivery-batch/create-group-and-deliver',
       data
     })
   },
 
   getBatchPage: async (params: PublicationDeliveryBatchPageReqVO) => {
-    return await request.get({ url: '/trade/publication-delivery-batch/page', params })
+    return await request.get({ url: '/repo/publication-delivery-batch/page', params })
   },
 
   getBatch: async (id: number) => {
     return await request.get<PublicationDeliveryBatchRespVO>({
-      url: '/trade/publication-delivery-batch/get',
+      url: '/repo/publication-delivery-batch/get',
       params: { id }
     })
   }

@@ -201,7 +201,7 @@
                 <el-table-column align="center" fixed="right" label="操作" width="120">
                   <template #default="childScope">
                     <el-button
-                      v-hasPermi="['trade:publication-delivery-batch:create']"
+                      v-hasPermi="['repo:publication-delivery-batch:create']"
                       link
                       type="primary"
                       @click="handleCreateAndDeliver(childScope.row)"
@@ -251,7 +251,7 @@
           <el-table-column align="center" fixed="right" label="操作" width="130">
             <template #default="{ row }">
               <el-button
-                v-hasPermi="['trade:publication-delivery-batch:create']"
+                v-hasPermi="['repo:publication-delivery-batch:create']"
                 link
                 type="primary"
                 @click="handleCreateGroupAndDeliver(row)"
@@ -462,7 +462,7 @@
           <el-table-column align="center" fixed="right" label="操作" width="100">
             <template #default="{ row }">
               <el-button
-                v-hasPermi="['trade:publication-delivery-batch:query']"
+                v-hasPermi="['repo:publication-delivery-batch:query']"
                 link
                 type="primary"
                 @click="openBatchDetail(row.id)"
@@ -622,9 +622,9 @@ import {
   type PublicationDeliveryCandidateItemRespVO,
   type PublicationDeliveryCandidatePageReqVO,
   type PublicationDeliveryCandidateRespVO
-} from '@/api/mall/trade/publicationDeliveryBatch'
+} from '@/api/repo/publicationDeliveryBatch'
 
-defineOptions({ name: 'TradePublicationDeliveryBatch' })
+defineOptions({ name: 'RepoPublicationDeliveryBatch' })
 
 const message = useMessage()
 const activeTab = ref('candidate')
