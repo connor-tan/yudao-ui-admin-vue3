@@ -337,24 +337,6 @@ const getShortcut = async () => {
       icon: 'tabler:ai',
       url: '/ai/chat',
       color: '#7c3aed'
-    },
-    {
-      name: 'ERP 系统',
-      icon: 'simple-icons:erpnext',
-      url: '/erp/home',
-      color: '#3fb27f'
-    },
-    {
-      name: 'CRM 系统',
-      icon: 'simple-icons:civicrm',
-      url: '/crm/backlog',
-      color: '#4daf1bc9'
-    },
-    {
-      name: 'IoT 物联网',
-      icon: 'fa-solid:hdd',
-      url: '/iot/home',
-      color: '#1a73e8'
     }
   ]
   shortcut = Object.assign(shortcut, data)

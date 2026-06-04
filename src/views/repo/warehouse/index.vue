@@ -1,7 +1,5 @@
 <!-- 仓库列表 -->
 <template>
-  <doc-alert v-if="false" title="【库存】产品库存、库存明细" url="https://doc.iocoder.cn/erp/stock/" />
-
   <ContentWrap>
     <!-- 搜索工作栏 -->
     <el-form
@@ -68,13 +66,13 @@
         label="仓储费"
         align="center"
         prop="warehousePrice"
-        :formatter="erpPriceTableColumnFormatter"
+        :formatter="priceTableColumnFormatter"
       />
       <el-table-column
         label="搬运费"
         align="center"
         prop="truckagePrice"
-        :formatter="erpPriceTableColumnFormatter"
+        :formatter="priceTableColumnFormatter"
       />
       <el-table-column label="负责人" align="center" prop="principal" />
       <el-table-column label="备注" align="center" prop="remark" />
@@ -141,7 +139,7 @@ import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { WarehouseApi, WarehouseVO } from '@/api/repo/warehouse'
 import WarehouseForm from './WarehouseForm.vue'
-import { erpPriceTableColumnFormatter } from '@/utils'
+import { priceTableColumnFormatter } from '@/utils'
 
 /** 仓库列表 */
 defineOptions({ name: 'RepoWarehouse' })

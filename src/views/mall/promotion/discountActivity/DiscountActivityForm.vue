@@ -61,7 +61,7 @@ import { cloneDeep, debounce } from 'lodash-es'
 import * as DiscountActivityApi from '@/api/mall/promotion/discount/discountActivity'
 import * as ProductSpuApi from '@/api/mall/product/spu'
 import { getPropertyList, RuleConfig } from '@/views/mall/product/spu/components'
-import { convertToInteger, erpCalculatePercentage, fenToYuan, yuanToFen } from '@/utils'
+import { calculatePercentage, convertToInteger, fenToYuan, yuanToFen } from '@/utils'
 import { PromotionDiscountTypeEnum } from '@/utils/constants'
 
 defineOptions({ name: 'PromotionDiscountActivityForm' })
@@ -220,7 +220,7 @@ const handleSkuDiscountPriceChange = debounce((row: any) => {
   // 设置优惠类型：满减
   row.productConfig.discountType = PromotionDiscountTypeEnum.PRICE.type
   // 设置折扣
-  row.productConfig.discountPercent = erpCalculatePercentage(
+  row.productConfig.discountPercent = calculatePercentage(
     row.price - yuanToFen(row.productConfig.discountPrice),
     row.price
   )
