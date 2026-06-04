@@ -187,6 +187,15 @@
                   prop="plannedDeliveryDate"
                 />
                 <el-table-column align="center" label="待发数量" prop="totalCount" width="100" />
+                <el-table-column align="center" label="已到货" prop="receivedCount" width="90" />
+                <el-table-column align="center" label="可发" prop="availableCount" width="90" />
+                <el-table-column align="center" label="缺口" width="90">
+                  <template #default="childScope">
+                    <el-tag :type="(childScope.row.shortageCount || 0) > 0 ? 'danger' : 'success'">
+                      {{ childScope.row.shortageCount || 0 }}
+                    </el-tag>
+                  </template>
+                </el-table-column>
                 <el-table-column align="center" label="订单数" prop="orderCount" width="90" />
                 <el-table-column align="center" label="学生数" prop="studentCount" width="90" />
                 <el-table-column align="center" fixed="right" label="操作" width="120">
@@ -229,6 +238,14 @@
           <el-table-column align="center" label="刊物数" prop="publicationGroupCount" width="100" />
           <el-table-column align="center" label="期次数" prop="issueGroupCount" width="100" />
           <el-table-column align="center" label="待发数量" prop="totalCount" width="100" />
+          <el-table-column align="center" label="可发" prop="availableCount" width="90" />
+          <el-table-column align="center" label="缺口" width="90">
+            <template #default="{ row }">
+              <el-tag :type="(row.shortageCount || 0) > 0 ? 'danger' : 'success'">
+                {{ row.shortageCount || 0 }}
+              </el-tag>
+            </template>
+          </el-table-column>
           <el-table-column align="center" label="订单数" prop="orderCount" width="100" />
           <el-table-column align="center" label="学生数" prop="studentCount" width="100" />
           <el-table-column align="center" fixed="right" label="操作" width="130">
@@ -535,6 +552,9 @@
       </el-descriptions-item>
       <el-descriptions-item label="待发">
         {{ expressCandidate.totalCount || 0 }} 本 / {{ expressCandidate.orderCount || 0 }} 单
+      </el-descriptions-item>
+      <el-descriptions-item label="可发">
+        {{ expressCandidate.availableCount || 0 }} 本 / 缺口 {{ expressCandidate.shortageCount || 0 }}
       </el-descriptions-item>
     </el-descriptions>
     <el-form :inline="true" label-width="92px">
@@ -944,6 +964,10 @@ const handleCreateGroupAndDeliver = async (row: PublicationDeliveryCandidateGrou
     message.info('快递刊物请在子表中逐个刊物期次录入物流后发货')
     return
   }
+  if ((row.shortageCount || 0) > 0) {
+    message.error(`当前到货余额不足，缺口 ${row.shortageCount || 0} 本`)
+    return
+  }
   if (
     row.deliveryType !== DeliveryTypeEnum.SCHOOL.type ||
     !row.schoolId ||
@@ -970,6 +994,10 @@ const handleCreateGroupAndDeliver = async (row: PublicationDeliveryCandidateGrou
 }
 
 const handleCreateAndDeliver = async (row: PublicationDeliveryCandidateRespVO) => {
+  if ((row.shortageCount || 0) > 0) {
+    message.error(`当前到货余额不足，缺口 ${row.shortageCount || 0} 本`)
+    return
+  }
   if (row.deliveryType === DeliveryTypeEnum.EXPRESS.type) {
     await openExpressDelivery(row)
     return
@@ -1033,6 +1061,7 @@ const openExpressDelivery = async (row: PublicationDeliveryCandidateRespVO) => {
   if (
     !row.schoolId ||
     !row.windowId ||
+    !row.warehouseId ||
     !row.offerId ||
     !row.offerSkuId ||
     !row.skuId ||
@@ -1106,6 +1135,7 @@ const submitExpressDelivery = async () => {
     await PublicationDeliveryBatchApi.createAndDeliver({
       deliveryType: DeliveryTypeEnum.EXPRESS.type,
       schoolId: row.schoolId!,
+      warehouseId: row.warehouseId,
       windowId: row.windowId!,
       offerId: row.offerId!,
       offerSkuId: row.offerSkuId!,

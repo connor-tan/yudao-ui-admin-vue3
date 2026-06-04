@@ -35,6 +35,10 @@ export interface PublicationDeliveryCandidateRespVO {
   totalCount?: number
   orderCount?: number
   studentCount?: number
+  receivedCount?: number
+  allocatedCount?: number
+  availableCount?: number
+  shortageCount?: number
 }
 
 export interface PublicationDeliveryCandidateGroupPageReqVO
@@ -53,6 +57,10 @@ export interface PublicationDeliveryCandidateGroupRespVO {
   studentCount?: number
   publicationGroupCount?: number
   issueGroupCount?: number
+  receivedCount?: number
+  allocatedCount?: number
+  availableCount?: number
+  shortageCount?: number
 }
 
 export interface PublicationDeliveryCandidateChildReqVO
