@@ -74,7 +74,7 @@ const allowedDeliveryTypeValues = computed(() => {
     return [DeliveryTypeEnum.EXPRESS.type, DeliveryTypeEnum.SCHOOL.type]
   }
   if (isNormalScene.value) {
-    return [DeliveryTypeEnum.EXPRESS.type, DeliveryTypeEnum.PICK_UP.type]
+    return [DeliveryTypeEnum.EXPRESS.type]
   }
   return []
 })

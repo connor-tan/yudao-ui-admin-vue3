@@ -50,6 +50,7 @@
             </el-button>
             <el-button
               v-hasPermi="['repo:publication-receipt:create']"
+              :loading="createReceiptSubmitting"
               plain
               type="primary"
               @click="handleCreateReceipt"
@@ -60,6 +61,7 @@
         </el-form>
 
         <el-table
+          ref="demandTableRef"
           v-loading="demandLoading"
           class="mt-20px"
           :data="demandList"
@@ -206,6 +208,7 @@
               <el-button
                 v-if="row.status === ReceiptStatusEnum.DRAFT"
                 v-hasPermi="['repo:publication-receipt:update']"
+                :loading="receiptActionLoadingMap[row.id!]"
                 link
                 type="primary"
                 @click="handleSubmitReceipt(row)"
@@ -232,6 +235,7 @@
               <el-button
                 v-if="row.status !== ReceiptStatusEnum.CLOSED"
                 v-hasPermi="['repo:publication-receipt:update']"
+                :loading="receiptActionLoadingMap[row.id!]"
                 link
                 type="danger"
                 @click="handleCloseReceipt(row)"
@@ -362,6 +366,8 @@ const demandLoading = ref(false)
 const demandTotal = ref(0)
 const demandList = ref<PublicationReceiptDemandVO[]>([])
 const selectedDemandList = ref<PublicationReceiptDemandVO[]>([])
+const createReceiptSubmitting = ref(false)
+const demandTableRef = ref()
 const demandQueryFormRef = ref()
 const demandQueryParams = reactive({
   pageNo: 1,
@@ -388,6 +394,7 @@ const receiptQueryParams = reactive({
 const receiveDialogVisible = ref(false)
 const detailDialogVisible = ref(false)
 const receiveSubmitting = ref(false)
+const receiptActionLoadingMap = ref<Record<number, boolean>>({})
 const currentReceipt = ref<PublicationReceiptVO>()
 
 const getReceiptStatusLabel = (status?: number) => {
@@ -416,6 +423,7 @@ const getDemandList = async () => {
 }
 
 const handleDemandQuery = () => {
+  clearDemandSelection()
   demandQueryParams.pageNo = 1
   getDemandList()
 }
@@ -429,7 +437,15 @@ const handleDemandSelectionChange = (rows: PublicationReceiptDemandVO[]) => {
   selectedDemandList.value = rows
 }
 
+const clearDemandSelection = () => {
+  selectedDemandList.value = []
+  demandTableRef.value?.clearSelection?.()
+}
+
 const handleCreateReceipt = async () => {
+  if (createReceiptSubmitting.value) {
+    return
+  }
   if (!demandQueryParams.supplierId || !demandQueryParams.warehouseId) {
     message.error('请先选择供应商和仓库')
     return
@@ -443,23 +459,41 @@ const handleCreateReceipt = async () => {
     message.error('本次应收数量必须大于 0')
     return
   }
-  await message.confirm(`确认生成 ${selectedDemandList.value.length} 条明细的刊物收货单？`)
-  const receiptId = await PublicationReceiptApi.createReceipt({
-    supplierId: demandQueryParams.supplierId,
-    warehouseId: demandQueryParams.warehouseId,
-    items: selectedDemandList.value.map((item) => ({
-      windowId: item.windowId,
-      offerId: item.offerId,
-      offerSkuId: item.offerSkuId,
-      skuId: item.skuId,
-      issueId: item.issueId,
-      issueNo: item.issueNo,
-      expectedCount: item.expectedCount
-    }))
-  })
-  message.success(`已生成收货单 #${receiptId}`)
-  activeTab.value = 'receipt'
-  await Promise.all([getDemandList(), getReceiptList()])
+  const contextMismatch = selectedDemandList.value.some(
+    (item) => item.warehouseId !== demandQueryParams.warehouseId
+  )
+  if (contextMismatch) {
+    message.error('所选明细与当前仓库不一致，请重新查询后选择')
+    clearDemandSelection()
+    return
+  }
+  try {
+    await message.confirm(`确认生成 ${selectedDemandList.value.length} 条明细的刊物收货单？`)
+  } catch {
+    return
+  }
+  createReceiptSubmitting.value = true
+  try {
+    const receiptId = await PublicationReceiptApi.createReceipt({
+      supplierId: demandQueryParams.supplierId,
+      warehouseId: demandQueryParams.warehouseId,
+      items: selectedDemandList.value.map((item) => ({
+        windowId: item.windowId,
+        offerId: item.offerId,
+        offerSkuId: item.offerSkuId,
+        skuId: item.skuId,
+        issueId: item.issueId,
+        issueNo: item.issueNo,
+        expectedCount: item.expectedCount
+      }))
+    })
+    message.success(`已生成收货单 #${receiptId}`)
+    activeTab.value = 'receipt'
+    clearDemandSelection()
+    await Promise.all([getDemandList(), getReceiptList()])
+  } finally {
+    createReceiptSubmitting.value = false
+  }
 }
 
 const getReceiptList = async () => {
@@ -485,10 +519,16 @@ const resetReceiptQuery = () => {
 
 const handleSubmitReceipt = async (row: PublicationReceiptVO) => {
   if (!row.id) return
+  if (receiptActionLoadingMap.value[row.id]) return
   await message.confirm(`确认提交收货单 ${row.receiptNo}？`)
-  await PublicationReceiptApi.submitReceipt(row.id)
-  message.success('提交成功')
-  await getReceiptList()
+  receiptActionLoadingMap.value[row.id] = true
+  try {
+    await PublicationReceiptApi.submitReceipt(row.id)
+    message.success('提交成功')
+    await getReceiptList()
+  } finally {
+    receiptActionLoadingMap.value[row.id] = false
+  }
 }
 
 const loadReceiptDetail = async (id?: number) => {
@@ -541,14 +581,25 @@ const submitReceive = async () => {
 
 const handleCloseReceipt = async (row: PublicationReceiptVO) => {
   if (!row.id) return
+  if (receiptActionLoadingMap.value[row.id]) return
   const result = await message.prompt('请输入关闭原因', '关闭收货单')
-  await PublicationReceiptApi.closeReceipt({
-    id: row.id,
-    closeReason: result.value
-  })
-  message.success('关闭成功')
-  await getReceiptList()
+  receiptActionLoadingMap.value[row.id] = true
+  try {
+    await PublicationReceiptApi.closeReceipt({
+      id: row.id,
+      closeReason: result.value
+    })
+    message.success('关闭成功')
+    await getReceiptList()
+  } finally {
+    receiptActionLoadingMap.value[row.id] = false
+  }
 }
+
+watch(
+  () => [demandQueryParams.supplierId, demandQueryParams.warehouseId],
+  () => clearDemandSelection()
+)
 
 onMounted(async () => {
   await Promise.all([

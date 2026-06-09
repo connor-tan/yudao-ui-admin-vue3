@@ -5,6 +5,7 @@ export interface PublicationDeliveryCandidatePageReqVO {
   pageSize?: number
   deliveryType?: number
   schoolId?: number
+  stationId?: number
   warehouseId?: number
   windowId?: number
   offerId?: number
@@ -18,6 +19,8 @@ export interface PublicationDeliveryCandidateRespVO {
   deliveryType?: number
   schoolId?: number
   schoolNameSnapshot?: string
+  stationId?: number
+  stationNameSnapshot?: string
   warehouseId?: number
   warehouseNameSnapshot?: string
   windowId?: number
@@ -48,6 +51,8 @@ export interface PublicationDeliveryCandidateGroupRespVO {
   deliveryType?: number
   schoolId?: number
   schoolNameSnapshot?: string
+  stationId?: number
+  stationNameSnapshot?: string
   warehouseId?: number
   warehouseNameSnapshot?: string
   windowId?: number
@@ -74,6 +79,7 @@ export interface PublicationDeliveryCandidateChildPageRespVO {
 export interface PublicationDeliveryBatchCreateReqVO {
   deliveryType: number
   schoolId: number
+  stationId: number
   warehouseId?: number
   windowId: number
   offerId: number
@@ -108,6 +114,7 @@ export interface PublicationDeliveryBatchPageReqVO {
   batchNo?: string
   deliveryType?: number
   schoolId?: number
+  stationId?: number
   warehouseId?: number
   windowId?: number
   offerId?: number
@@ -125,6 +132,8 @@ export interface PublicationDeliveryBatchRespVO {
   deliveryType?: number
   schoolId?: number
   schoolNameSnapshot?: string
+  stationId?: number
+  stationNameSnapshot?: string
   warehouseId?: number
   warehouseNameSnapshot?: string
   windowId?: number
@@ -178,6 +187,8 @@ export interface PublicationDeliveryCandidateItemRespVO {
   count?: number
   schoolId?: number
   schoolNameSnapshot?: string
+  stationId?: number
+  stationNameSnapshot?: string
   warehouseId?: number
   warehouseNameSnapshot?: string
   windowId?: number

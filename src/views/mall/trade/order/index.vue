@@ -80,7 +80,7 @@
       <el-form-item label="配送方式" prop="deliveryType">
         <el-select v-model="queryParams.deliveryType" class="!w-280px" clearable placeholder="全部">
           <el-option
-            v-for="dict in getIntDictOptions(DICT_TYPE.TRADE_DELIVERY_TYPE)"
+            v-for="dict in deliveryTypeOptions"
             :key="dict.value"
             :label="dict.label"
             :value="dict.value"
@@ -336,6 +336,11 @@ const dynamicSearchList = ref([
   { value: 'userNickname', label: '用户昵称' },
   { value: 'userMobile', label: '用户电话' }
 ])
+const deliveryTypeOptions = computed(() =>
+  getIntDictOptions(DICT_TYPE.TRADE_DELIVERY_TYPE).filter(
+    (dict) => dict.value !== DeliveryTypeEnum.PICK_UP.type
+  )
+)
 /**
  * 聚合搜索切换查询对象时触发
  * @param val
@@ -355,12 +360,25 @@ const inputChangeSelect = (val: string) => {
 const getList = async () => {
   loading.value = true
   try {
-    const data = await TradeOrderApi.getOrderPage(unref(queryParams))
+    const data = await TradeOrderApi.getOrderPage(buildOrderQueryParams())
     list.value = data.list
     total.value = data.total
   } finally {
     loading.value = false
   }
+}
+
+const buildOrderQueryParams = () => {
+  const params = { ...unref(queryParams) }
+  if (params.deliveryType === DeliveryTypeEnum.PICK_UP.type) {
+    params.deliveryType = undefined
+  }
+  if (params.deliveryType !== DeliveryTypeEnum.EXPRESS.type) {
+    params.logisticsId = undefined
+  }
+  params.pickUpStoreIds = undefined
+  params.pickUpVerifyCode = undefined
+  return params
 }
 
 /** 搜索按钮操作 */

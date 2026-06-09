@@ -723,6 +723,7 @@ const getCandidateGroupKey = (row: PublicationDeliveryCandidateGroupRespVO) => {
   return [
     row.deliveryType || 0,
     row.schoolId || 0,
+    row.stationId || 0,
     row.warehouseId || 0,
     row.windowId || 0
   ].join('_')
@@ -903,6 +904,7 @@ const buildCandidateGroupReq = (
   return {
     deliveryType: row.deliveryType,
     schoolId: row.schoolId,
+    stationId: row.stationId,
     warehouseId: row.warehouseId,
     windowId: row.windowId,
     offerId: queryParams.offerId,
@@ -971,6 +973,7 @@ const handleCreateGroupAndDeliver = async (row: PublicationDeliveryCandidateGrou
   if (
     row.deliveryType !== DeliveryTypeEnum.SCHOOL.type ||
     !row.schoolId ||
+    !row.stationId ||
     !row.warehouseId ||
     !row.windowId
   ) {
@@ -1005,6 +1008,7 @@ const handleCreateAndDeliver = async (row: PublicationDeliveryCandidateRespVO) =
   if (
     !row.schoolId ||
     row.deliveryType !== DeliveryTypeEnum.SCHOOL.type ||
+    !row.stationId ||
     !row.warehouseId ||
     !row.windowId ||
     !row.offerId ||
@@ -1027,6 +1031,7 @@ const handleCreateAndDeliver = async (row: PublicationDeliveryCandidateRespVO) =
   await PublicationDeliveryBatchApi.createAndDeliver({
     deliveryType: row.deliveryType!,
     schoolId: row.schoolId!,
+    stationId: row.stationId!,
     warehouseId: row.warehouseId,
     windowId: row.windowId!,
     offerId: row.offerId!,
@@ -1044,6 +1049,7 @@ const buildCandidateReq = (
 ): PublicationDeliveryCandidatePageReqVO => ({
   deliveryType: row.deliveryType,
   schoolId: row.schoolId,
+  stationId: row.stationId,
   warehouseId: row.warehouseId,
   windowId: row.windowId,
   offerId: row.offerId,
@@ -1060,6 +1066,7 @@ const openExpressDelivery = async (row: PublicationDeliveryCandidateRespVO) => {
   }
   if (
     !row.schoolId ||
+    !row.stationId ||
     !row.windowId ||
     !row.warehouseId ||
     !row.offerId ||
@@ -1135,6 +1142,7 @@ const submitExpressDelivery = async () => {
     await PublicationDeliveryBatchApi.createAndDeliver({
       deliveryType: DeliveryTypeEnum.EXPRESS.type,
       schoolId: row.schoolId!,
+      stationId: row.stationId!,
       warehouseId: row.warehouseId,
       windowId: row.windowId!,
       offerId: row.offerId!,
