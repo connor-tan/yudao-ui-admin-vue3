@@ -42,7 +42,7 @@ export const SubscriptionWindowApi = {
   },
 
   getWindowSimpleList: async () => {
-    return await request.get({ url: '/subscription/window/simple-list' })
+    return await request.get<SubscriptionWindowSimple[]>({ url: '/subscription/window/simple-list' })
   },
 
   createWindow: async (data: SubscriptionWindow) => {

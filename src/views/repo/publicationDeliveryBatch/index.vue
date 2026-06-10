@@ -750,7 +750,7 @@ const buildCandidateSkuMeta = (row: PublicationDeliveryCandidateRespVO) => {
 
 const loadWindowList = async () => {
   const data = await SubscriptionWindowApi.getWindowSimpleList()
-  windowList.value = data.list || []
+  windowList.value = data || []
 }
 
 const loadOfferList = async (windowId: number | undefined, target: Ref<SubscriptionOffer[]>) => {
